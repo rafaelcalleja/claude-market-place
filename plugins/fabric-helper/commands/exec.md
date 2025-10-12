@@ -9,22 +9,47 @@ mcp-servers: []
 
 Execute the Fabric pattern "$1" on this input: "$2"
 
-## Instructions
+## Step 1: Extract the Pattern
 
-1. First, extract the pattern from the library using Bash:
+Find the plugin directory and extract the pattern:
 
 ```bash
-cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json" | jq -r '.patterns[] | select(.patternName=="$1") | .pattern_extract'
+# Find the fabric-helper plugin directory
+PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
+
+if [ -z "$PLUGIN_DIR" ]; then
+  echo "Error: fabric-helper plugin not found"
+  exit 1
+fi
+
+# Extract the pattern
+cd "$PLUGIN_DIR"
+cat .fabric-core/pattern_extracts.json | jq -r '.patterns[] | select(.patternName=="$1") | .pattern_extract'
 ```
 
-2. If the pattern is not found (empty output), tell the user:
-   - Pattern "$1" not found
-   - Suggest using: /suggest "what you want to do"
+## Step 2: Check Result
 
-3. If found, invoke the pattern-executor agent using Task tool with:
-   - subagent_type: "pattern-executor"
-   - prompt: Pass the extracted pattern instructions and ask the agent to apply them to the user input "$2"
+If the bash output is empty or shows an error, tell the user:
+- Pattern "$1" not found in library
+- Suggest: `/suggest "what you want to do"`
+- Stop here
 
-4. Return the agent's result to the user.
+## Step 3: Execute Pattern
 
-Execute these steps now.
+If pattern found, invoke pattern-executor agent (Task tool, subagent_type: "pattern-executor"):
+
+```
+Execute Fabric pattern "$1".
+
+PATTERN INSTRUCTIONS:
+[Paste the complete pattern text from Step 1 here]
+
+USER INPUT:
+$2
+
+Apply these instructions to the user input. Follow all directives precisely.
+```
+
+## Step 4: Return Result
+
+Pass the agent's output directly to the user.

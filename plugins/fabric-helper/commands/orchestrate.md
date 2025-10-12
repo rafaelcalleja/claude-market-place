@@ -8,33 +8,55 @@ complexity: intermediate
 mcp-servers: []
 ---
 
-Orchestrate a complete Fabric pattern workflow for this request: "$1"
+Orchestrate a Fabric pattern workflow for: "$1"
 
-## Instructions
-
-1. Load both pattern libraries using Bash:
+## Step 1: Find Plugin and Load Libraries
 
 ```bash
-cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json"
+# Find fabric-helper plugin
+PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
+
+if [ -z "$PLUGIN_DIR" ]; then
+  echo "Error: fabric-helper plugin not found"
+  exit 1
+fi
+
+echo "=== PATTERN DESCRIPTIONS ==="
+cat "$PLUGIN_DIR/.fabric-core/pattern_descriptions.json"
+
+echo ""
+echo "=== PATTERN EXTRACTS ==="
+cat "$PLUGIN_DIR/.fabric-core/pattern_extracts.json"
 ```
 
-```bash
-cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json"
+## Step 2: Get Pattern Workflow
+
+Invoke pattern-suggester (Task, subagent_type: "pattern-suggester"):
+
+```
+Recommend a pattern workflow for: "$1"
+
+PATTERN LIBRARY:
+[Insert pattern_descriptions from Step 1]
+
+Return a sequence like: pattern1 → pattern2 → pattern3
 ```
 
-2. Invoke pattern-suggester agent to get a workflow sequence:
-   - Use Task tool with subagent_type "pattern-suggester"
-   - Ask it to recommend a pattern workflow for "$1"
-   - Pass the pattern_descriptions content
+## Step 3: Parse Sequence
 
-3. Parse the recommended pattern sequence from the suggester's response.
+Extract pattern names from suggester's response (e.g., [analyze_code, extract_issues, create_report])
 
-4. For each pattern in the sequence:
-   - Extract that pattern's instructions from pattern_extracts (loaded in step 1)
-   - Invoke pattern-executor agent with the pattern instructions
-   - Use the previous pattern's output as input to the next pattern
-   - Track progress with TodoWrite
+## Step 4: Execute Chain
 
-5. Return the final pattern's output to the user.
+Use TodoWrite to track progress.
 
-Execute these steps now.
+For each pattern in sequence:
+1. Extract pattern from pattern_extracts (from Step 1) using jq
+2. Invoke pattern-executor (Task, subagent_type: "pattern-executor") with:
+   - Pattern instructions
+   - Input: First pattern uses "$1", subsequent use previous output
+3. Store output for next pattern
+
+## Step 5: Return Final Result
+
+Pass the last pattern's output to the user.

@@ -8,20 +8,49 @@ complexity: basic
 mcp-servers: []
 ---
 
-Suggest appropriate Fabric patterns for this request: "$1"
+Suggest appropriate Fabric patterns for: "$1"
 
-## Instructions
+## Step 1: Load Pattern Library
 
-1. Load the pattern library using Bash:
+Find the plugin and load the pattern descriptions:
 
 ```bash
-cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json"
+# Find the fabric-helper plugin directory
+PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
+
+if [ -z "$PLUGIN_DIR" ]; then
+  echo "Error: fabric-helper plugin not found"
+  exit 1
+fi
+
+# Load pattern library
+cat "$PLUGIN_DIR/.fabric-core/pattern_descriptions.json"
 ```
 
-2. Invoke the pattern-suggester agent using Task tool with:
-   - subagent_type: "pattern-suggester"
-   - prompt: Ask the agent to analyze the user request "$1" and recommend 3-5 appropriate patterns from the library you just loaded. Include the complete library content in your prompt to the agent.
+## Step 2: Check Result
 
-3. Return the agent's pattern recommendations to the user.
+If bash shows an error, tell the user the plugin may not be properly installed.
 
-Execute these steps now.
+## Step 3: Get Suggestions
+
+If library loaded, invoke pattern-suggester agent (Task tool, subagent_type: "pattern-suggester"):
+
+```
+Analyze this request and recommend Fabric patterns: "$1"
+
+PATTERN LIBRARY:
+[Paste the complete JSON from Step 1 here]
+
+Task:
+- Identify user's intent and domain
+- Match 3-5 patterns by tags and semantic similarity
+- Recommend specific pattern names with reasoning
+- Suggest workflows for complex tasks
+- Provide alternatives
+
+Return only pattern names and reasoning.
+```
+
+## Step 4: Return Recommendations
+
+Pass the agent's recommendations to the user.

@@ -335,6 +335,14 @@ Copyright (c) 2025 Rafael Calleja
 
 ## Version History
 
+### 1.0.4 (2025-10-12)
+- **Working Solution**: Commands now use `find` to locate plugin directory dynamically
+- No dependency on ${CLAUDE_PLUGIN_ROOT} environment variable
+- Commands find plugin at: `~/.claude/plugins/marketplaces/*/fabric-helper`
+- All 3 commands updated: suggest, exec, orchestrate
+- Verified approach based on official Anthropic plugin patterns
+- Users must reinstall plugin for this fix to take effect
+
 ### 1.0.3 (2025-10-12)
 - **Simplified commands**: Rewritten all command prompts to be more direct and executable by Claude
 - Commands now have clearer, imperative instructions ("Execute these steps now")
