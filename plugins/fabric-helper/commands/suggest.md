@@ -1,37 +1,48 @@
 ---
 name: suggest
 argument-hint: [user_prompt]
-allowed-tools: [Task]
+allowed-tools: [Bash, Task]
 description: "Suggest Fabric patterns based on user prompt analysis"
 category: utility
 complexity: basic
 mcp-servers: []
 ---
 
-## Usage
+## Task
+
+Suggest appropriate Fabric patterns for the user's request.
+
+## Steps
+
+1. **Load the pattern library**: Read the file `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json` using the Bash tool with `cat` command. This file contains all available patterns with their names, descriptions, and tags.
+
+2. **Invoke the pattern-suggester agent**: Use the Task tool to call the `pattern-suggester` subagent. Pass it:
+   - The user's request: `$1`
+   - The complete pattern library JSON from step 1
+
+3. **Agent task**: Ask the pattern-suggester to:
+   - Analyze the user's intent and domain
+   - Match patterns by tags and semantic similarity
+   - Recommend 3-5 specific pattern names with reasoning
+   - Suggest workflows for complex needs
+   - Provide alternatives if applicable
+
+4. **Return** the agent's pattern recommendations to the user.
+
+## User Request
+
 ```
-/suggest [user_prompt]
+$1
 ```
-
-## Arguments
-- `user_prompt` - Describe what you want to do
-
-## Execution
-
-Delegate to the `pattern-suggester` subagent with the provided user prompt for intelligent pattern suggestions based on semantic analysis.
-
-The pattern-suggester agent will:
-- Load and analyze the Fabric pattern library from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json`
-- Perform deep semantic analysis of the user prompt
-- Identify primary intent, domain context, and specific requirements
-- Match patterns based on tags, semantic similarity, and use case alignment
-- Generate 3-5 targeted pattern recommendations with clear reasoning
-- Suggest single patterns for simple tasks or multi-pattern workflows for complex tasks
-- Provide alternative approaches for different outcomes
 
 ## Example
-```
-/suggest "I need to analyze security vulnerabilities in my codebase"
-```
 
-This will invoke the pattern-suggester subagent to recommend security-focused analysis patterns from the Fabric library.
+Input: `/suggest "analyze security vulnerabilities in code"`
+
+Expected output:
+```
+Recommended: analyze_security, review_code, extract_vulnerabilities
+
+Reasoning: Security-focused analysis. These patterns cover vulnerability
+assessment, security-aware code review, and structured issue extraction.
+```

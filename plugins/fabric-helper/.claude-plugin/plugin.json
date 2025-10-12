@@ -1,6 +1,6 @@
 {
   "name": "fabric-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Fabric AI system integration with pattern suggestion and execution workflows",
   "author": {
     "name": "Rafael Calleja"

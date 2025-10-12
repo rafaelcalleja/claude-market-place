@@ -335,6 +335,14 @@ Copyright (c) 2025 Rafael Calleja
 
 ## Version History
 
+### 1.0.2 (2025-10-12)
+- **Major Fix**: Redesigned architecture - commands now read data files and pass content to agents
+- Fixed: `${CLAUDE_PLUGIN_ROOT}` variable doesn't expand in agent prompts
+- Commands (suggest, exec, orchestrate) now use Bash tool to read pattern files
+- Agents (pattern-suggester, pattern-executor) simplified to receive content directly
+- Improved reliability and eliminates path resolution issues
+- Added jq-based pattern extraction in exec command
+
 ### 1.0.1 (2025-10-12)
 - **Fix**: Use `${CLAUDE_PLUGIN_ROOT}` for all data file paths to support installation in any directory
 - Ensures plugin works correctly when installed via Claude Code marketplace

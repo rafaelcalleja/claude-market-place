@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-allowed-tools: [Task, TodoWrite]
+allowed-tools: [Bash, Task, TodoWrite]
 description: "Orchestrate complete Fabric pattern workflows"
 argument-hint: [user_prompt]
 category: utility
@@ -8,81 +8,100 @@ complexity: intermediate
 mcp-servers: []
 ---
 
-## Usage
+## Task
+
+Orchestrate a complete multi-pattern workflow by automatically suggesting patterns, then executing them in sequence.
+
+## Steps
+
+### Step 1: Load Pattern Libraries
+
+Use Bash tool to read both pattern files:
+
+1. Pattern descriptions (for suggestion):
+```bash
+cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json"
 ```
-/orchestrate [user_prompt]
+
+2. Pattern extracts (for execution):
+```bash
+cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json"
 ```
 
-## Arguments
-- `user_prompt` - Describe your complete workflow need
+### Step 2: Get Pattern Suggestions
 
-## Execution
+Use Task tool to invoke the `pattern-suggester` subagent with:
+- User request: `$1`
+- Pattern library: The pattern_descriptions.json content from Step 1
 
-This command orchestrates the complete pattern workflow:
+Ask the suggester to recommend a pattern workflow (sequence of patterns).
 
-1. **Get Pattern Suggestions**:
-   Use Task tool to call pattern-suggester with user prompt
+### Step 3: Parse Pattern Sequence
 
-2. **Parse Pattern Sequence**:
-   Extract the recommended pattern sequence from the response
+Extract the recommended pattern sequence from the suggester's response.
+Example: If suggester returns "analyze_code → extract_issues → create_report",
+the sequence is: [analyze_code, extract_issues, create_report]
 
-3. **Execute Pattern Chain**:
-   For each pattern in the sequence:
-   - Use Task tool to call pattern-executor with the pattern name
-   - Pass the previous pattern's output as input to the next pattern
-   - Store each output for chaining
+### Step 4: Execute Pattern Chain
 
-4. **Return Final Result**:
-   Return the last pattern's output directly to the user
+For each pattern in the sequence:
 
-## Detailed Workflow
+1. Extract the pattern prompt from pattern_extracts.json (loaded in Step 1)
+2. Use Task tool to invoke `pattern-executor` subagent with:
+   - Pattern name
+   - Pattern prompt (extracted)
+   - Input: For first pattern use `$1`, for subsequent patterns use previous output
+3. Store the output for the next pattern
 
-### Step 1: Get Suggestions
-Call pattern-suggester agent with user prompt to get pattern sequence
+Continue until all patterns are executed.
 
-### Step 2: Parse Response
-Extract the pattern sequence from suggester's response (e.g., `analyze → extract → create_summary`)
+### Step 5: Return Final Result
 
-### Step 3: Execute Each Pattern
-For each pattern in the sequence, use Task tool with:
-- description: "Execute [pattern_name] pattern"
-- prompt: "Execute [pattern_name] pattern with this input: [previous_output or original_input]"
-- subagent_type: "pattern-executor"
+Return the output from the last pattern execution to the user.
 
-### Step 4: Chain Outputs
-- First pattern receives the original user input
-- Each subsequent pattern receives the output from the previous pattern
-- Continue until all patterns are executed
+## User Request
 
-### Step 5: Return Result
-Return the final pattern's output directly without modification
+```
+$1
+```
+
+## Workflow Management
+
+Use TodoWrite tool to track progress:
+1. Pattern suggestion
+2. Pattern extraction for each pattern
+3. Execution of each pattern
+4. Final result delivery
 
 ## Examples
 
-### Documentation Generation
+### Documentation Workflow
 ```
-/orchestrate "Document my codebase with clean, formatted output"
+/orchestrate "Analyze this code and create documentation"
 ```
+
 Workflow:
-1. pattern-suggester returns: `analyze_code → extract_structure → create_documentation`
-2. Execute analyze_code with original code
-3. Execute extract_structure with code analysis
-4. Execute create_documentation with structure data
+1. Suggester recommends: analyze_code → extract_structure → create_documentation
+2. Execute analyze_code with the code
+3. Execute extract_structure with analysis result
+4. Execute create_documentation with structure result
 5. Return final documentation
 
-### Security Analysis
+### Security Analysis Workflow
 ```
-/orchestrate "Analyze security vulnerabilities and create a report"
+/orchestrate "Find security issues and create a report"
 ```
+
 Workflow:
-1. pattern-suggester returns: `analyze_security → extract_vulnerabilities → create_report`
+1. Suggester recommends: analyze_security → extract_vulnerabilities → create_report
 2. Execute analyze_security with codebase
 3. Execute extract_vulnerabilities with security analysis
 4. Execute create_report with vulnerability list
 5. Return security report
 
-## Important Notes
-- The command handles all orchestration directly
+## Notes
+
+- The orchestrator manages the entire workflow automatically
 - Each pattern's output becomes the next pattern's input
-- No intermediate agents are involved
-- Final output is returned unmodified
+- The user receives only the final result
+- Progress is tracked with TodoWrite for visibility

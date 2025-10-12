@@ -1,43 +1,78 @@
 ---
 description: Execute a specific Fabric pattern by name
 argument-hint: [pattern_name] [user_prompt]
-allowed-tools: [Task]
+allowed-tools: [Bash, Task]
 category: utility
 complexity: basic
 mcp-servers: []
 ---
 
-## Usage
-```
-/exec [pattern_name] [user_prompt]
-```
+## Task
+
+Execute a specific Fabric pattern on the user's input.
 
 ## Arguments
-- `pattern_name` - The name of the pattern to execute (e.g., "review_code", "summarize")
-- `user_prompt` - The input text to process
+
+- `$1` - Pattern name (e.g., "review_code", "summarize", "analyze_security")
+- `$2` - Input text to process
+
+## Steps
+
+1. **Extract the pattern**: Use the Bash tool to extract the specific pattern from the pattern library:
+   ```bash
+   cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json" | jq -r '.patterns[] | select(.patternName=="$1") | .pattern_extract'
+   ```
+   This extracts the complete pattern prompt for the requested pattern name.
+
+2. **Verify pattern exists**: If the pattern is not found (empty output), inform the user that the pattern "$1" doesn't exist and suggest using `/suggest` to find appropriate patterns.
+
+3. **Invoke pattern-executor agent**: Use the Task tool to call the `pattern-executor` subagent with:
+   - Pattern name: `$1`
+   - Pattern prompt: The extracted `pattern_extract` from step 1
+   - User input: `$2`
+
+4. **Agent task**: Ask the pattern-executor to:
+   - Apply the pattern prompt to the user's input
+   - Generate high-quality analysis using the Sonnet model
+   - Return the formatted result according to the pattern's specifications
+
+5. **Return** the execution result to the user.
+
+## Pattern Name
+
+```
+$1
+```
+
+## User Input
+
+```
+$2
+```
 
 ## Examples
+
+### Code Review
 ```
-/exec review_code "analyze the login function"
-/exec summarize "last 5 commits"
-/exec analyze_security "[code here]"
+/exec review_code "function getData() { return data; }"
 ```
 
-## Execution
+### Summarize Content
+```
+/exec summarize "[long article text]"
+```
 
-This command delegates to the pattern-executor subagent which uses the Sonnet model for high-quality analysis.
+### Security Analysis
+```
+/exec analyze_security "[code snippet]"
+```
 
-Use the pattern-executor subagent to execute the pattern with the following input:
+## Error Handling
 
---- PATTERN NAME ---
-$1
+If pattern not found:
+```
+Pattern "$1" not found in the library.
 
---- INPUT START ---
-$2
---- INPUT END ---
-
-The pattern-executor will:
-1. Extract the specified pattern from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json`
-2. Apply the pattern to the provided input
-3. Generate comprehensive analysis using Sonnet model
-4. Return the formatted result
+Use /suggest to discover available patterns:
+/suggest "describe what you want to do"
+```
