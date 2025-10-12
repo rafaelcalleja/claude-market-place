@@ -335,6 +335,10 @@ Copyright (c) 2025 Rafael Calleja
 
 ## Version History
 
+### 1.0.1 (2025-10-12)
+- **Fix**: Use `${CLAUDE_PLUGIN_ROOT}` for all data file paths to support installation in any directory
+- Ensures plugin works correctly when installed via Claude Code marketplace
+
 ### 1.0.0 (2025-10-12)
 - Initial release
 - 3 commands: suggest, orchestrate, exec

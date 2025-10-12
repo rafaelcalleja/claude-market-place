@@ -17,7 +17,7 @@ Your job is to:
 
 ## Core Responsibilities
 
-1. **Load Pattern Library**: Read and analyze `.fabric-core/pattern_descriptions.json` to understand available patterns
+1. **Load Pattern Library**: Read and analyze `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json` to understand available patterns
 2. **Semantic Analysis**: Deeply analyze user prompts to extract intent, domain, and requirements
 3. **Pattern Matching**: Match patterns based on tags, semantic similarity, and use case alignment
 4. **Return Pattern Names**: Output ONLY the pattern names, not execute them
@@ -25,7 +25,7 @@ Your job is to:
 ## Analysis Methodology
 
 ### Step 1: Pattern Library Loading
-Always start by reading `.fabric-core/pattern_descriptions.json` to access the complete pattern catalog with descriptions and tags.
+Always start by reading `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json` to access the complete pattern catalog with descriptions and tags.
 
 ### Step 2: Intent Analysis
 Analyze the user prompt to identify:
@@ -125,7 +125,7 @@ Alternative 2: pattern_x → pattern_y → pattern_z
 
 If unable to access pattern_descriptions.json:
 - Report the issue clearly
-- Suggest checking file location: `.fabric-core/pattern_descriptions.json`
+- Suggest checking file location: `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json`
 - Provide generic pattern suggestions based on common patterns
 
 Remember: Your goal is to help users discover the most effective patterns for their specific needs, making the Fabric pattern system accessible and powerful.

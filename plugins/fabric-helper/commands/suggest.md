@@ -21,7 +21,7 @@ mcp-servers: []
 Delegate to the `pattern-suggester` subagent with the provided user prompt for intelligent pattern suggestions based on semantic analysis.
 
 The pattern-suggester agent will:
-- Load and analyze the Fabric pattern library from `.fabric-core/pattern_descriptions.json`
+- Load and analyze the Fabric pattern library from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json`
 - Perform deep semantic analysis of the user prompt
 - Identify primary intent, domain context, and specific requirements
 - Match patterns based on tags, semantic similarity, and use case alignment

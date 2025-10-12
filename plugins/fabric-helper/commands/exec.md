@@ -37,7 +37,7 @@ $2
 --- INPUT END ---
 
 The pattern-executor will:
-1. Extract the specified pattern from `.fabric-core/pattern_extracts.json`
+1. Extract the specified pattern from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json`
 2. Apply the pattern to the provided input
 3. Generate comprehensive analysis using Sonnet model
 4. Return the formatted result
