@@ -48,6 +48,18 @@
       "category": "productivity",
       "keywords": ["hooks", "formatting", "automation"],
       "license": "MIT"
+    },
+    {
+      "name": "fabric-helper",
+      "description": "Fabric AI system integration with pattern suggestion and execution workflows",
+      "version": "1.0.0",
+      "author": {
+        "name": "Rafael Calleja"
+      },
+      "source": "./plugins/fabric-helper",
+      "category": "development",
+      "keywords": ["fabric", "workflow", "analysis", "ai", "patterns"],
+      "license": "MIT"
     }
   ]
 }

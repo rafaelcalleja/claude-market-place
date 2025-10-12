@@ -8,7 +8,7 @@
 
 This repository serves dual purposes:
 
-1. **Working Plugin Marketplace** - A production-ready marketplace with three fully-functional example plugins
+1. **Working Plugin Marketplace** - A production-ready marketplace with four fully-functional example plugins
 2. **Comprehensive Research** - Complete documentation on Claude Code's plugin system
 
 Everything you need to use, create, distribute, and manage Claude Code plugins.
@@ -40,6 +40,7 @@ Everything you need to use, create, distribute, and manage Claude Code plugins.
 /plugin install productivity-commands@example-marketplace
 /plugin install code-analysis-agents@example-marketplace
 /plugin install auto-formatter@example-marketplace
+/plugin install fabric-helper@example-marketplace
 ```
 
 ---
@@ -72,6 +73,16 @@ Everything you need to use, create, distribute, and manage Claude Code plugins.
 - Session notifications
 
 [View documentation →](plugins/auto-formatter/README.md)
+
+### 4. Fabric Helper
+**Fabric AI system integration with pattern suggestion and execution**
+
+- `/suggest` - Intelligent pattern recommendation based on semantic analysis
+- `/exec` - Execute specific Fabric patterns with high-quality analysis
+- `/orchestrate` - Chain multiple patterns into automated workflows
+- 200+ pre-built patterns for code analysis, security, documentation, and more
+
+[View documentation →](plugins/fabric-helper/README.md)
 
 ---
 
@@ -146,14 +157,29 @@ claude-market-place/
 │   │   │   ├── performance-optimizer.md
 │   │   │   └── architecture-reviewer.md
 │   │   └── README.md
-│   └── auto-formatter/
+│   ├── auto-formatter/
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json
+│   │   ├── hooks/
+│   │   │   └── hooks.json
+│   │   ├── scripts/
+│   │   │   └── format-file.sh
+│   │   └── README.md
+│   └── fabric-helper/
 │       ├── .claude-plugin/
 │       │   └── plugin.json
-│       ├── hooks/
-│       │   └── hooks.json
-│       ├── scripts/
-│       │   └── format-file.sh
-│       └── README.md
+│       ├── commands/
+│       │   ├── suggest.md
+│       │   ├── orchestrate.md
+│       │   └── exec.md
+│       ├── agents/
+│       │   ├── pattern-suggester.md
+│       │   └── pattern-executor.md
+│       ├── .fabric-core/
+│       │   ├── pattern_descriptions.json
+│       │   └── pattern_extracts.json
+│       ├── README.md
+│       └── LICENSE
 ├── README.md                         # This file
 ├── QUICK_REFERENCE.md               # One-page cheat sheet
 ├── RESEARCH_REPORT.md               # Complete specifications
