@@ -1,0 +1,13 @@
+{
+  "name": "productivity-commands",
+  "version": "1.0.0",
+  "description": "Collection of productivity-enhancing slash commands for common development workflows",
+  "author": {
+    "name": "Example Developer",
+    "email": "developer@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://example.com/plugins/productivity-commands",
+  "license": "MIT",
+  "keywords": ["commands", "workflow", "productivity"]
+}

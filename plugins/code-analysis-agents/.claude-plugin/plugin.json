@@ -1,0 +1,13 @@
+{
+  "name": "code-analysis-agents",
+  "version": "1.0.0",
+  "description": "Specialized agents for code review, security analysis, and performance optimization",
+  "author": {
+    "name": "Example Developer",
+    "email": "developer@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://example.com/plugins/code-analysis-agents",
+  "license": "MIT",
+  "keywords": ["agents", "analysis", "review", "security", "performance"]
+}

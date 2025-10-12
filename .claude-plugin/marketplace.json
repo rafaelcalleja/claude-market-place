@@ -1,0 +1,53 @@
+{
+  "$schema": "https://anthropic.com/schemas/plugin-marketplace.json",
+  "name": "example-marketplace",
+  "metadata": {
+    "description": "Comprehensive Claude Code plugin marketplace featuring productivity commands (/quick-test, /analyze-deps, /project-stats), specialized code analysis agents (security-auditor, performance-optimizer, architecture-reviewer), and automatic code formatting hooks. Perfect for learning plugin development or extending your Claude Code workflow with production-ready examples.",
+    "version": "1.0.0"
+  },
+  "owner": {
+    "name": "Example Developer",
+    "email": "developer@example.com"
+  },
+  "plugins": [
+    {
+      "name": "productivity-commands",
+      "description": "Collection of productivity-enhancing slash commands for common development workflows",
+      "version": "1.0.0",
+      "author": {
+        "name": "Example Developer",
+        "email": "developer@example.com"
+      },
+      "source": "./plugins/productivity-commands",
+      "category": "productivity",
+      "keywords": ["commands", "workflow", "productivity"],
+      "license": "MIT"
+    },
+    {
+      "name": "code-analysis-agents",
+      "description": "Specialized agents for code review, security analysis, and performance optimization",
+      "version": "1.0.0",
+      "author": {
+        "name": "Example Developer",
+        "email": "developer@example.com"
+      },
+      "source": "./plugins/code-analysis-agents",
+      "category": "development",
+      "keywords": ["agents", "analysis", "review", "security"],
+      "license": "MIT"
+    },
+    {
+      "name": "auto-formatter",
+      "description": "Automatic code formatting hook that runs after file edits",
+      "version": "1.0.0",
+      "author": {
+        "name": "Example Developer",
+        "email": "developer@example.com"
+      },
+      "source": "./plugins/auto-formatter",
+      "category": "productivity",
+      "keywords": ["hooks", "formatting", "automation"],
+      "license": "MIT"
+    }
+  ]
+}

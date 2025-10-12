@@ -1,0 +1,13 @@
+{
+  "name": "auto-formatter",
+  "version": "1.0.0",
+  "description": "Automatic code formatting hook that runs after file edits",
+  "author": {
+    "name": "Example Developer",
+    "email": "developer@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://example.com/plugins/auto-formatter",
+  "license": "MIT",
+  "keywords": ["hooks", "formatting", "automation"]
+}

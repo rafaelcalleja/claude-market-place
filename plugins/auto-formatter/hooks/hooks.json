@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/format-file.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash(rm:*)",
+        "hooks": [
+          {
+            "type": "notification",
+            "message": "⚠️  Warning: About to delete files. Make sure you have backups if needed."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "notification",
+            "message": "✨ Auto-formatter plugin loaded. Files will be formatted automatically after edits."
+          }
+        ]
+      }
+    ]
+  }
+}
