@@ -8,41 +8,20 @@ complexity: basic
 mcp-servers: []
 ---
 
-## Task
+Suggest appropriate Fabric patterns for this request: "$1"
 
-Suggest appropriate Fabric patterns for the user's request.
+## Instructions
 
-## Steps
+1. Load the pattern library using Bash:
 
-1. **Load the pattern library**: Read the file `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json` using the Bash tool with `cat` command. This file contains all available patterns with their names, descriptions, and tags.
-
-2. **Invoke the pattern-suggester agent**: Use the Task tool to call the `pattern-suggester` subagent. Pass it:
-   - The user's request: `$1`
-   - The complete pattern library JSON from step 1
-
-3. **Agent task**: Ask the pattern-suggester to:
-   - Analyze the user's intent and domain
-   - Match patterns by tags and semantic similarity
-   - Recommend 3-5 specific pattern names with reasoning
-   - Suggest workflows for complex needs
-   - Provide alternatives if applicable
-
-4. **Return** the agent's pattern recommendations to the user.
-
-## User Request
-
-```
-$1
+```bash
+cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json"
 ```
 
-## Example
+2. Invoke the pattern-suggester agent using Task tool with:
+   - subagent_type: "pattern-suggester"
+   - prompt: Ask the agent to analyze the user request "$1" and recommend 3-5 appropriate patterns from the library you just loaded. Include the complete library content in your prompt to the agent.
 
-Input: `/suggest "analyze security vulnerabilities in code"`
+3. Return the agent's pattern recommendations to the user.
 
-Expected output:
-```
-Recommended: analyze_security, review_code, extract_vulnerabilities
-
-Reasoning: Security-focused analysis. These patterns cover vulnerability
-assessment, security-aware code review, and structured issue extraction.
-```
+Execute these steps now.

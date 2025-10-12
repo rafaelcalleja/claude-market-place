@@ -8,100 +8,33 @@ complexity: intermediate
 mcp-servers: []
 ---
 
-## Task
+Orchestrate a complete Fabric pattern workflow for this request: "$1"
 
-Orchestrate a complete multi-pattern workflow by automatically suggesting patterns, then executing them in sequence.
+## Instructions
 
-## Steps
+1. Load both pattern libraries using Bash:
 
-### Step 1: Load Pattern Libraries
-
-Use Bash tool to read both pattern files:
-
-1. Pattern descriptions (for suggestion):
 ```bash
 cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json"
 ```
 
-2. Pattern extracts (for execution):
 ```bash
 cat "${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json"
 ```
 
-### Step 2: Get Pattern Suggestions
+2. Invoke pattern-suggester agent to get a workflow sequence:
+   - Use Task tool with subagent_type "pattern-suggester"
+   - Ask it to recommend a pattern workflow for "$1"
+   - Pass the pattern_descriptions content
 
-Use Task tool to invoke the `pattern-suggester` subagent with:
-- User request: `$1`
-- Pattern library: The pattern_descriptions.json content from Step 1
+3. Parse the recommended pattern sequence from the suggester's response.
 
-Ask the suggester to recommend a pattern workflow (sequence of patterns).
+4. For each pattern in the sequence:
+   - Extract that pattern's instructions from pattern_extracts (loaded in step 1)
+   - Invoke pattern-executor agent with the pattern instructions
+   - Use the previous pattern's output as input to the next pattern
+   - Track progress with TodoWrite
 
-### Step 3: Parse Pattern Sequence
+5. Return the final pattern's output to the user.
 
-Extract the recommended pattern sequence from the suggester's response.
-Example: If suggester returns "analyze_code → extract_issues → create_report",
-the sequence is: [analyze_code, extract_issues, create_report]
-
-### Step 4: Execute Pattern Chain
-
-For each pattern in the sequence:
-
-1. Extract the pattern prompt from pattern_extracts.json (loaded in Step 1)
-2. Use Task tool to invoke `pattern-executor` subagent with:
-   - Pattern name
-   - Pattern prompt (extracted)
-   - Input: For first pattern use `$1`, for subsequent patterns use previous output
-3. Store the output for the next pattern
-
-Continue until all patterns are executed.
-
-### Step 5: Return Final Result
-
-Return the output from the last pattern execution to the user.
-
-## User Request
-
-```
-$1
-```
-
-## Workflow Management
-
-Use TodoWrite tool to track progress:
-1. Pattern suggestion
-2. Pattern extraction for each pattern
-3. Execution of each pattern
-4. Final result delivery
-
-## Examples
-
-### Documentation Workflow
-```
-/orchestrate "Analyze this code and create documentation"
-```
-
-Workflow:
-1. Suggester recommends: analyze_code → extract_structure → create_documentation
-2. Execute analyze_code with the code
-3. Execute extract_structure with analysis result
-4. Execute create_documentation with structure result
-5. Return final documentation
-
-### Security Analysis Workflow
-```
-/orchestrate "Find security issues and create a report"
-```
-
-Workflow:
-1. Suggester recommends: analyze_security → extract_vulnerabilities → create_report
-2. Execute analyze_security with codebase
-3. Execute extract_vulnerabilities with security analysis
-4. Execute create_report with vulnerability list
-5. Return security report
-
-## Notes
-
-- The orchestrator manages the entire workflow automatically
-- Each pattern's output becomes the next pattern's input
-- The user receives only the final result
-- Progress is tracked with TodoWrite for visibility
+Execute these steps now.

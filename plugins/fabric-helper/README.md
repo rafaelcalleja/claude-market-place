@@ -335,6 +335,12 @@ Copyright (c) 2025 Rafael Calleja
 
 ## Version History
 
+### 1.0.3 (2025-10-12)
+- **Simplified commands**: Rewritten all command prompts to be more direct and executable by Claude
+- Commands now have clearer, imperative instructions ("Execute these steps now")
+- Removed ambiguous placeholders, made all steps concrete
+- This version requires reinstallation to take effect
+
 ### 1.0.2 (2025-10-12)
 - **Major Fix**: Redesigned architecture - commands now read data files and pass content to agents
 - Fixed: `${CLAUDE_PLUGIN_ROOT}` variable doesn't expand in agent prompts
