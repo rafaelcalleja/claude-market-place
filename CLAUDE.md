@@ -104,3 +104,95 @@ Shows:
 - Field-by-field validation
 - Path resolution details
 - Schema validation messages
+
+---
+
+## Makefile Usage
+
+The project includes a Makefile for common development tasks.
+
+### Available Commands
+
+```bash
+# Show all available commands
+make help
+
+# Validate marketplace and plugins
+make validate
+# or
+make lint
+
+# Install marketplace locally for testing
+make install
+
+# Format all JSON files (requires jq)
+make format
+
+# Run all tests
+make test
+
+# Clean temporary files
+make clean
+
+# Check for required dependencies
+make check-deps
+
+# Validate with debug output
+make validate-debug
+
+# Show project structure
+make structure
+```
+
+### Quick Start
+
+**Validate the marketplace:**
+```bash
+make validate
+```
+
+**Install for local testing:**
+```bash
+make install
+```
+
+**Run complete test suite:**
+```bash
+make test
+```
+
+### Development Workflow
+
+1. **After making changes**:
+   ```bash
+   make validate
+   ```
+
+2. **Format JSON files**:
+   ```bash
+   make format
+   ```
+
+3. **Test everything**:
+   ```bash
+   make test
+   ```
+
+4. **Install locally**:
+   ```bash
+   make install
+   ```
+
+### Prerequisites
+
+**Required:**
+- `claude` - Claude Code CLI
+
+**Optional:**
+- `jq` - For JSON formatting
+- `tree` - For structure visualization
+
+Check dependencies:
+```bash
+make check-deps
+```
