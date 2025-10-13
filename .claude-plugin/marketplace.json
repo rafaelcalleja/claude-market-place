@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/schemas/plugin-marketplace.json",
-  "name": "example-marketplace",
+  "name": "claude-market-place",
   "metadata": {
     "description": "Comprehensive Claude Code plugin marketplace featuring productivity commands (/quick-test, /analyze-deps, /project-stats), specialized code analysis agents (security-auditor, performance-optimizer, architecture-reviewer), and automatic code formatting hooks. Perfect for learning plugin development or extending your Claude Code workflow with production-ready examples.",
     "version": "1.0.0"
