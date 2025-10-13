@@ -18,5 +18,6 @@
     "mcp-servers",
     "development-tools"
   ],
+  "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }
