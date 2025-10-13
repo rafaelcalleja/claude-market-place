@@ -66,13 +66,15 @@ cat > "$INITIALIZED_FLAG" << EOF
 Initialized at: $(date -Iseconds)
 Files processed: $COUNT
 Plugin root: $PLUGIN_ROOT
-Script version: 1.0.0
+Script version: 1.0.1
 EOF
 
-# Success message (visible in transcript with Ctrl-R)
-echo "✓ fabric-helper plugin initialized successfully"
-echo "  📂 Root: $PLUGIN_ROOT"
-echo "  📝 Files processed: $COUNT"
-echo "  ℹ️  Variable expansion completed for all markdown files"
+# Output JSON with systemMessage for SessionStart hooks
+# This ensures the message is shown to the user
+cat << EOF
+{
+  "systemMessage": "✓ Initialized fabric-helper plugin ($COUNT files processed). Restart Claude Code to load changes."
+}
+EOF
 
 exit 0
