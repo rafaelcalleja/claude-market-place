@@ -1,37 +1,24 @@
 ---
 name: suggest
 argument-hint: [user_prompt]
-allowed-tools: [Bash, Task]
+allowed-tools: [Task]
 description: "Suggest Fabric patterns based on user prompt analysis"
 category: utility
 complexity: basic
 mcp-servers: []
 ---
 
-Suggest appropriate Fabric patterns for: "$1"
-
-## Step 1: Load Pattern Library
-
-Find the plugin and load the pattern descriptions:
-
-```bash
-# Find the fabric-helper plugin directory
-PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
-
-if [ -z "$PLUGIN_DIR" ]; then
-  echo "Error: fabric-helper plugin not found"
-  exit 1
-fi
-
-# Load pattern library
-cat "$PLUGIN_DIR/.fabric-core/pattern_descriptions.json"
+## Usage
+```
+/suggest [user_prompt]
 ```
 
-## Step 2: Check Result
+## Arguments
+- `user_prompt` - Describe what you want to do
 
-If bash shows an error, tell the user the plugin may not be properly installed.
+## Execution
 
-## Step 3: Get Suggestions
+Delegate to the `pattern-suggester` subagent with the provided user prompt for intelligent pattern suggestions based on semantic analysis.
 
 The pattern-suggester agent will:
 !echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
@@ -43,22 +30,9 @@ The pattern-suggester agent will:
 - Suggest single patterns for simple tasks or multi-pattern workflows for complex tasks
 - Provide alternative approaches for different outcomes
 
+## Example
 ```
-Analyze this request and recommend Fabric patterns: "$1"
-
-PATTERN LIBRARY:
-[Paste the complete JSON from Step 1 here]
-
-Task:
-- Identify user's intent and domain
-- Match 3-5 patterns by tags and semantic similarity
-- Recommend specific pattern names with reasoning
-- Suggest workflows for complex tasks
-- Provide alternatives
-
-Return only pattern names and reasoning.
+/suggest "I need to analyze security vulnerabilities in my codebase"
 ```
 
-## Step 4: Return Recommendations
-
-Pass the agent's recommendations to the user.
+This will invoke the pattern-suggester subagent to recommend security-focused analysis patterns from the Fabric library.

@@ -1,51 +1,40 @@
 ---
 description: Execute a specific Fabric pattern by name
 argument-hint: [pattern_name] [user_prompt]
-allowed-tools: [Bash, Task]
+allowed-tools: [Task]
 category: utility
 complexity: basic
 mcp-servers: []
 ---
 
-Execute the Fabric pattern "$1" on this input: "$2"
-
-## Step 1: Extract the Pattern
-
-Find the plugin directory and extract the pattern:
-
-```bash
-# Find the fabric-helper plugin directory
-PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
-
-if [ -z "$PLUGIN_DIR" ]; then
-  echo "Error: fabric-helper plugin not found"
-  exit 1
-fi
-
-# Extract the pattern
-cd "$PLUGIN_DIR"
-cat .fabric-core/pattern_extracts.json | jq -r '.patterns[] | select(.patternName=="$1") | .pattern_extract'
+## Usage
+```
+/exec [pattern_name] [user_prompt]
 ```
 
-## Step 2: Check Result
+## Arguments
+- `pattern_name` - The name of the pattern to execute (e.g., "review_code", "summarize")
+- `user_prompt` - The input text to process
 
-If the bash output is empty or shows an error, tell the user:
-- Pattern "$1" not found in library
-- Suggest: `/suggest "what you want to do"`
-- Stop here
-
-## Step 3: Execute Pattern
-
-If pattern found, invoke pattern-executor agent (Task tool, subagent_type: "pattern-executor"):
-
+## Examples
 ```
-Execute Fabric pattern "$1".
+/exec review_code "analyze the login function"
+/exec summarize "last 5 commits"
+/exec analyze_security "[code here]"
+```
 
-PATTERN INSTRUCTIONS:
-[Paste the complete pattern text from Step 1 here]
+## Execution
 
-USER INPUT:
+This command delegates to the pattern-executor subagent which uses the Sonnet model for high-quality analysis.
+
+Use the pattern-executor subagent to execute the pattern with the following input:
+
+--- PATTERN NAME ---
+$1
+
+--- INPUT START ---
 $2
+--- INPUT END ---
 
 The pattern-executor will:
 !echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
