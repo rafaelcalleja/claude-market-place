@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-allowed-tools: [Bash, Task, TodoWrite]
+allowed-tools: [Task, TodoWrite]
 description: "Orchestrate complete Fabric pattern workflows"
 argument-hint: [user_prompt]
 category: utility
@@ -8,55 +8,81 @@ complexity: intermediate
 mcp-servers: []
 ---
 
-Orchestrate a Fabric pattern workflow for: "$1"
-
-## Step 1: Find Plugin and Load Libraries
-
-```bash
-# Find fabric-helper plugin
-PLUGIN_DIR=$(find ~/.claude/plugins/marketplaces -type d -name "fabric-helper" 2>/dev/null | head -1)
-
-if [ -z "$PLUGIN_DIR" ]; then
-  echo "Error: fabric-helper plugin not found"
-  exit 1
-fi
-
-echo "=== PATTERN DESCRIPTIONS ==="
-cat "$PLUGIN_DIR/.fabric-core/pattern_descriptions.json"
-
-echo ""
-echo "=== PATTERN EXTRACTS ==="
-cat "$PLUGIN_DIR/.fabric-core/pattern_extracts.json"
+## Usage
+```
+/orchestrate [user_prompt]
 ```
 
-## Step 2: Get Pattern Workflow
+## Arguments
+- `user_prompt` - Describe your complete workflow need
 
-Invoke pattern-suggester (Task, subagent_type: "pattern-suggester"):
+## Execution
 
+This command orchestrates the complete pattern workflow:
+
+1. **Get Pattern Suggestions**:
+   Use Task tool to call pattern-suggester with user prompt
+
+2. **Parse Pattern Sequence**:
+   Extract the recommended pattern sequence from the response
+
+3. **Execute Pattern Chain**:
+   For each pattern in the sequence:
+   - Use Task tool to call pattern-executor with the pattern name
+   - Pass the previous pattern's output as input to the next pattern
+   - Store each output for chaining
+
+4. **Return Final Result**:
+   Return the last pattern's output directly to the user
+
+## Detailed Workflow
+
+### Step 1: Get Suggestions
+Call pattern-suggester agent with user prompt to get pattern sequence
+
+### Step 2: Parse Response
+Extract the pattern sequence from suggester's response (e.g., `analyze → extract → create_summary`)
+
+### Step 3: Execute Each Pattern
+For each pattern in the sequence, use Task tool with:
+- description: "Execute [pattern_name] pattern"
+- prompt: "Execute [pattern_name] pattern with this input: [previous_output or original_input]"
+- subagent_type: "pattern-executor"
+
+### Step 4: Chain Outputs
+- First pattern receives the original user input
+- Each subsequent pattern receives the output from the previous pattern
+- Continue until all patterns are executed
+
+### Step 5: Return Result
+Return the final pattern's output directly without modification
+
+## Examples
+
+### Documentation Generation
 ```
-Recommend a pattern workflow for: "$1"
-
-PATTERN LIBRARY:
-[Insert pattern_descriptions from Step 1]
-
-Return a sequence like: pattern1 → pattern2 → pattern3
+/orchestrate "Document my codebase with clean, formatted output"
 ```
+Workflow:
+1. pattern-suggester returns: `analyze_code → extract_structure → create_documentation`
+2. Execute analyze_code with original code
+3. Execute extract_structure with code analysis
+4. Execute create_documentation with structure data
+5. Return final documentation
 
-## Step 3: Parse Sequence
+### Security Analysis
+```
+/orchestrate "Analyze security vulnerabilities and create a report"
+```
+Workflow:
+1. pattern-suggester returns: `analyze_security → extract_vulnerabilities → create_report`
+2. Execute analyze_security with codebase
+3. Execute extract_vulnerabilities with security analysis
+4. Execute create_report with vulnerability list
+5. Return security report
 
-Extract pattern names from suggester's response (e.g., [analyze_code, extract_issues, create_report])
-
-## Step 4: Execute Chain
-
-Use TodoWrite to track progress.
-
-For each pattern in sequence:
-1. Extract pattern from pattern_extracts (from Step 1) using jq
-2. Invoke pattern-executor (Task, subagent_type: "pattern-executor") with:
-   - Pattern instructions
-   - Input: First pattern uses "$1", subsequent use previous output
-3. Store output for next pattern
-
-## Step 5: Return Final Result
-
-Pass the last pattern's output to the user.
+## Important Notes
+- The command handles all orchestration directly
+- Each pattern's output becomes the next pattern's input
+- No intermediate agents are involved
+- Final output is returned unmodified
