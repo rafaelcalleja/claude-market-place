@@ -33,7 +33,15 @@ If bash shows an error, tell the user the plugin may not be properly installed.
 
 ## Step 3: Get Suggestions
 
-If library loaded, invoke pattern-suggester agent (Task tool, subagent_type: "pattern-suggester"):
+The pattern-suggester agent will:
+!echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
+- Load and analyze the Fabric pattern library from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json`
+- Perform deep semantic analysis of the user prompt
+- Identify primary intent, domain context, and specific requirements
+- Match patterns based on tags, semantic similarity, and use case alignment
+- Generate 3-5 targeted pattern recommendations with clear reasoning
+- Suggest single patterns for simple tasks or multi-pattern workflows for complex tasks
+- Provide alternative approaches for different outcomes
 
 ```
 Analyze this request and recommend Fabric patterns: "$1"
