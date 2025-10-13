@@ -49,7 +49,7 @@ COUNT=0
 if [ -d "${PLUGIN_ROOT}/agents" ]; then
     while IFS= read -r -d '' md_file; do
         expand_variables "$md_file" "$PLUGIN_ROOT"
-        ((COUNT++))
+        COUNT=$((COUNT + 1))
     done < <(find "${PLUGIN_ROOT}/agents" -type f -name "*.md" -print0)
 fi
 
@@ -57,7 +57,7 @@ fi
 if [ -d "${PLUGIN_ROOT}/commands" ]; then
     while IFS= read -r -d '' md_file; do
         expand_variables "$md_file" "$PLUGIN_ROOT"
-        ((COUNT++))
+        COUNT=$((COUNT + 1))
     done < <(find "${PLUGIN_ROOT}/commands" -type f -name "*.md" -print0)
 fi
 
