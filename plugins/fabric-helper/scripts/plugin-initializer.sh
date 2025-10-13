@@ -14,10 +14,27 @@ PLUGIN_ROOT="$1"
 
 # Marker file to check if already initialized
 INITIALIZED_FLAG="${PLUGIN_ROOT}/.initialized"
+PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
 
-# If already initialized, exit silently
+# Get current plugin version from plugin.json
+if [ -f "$PLUGIN_JSON" ]; then
+    CURRENT_VERSION=$(grep -Po '"version":\s*"\K[^"]+' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
+else
+    CURRENT_VERSION="unknown"
+fi
+
+# Check if already initialized with same version
+REINITIALIZING=false
 if [ -f "$INITIALIZED_FLAG" ]; then
-    exit 0
+    INITIALIZED_VERSION=$(grep -Po 'Plugin version:\s*\K.*' "$INITIALIZED_FLAG" 2>/dev/null || echo "unknown")
+
+    if [ "$INITIALIZED_VERSION" = "$CURRENT_VERSION" ]; then
+        # Same version, skip initialization
+        exit 0
+    fi
+
+    # Different version detected, will re-initialize
+    REINITIALIZING=true
 fi
 
 # Verify plugin root directory exists
@@ -66,14 +83,20 @@ cat > "$INITIALIZED_FLAG" << EOF
 Initialized at: $(date -Iseconds)
 Files processed: $COUNT
 Plugin root: $PLUGIN_ROOT
-Script version: 1.0.1
+Plugin version: $CURRENT_VERSION
 EOF
 
 # Output JSON with systemMessage for SessionStart hooks
 # This ensures the message is shown to the user
+if [ "$REINITIALIZING" = true ]; then
+    MESSAGE="✓ Re-initialized fabric-helper v$CURRENT_VERSION ($COUNT files updated). Restart Claude Code to load changes."
+else
+    MESSAGE="✓ Initialized fabric-helper plugin v$CURRENT_VERSION ($COUNT files processed). Restart Claude Code to load changes."
+fi
+
 cat << EOF
 {
-  "systemMessage": "✓ Initialized fabric-helper plugin ($COUNT files processed). Restart Claude Code to load changes."
+  "systemMessage": "$MESSAGE"
 }
 EOF
 
