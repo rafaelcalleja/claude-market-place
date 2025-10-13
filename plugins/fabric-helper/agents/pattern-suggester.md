@@ -16,7 +16,6 @@ Your job is to:
 4. Never create files, write content, or execute patterns
 
 ## Core Responsibilities
-!echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
 1. **Load Pattern Library**: Read and analyze `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json` to understand available patterns
 2. **Semantic Analysis**: Deeply analyze user prompts to extract intent, domain, and requirements
 3. **Pattern Matching**: Match patterns based on tags, semantic similarity, and use case alignment
