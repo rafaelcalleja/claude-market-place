@@ -1,9 +1,13 @@
-.PHONY: help validate lint clean install test format
+.PHONY: help validate lint clean install test format sync-superclaude upgrade-superclaude build-superclaude-plugin validate-superclaude clean-superclaude superclaude-all
+
+# SuperClaude Framework version
+SUPERCLAUDE_VERSION ?= 4.1.5
 
 # Default target
 help:
 	@echo "Claude Code Plugin Marketplace - Available Commands"
 	@echo ""
+	@echo "General:"
 	@echo "  make validate    - Validate marketplace.json and plugin manifests"
 	@echo "  make lint        - Alias for validate"
 	@echo "  make install     - Install marketplace locally for testing"
@@ -11,6 +15,14 @@ help:
 	@echo "  make test        - Run validation tests on all plugins"
 	@echo "  make clean       - Clean temporary files"
 	@echo "  make check-deps  - Check for required tools"
+	@echo ""
+	@echo "SuperClaude Framework:"
+	@echo "  make sync-superclaude           - Download SuperClaude release (v$(SUPERCLAUDE_VERSION))"
+	@echo "  make build-superclaude-plugin   - Build SuperClaude plugin from downloaded source"
+	@echo "  make validate-superclaude       - Validate SuperClaude plugin"
+	@echo "  make clean-superclaude          - Clean SuperClaude plugin components"
+	@echo "  make upgrade-superclaude        - Upgrade SuperClaude to new version (interactive)"
+	@echo "  make superclaude-all            - Complete workflow: clean → build → validate → lint"
 	@echo ""
 
 # Validate marketplace and plugin configurations
@@ -75,3 +87,72 @@ validate-debug:
 structure:
 	@echo "Plugin Marketplace Structure:"
 	@tree -L 3 -I 'node_modules|__pycache__|*.pyc' . 2>/dev/null || find . -maxdepth 3 -type d | grep -v "/\." | sed 's|^\./||' | sed 's|[^/]*/| |g'
+
+# ============================================
+# SuperClaude Framework Targets
+# ============================================
+
+# Download SuperClaude Framework release
+sync-superclaude:
+	@echo "Downloading SuperClaude Framework v$(SUPERCLAUDE_VERSION)..."
+	@mkdir -p /tmp
+	@cd /tmp && \
+		wget -q "https://github.com/SuperClaude-Org/SuperClaude_Framework/archive/refs/tags/v$(SUPERCLAUDE_VERSION).tar.gz" \
+		-O superclaude-$(SUPERCLAUDE_VERSION).tar.gz && \
+		tar -xzf superclaude-$(SUPERCLAUDE_VERSION).tar.gz && \
+		rm superclaude-$(SUPERCLAUDE_VERSION).tar.gz
+	@echo "✓ SuperClaude Framework v$(SUPERCLAUDE_VERSION) downloaded to /tmp/SuperClaude_Framework-$(SUPERCLAUDE_VERSION)"
+
+# Build SuperClaude plugin from downloaded source
+build-superclaude-plugin:
+	@./scripts/build-superclaude-plugin.sh $(SUPERCLAUDE_VERSION)
+
+# Validate SuperClaude plugin
+validate-superclaude:
+	@claude plugin validate plugins/superclaude-framework
+
+# Clean SuperClaude plugin components
+clean-superclaude:
+	@echo "Cleaning SuperClaude components..."
+	@rm -rf plugins/superclaude-framework/commands/
+	@rm -rf plugins/superclaude-framework/agents/
+	@rm -rf plugins/superclaude-framework/core/
+	@rm -rf plugins/superclaude-framework/docs/
+	@rm -f plugins/superclaude-framework/.mcp.json
+	@echo "✓ SuperClaude cleaned"
+
+# Upgrade SuperClaude to new version (interactive)
+upgrade-superclaude:
+	@echo "Current version: $(SUPERCLAUDE_VERSION)"
+	@read -p "Enter new version: " NEW_VERSION; \
+	if [ -z "$$NEW_VERSION" ]; then \
+		echo "✗ No version provided"; \
+		exit 1; \
+	fi; \
+	echo "Upgrading to v$$NEW_VERSION..."; \
+	$(MAKE) build-superclaude-plugin SUPERCLAUDE_VERSION=$$NEW_VERSION && \
+	$(MAKE) validate-superclaude && \
+	echo "✓ SuperClaude Framework upgraded to v$$NEW_VERSION"
+
+# Complete SuperClaude workflow: clean → build → validate → lint
+superclaude-all:
+	@echo "=================================================="
+	@echo "SuperClaude Complete Workflow"
+	@echo "Version: $(SUPERCLAUDE_VERSION)"
+	@echo "=================================================="
+	@echo ""
+	@echo "[1/4] Cleaning..."
+	@$(MAKE) clean-superclaude
+	@echo ""
+	@echo "[2/4] Building..."
+	@$(MAKE) build-superclaude-plugin
+	@echo ""
+	@echo "[3/4] Validating plugin..."
+	@$(MAKE) validate-superclaude
+	@echo ""
+	@echo "[4/4] Validating marketplace..."
+	@$(MAKE) lint
+	@echo ""
+	@echo "=================================================="
+	@echo "✓ Complete workflow finished successfully!"
+	@echo "=================================================="

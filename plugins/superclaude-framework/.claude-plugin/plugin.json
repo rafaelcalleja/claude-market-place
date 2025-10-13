@@ -1,0 +1,22 @@
+{
+  "name": "superclaude-framework",
+  "version": "4.1.5",
+  "description": "SuperClaude Framework - Complete suite of behavioral rules, specialized agents, and productivity commands for enhanced Claude Code development",
+  "author": {
+    "name": "SuperClaude Team",
+    "url": "https://github.com/SuperClaude-Org"
+  },
+  "homepage": "https://github.com/SuperClaude-Org/SuperClaude_Framework",
+  "repository": "https://github.com/SuperClaude-Org/SuperClaude_Framework",
+  "keywords": [
+    "framework",
+    "automation",
+    "agents",
+    "commands",
+    "productivity",
+    "behavioral-rules",
+    "mcp-servers",
+    "development-tools"
+  ],
+  "mcpServers": "./.mcp.json"
+}

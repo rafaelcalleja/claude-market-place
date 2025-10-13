@@ -60,6 +60,20 @@
       "category": "development",
       "keywords": ["fabric", "workflow", "analysis", "ai", "patterns"],
       "license": "MIT"
+    },
+    {
+      "name": "superclaude-framework",
+      "description": "Complete SuperClaude Framework with behavioral rules, specialized agents, productivity commands, and MCP server integrations for enhanced Claude Code development",
+      "version": "4.1.5",
+      "author": {
+        "name": "SuperClaude Team",
+        "url": "https://github.com/SuperClaude-Org"
+      },
+      "source": "./plugins/superclaude-framework",
+      "category": "framework",
+      "keywords": ["framework", "automation", "agents", "commands", "productivity", "behavioral-rules", "mcp-servers"],
+      "license": "MIT",
+      "homepage": "https://github.com/SuperClaude-Org/SuperClaude_Framework"
     }
   ]
 }

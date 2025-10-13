@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "magic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@21st-dev/magic"
+      ],
+      "env": {
+        "TWENTYFIRST_API_KEY": ""
+      }
+    },
+    "morphllm-fast-apply": {
+      "command": "npx",
+      "args": [
+        "@morph-llm/morph-fast-apply",
+        "/home/"
+      ],
+      "env": {
+        "MORPH_API_KEY": "",
+        "ALL_TOOLS": "true"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "serena-docker": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v", "${PWD}:/workspace",
+        "--workdir", "/workspace",
+        "python:3.11-slim",
+        "bash", "-c",
+        "pip install uv && uv tool install serena-ai && uv tool run serena-ai start-mcp-server --context ide-assistant --project /workspace"
+      ]
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant"
+      ]
+    },
+    "tavily": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.tavily.com/mcp/?tavilyApiKey=${TAVILY_API_KEY}"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      }
+    }
+  }
+}
