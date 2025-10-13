@@ -37,6 +37,7 @@ $2
 --- INPUT END ---
 
 The pattern-executor will:
+!echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
 1. Extract the specified pattern from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_extracts.json`
 2. Apply the pattern to the provided input
 3. Generate comprehensive analysis using Sonnet model

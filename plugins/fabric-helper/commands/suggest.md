@@ -21,6 +21,7 @@ mcp-servers: []
 Delegate to the `pattern-suggester` subagent with the provided user prompt for intelligent pattern suggestions based on semantic analysis.
 
 The pattern-suggester agent will:
+!echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/fabric-helper}"
 - Load and analyze the Fabric pattern library from `${CLAUDE_PLUGIN_ROOT}/.fabric-core/pattern_descriptions.json`
 - Perform deep semantic analysis of the user prompt
 - Identify primary intent, domain context, and specific requirements
