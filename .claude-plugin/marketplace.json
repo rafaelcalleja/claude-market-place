@@ -74,6 +74,18 @@
       "keywords": ["framework", "automation", "agents", "commands", "productivity", "behavioral-rules", "mcp-servers"],
       "license": "MIT",
       "homepage": "https://github.com/SuperClaude-Org/SuperClaude_Framework"
+    },
+    {
+      "name": "example-skills",
+      "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, visual design, algorithmic art, internal communications, web testing, artifact building, Slack GIFs, and theme styling",
+      "version": "1.0.0",
+      "source": "./skills/",
+      "strict": false,
+      "skills": [
+        "./skill-creator",
+        "./mcp-builder",
+        "./webapp-testing"
+      ]
     }
   ]
 }
