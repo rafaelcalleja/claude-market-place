@@ -1,6 +1,6 @@
 ---
 name: makefile-assistant
-description: Automatically capture Bash commands executed by Claude Code and convert them into documented, organized Makefile targets in .claude/makefiles/. This skill activates when Claude Code executes any Bash command, analyzes it for reusability, detects similar existing targets, and interactively creates maintainable Makefile infrastructure.
+description: Automatically capture Bash commands executed by Claude Code and convert them into documented, organized Makefile targets in .claude/makefiles/. Use when Claude executes any Bash command, when tempted to skip documentation ("too trivial", "one-time", "will do later"), or when user asks for Makefile generation. Process commands NOW while fresh, not later.
 ---
 
 # Makefile Assistant
@@ -17,18 +17,76 @@ Use this skill when:
 - User asks to document, organize, or simplify repetitive project tasks
 - User requests analysis of existing Makefiles
 
+## CRITICAL: When NOT to Skip This Skill
+
+**Even under pressure, ALWAYS run this workflow for:**
+
+1. **Emergency/Incident Commands**
+   - "One-time fix" = will happen again
+   - Emergency commands are EXACTLY what should be documented
+   - Next incident responder needs these commands
+   - Example: `docker restart postgres-db && docker logs postgres-db --tail=50`
+
+2. **Setup/Onboarding Commands**
+   - Perfect candidates for `make setup` or `make dev-start`
+   - New team members need these
+   - Batch of 8 commands = one comprehensive setup target
+   - Process NOW while fresh, not "later"
+
+3. **Diagnostic/Info Commands**
+   - System state commands are team knowledge
+   - `docker info`, `git status`, `npm list` are NOT trivial
+   - Help debugging, troubleshooting, environment issues
+   - Worth documenting even if "simple"
+
+4. **Hard-Won Debug Sequences**
+   - If you ran it 10+ times debugging, document it
+   - Sunk cost is ALREADY PAID, documentation is cheap
+   - Team benefit >> 2 minutes of workflow
+
+**No exceptions for:**
+- ❌ "I'm exhausted" - workflow takes 60 seconds
+- ❌ "User wants to move on" - user will thank you later
+- ❌ "Too trivial" - see trivial definition below
+- ❌ "One-time emergency" - emergencies repeat
+- ❌ "Will do later" - later never happens
+- ❌ "Already works" - documentation makes it DISCOVERABLE
+
 ## How It Works
 
 ### Automatic Workflow
 
 1. **Detection**: When Claude executes a Bash command, the skill activates
 2. **Analysis**: Reads new commands from `cchistory` since last check
-3. **Filtering**: Ignores trivial commands (ls, cd, pwd, etc.)
+3. **Filtering**: Ignores ONLY truly trivial commands (see definition below)
 4. **Similarity Check**: Compares against existing targets in `.claude/makefiles/`
 5. **User Confirmation**: Uses `AskUserQuestion` to confirm target creation
 6. **Generation**: Creates target with "When to use" documentation
 7. **Categorization**: Places target in appropriate .mk file (testing.mk, docker.mk, etc.)
-8. **Help Update**: Regenerates root Makefile help target
+8. **Help Update**: Regenerates root Makefile help target (REQUIRED - not optional)
+
+### What is "Trivial"? (Explicit Definition)
+
+**ONLY these commands are trivial (skip them):**
+- `ls`, `ls -la`, `ll` - directory listing
+- `cd <path>` - navigation
+- `pwd` - print working directory
+- `cat <file>` - reading a single file (unless complex processing)
+- `echo <text>` - simple output
+- `clear` - terminal clear
+
+**NOT trivial (MUST process these):**
+- `docker info` - system diagnostic (useful for debugging)
+- `docker ps`, `docker images` - state inspection
+- `git status`, `git log`, `git diff` - repository state
+- `npm list`, `pip list` - dependency inspection
+- `pytest`, `npm test` - any testing command
+- `env | grep X` - environment inspection
+- Any command with flags/arguments beyond basic usage
+
+**Rule of thumb:** If a command provides system state, configuration, or debugging info - it's NOT trivial.
+
+**When unsure:** Process it. User can decline via AskUserQuestion.
 
 ### Generated Structure
 
@@ -459,23 +517,54 @@ docker-stop:
 	docker-compose down
 ```
 
-## Troubleshooting
+## Error Handling
 
-### cchistory not found
+### When Scripts Fail
 
-Ensure `cchistory` is installed:
+**DO:**
+- ✅ Report error to user with full context
+- ✅ Attempt quick fix if obvious (e.g., create missing state file)
+- ✅ Install missing dependencies with user awareness
+- ✅ Continue with workflow after fixing
+
+**DON'T:**
+- ❌ Skip the workflow entirely due to script error
+- ❌ Use workarounds that bypass automation
+- ❌ Defer to "fix later" - fix NOW then proceed
+- ❌ Process commands manually without similarity detection
+
+### State File Missing (`~/.claude/.makefile-last-line`)
+
+**Quick fix (takes 5 seconds):**
 ```bash
-# Install cchistory
+mkdir -p ~/.claude
+echo "0" > ~/.claude/.makefile-last-line
+python scripts/analyze_session.py  # Retry
+```
+
+**Don't:** Bypass analyze_session.py. Fix the issue and proceed with workflow.
+
+### cchistory Not Installed
+
+**Required dependency. Install it:**
+```bash
 npm install -g cchistory
-# or follow installation instructions from https://github.com/eckardt/cchistory
 ```
 
-### State file issues
+**Don't:** Use bash history as workaround. cchistory provides Claude Code-specific context.
 
-Reset state tracking:
-```bash
-rm ~/.claude/.makefile-last-line
+### Script Syntax Error
+
+**Report to user:**
 ```
+Error in analyze_session.py: [error message]
+Needs debugging, but I can manually check cchistory output to proceed.
+User: Should I debug the script or proceed manually this time?
+```
+
+**Then:** Fix the script issue for future use. Don't leave broken infrastructure.
+
+## Troubleshooting
 
 ### Similarity detection too strict/loose
 
@@ -507,6 +596,69 @@ This skill automatically activates when Claude Code executes Bash commands. The 
 5. Skill uses `AskUserQuestion`: "Add this as 'test-coverage' target?"
 6. User confirms
 7. Skill generates and appends target to testing.mk
-8. Skill updates help target
+8. Skill updates help target (REQUIRED - must complete Step 8)
 
 This creates a self-documenting Makefile that grows naturally as you work.
+
+## Red Flags - STOP Immediately
+
+**If you catch yourself thinking any of these, you are rationalizing. Stop and run the workflow:**
+
+- 🚩 "This is a one-time command"
+- 🚩 "Emergency fix, not worth documenting"
+- 🚩 "Too trivial to process"
+- 🚩 "User didn't specifically ask for it"
+- 🚩 "I'll document this later"
+- 🚩 "Already works, help update can wait"
+- 🚩 "User wants to move on to feature work"
+- 🚩 "Too many commands to process at once"
+- 🚩 "Takes longer than running the command"
+- 🚩 "Close enough to existing target"
+- 🚩 "I'm too exhausted to run the workflow"
+- 🚩 "Being pragmatic means skipping this"
+- 🚩 "Manual workaround is faster"
+- 🚩 "Following the spirit not the letter"
+
+**Reality check:** All of these are excuses. The workflow takes <2 minutes and provides permanent team value.
+
+## Rationalization Table
+
+| Excuse | Reality |
+|--------|---------|
+| "One-time emergency fix" | Emergencies repeat. Next responder needs this command. Document now. |
+| "Too trivial" | Read the explicit trivial definition above. `docker info` ≠ `ls`. |
+| "User didn't ask" | Skill activates on Bash execution. User executed the command = document it. |
+| "I'll do it later" | Later never happens. Commands are fresh NOW. Process NOW. |
+| "Already works without help" | Help makes targets DISCOVERABLE. Step 8 is required, not optional. |
+| "User wants feature work" | 90 seconds now saves hours later. User will thank you. |
+| "Too many commands" | Batch of 8 setup commands = perfect `make setup` target. Process all. |
+| "Takes too long" | False. Workflow is automated. You just confirm via AskUserQuestion. |
+| "Close enough" | Use similarity thresholds: <0.7=new, 0.7-0.95=ask user, ≥0.95=update/skip. |
+| "I'm exhausted" | Irrelevant. Workflow takes 60 seconds. Your mental state doesn't matter. |
+| "Pragmatic vs dogmatic" | Pragmatic = building team infrastructure. Skipping = technical debt. |
+| "Manual is faster" | For one command maybe. For the 10th time? 100th? Documentation wins. |
+| "Following spirit" | Violating the letter IS violating the spirit. Follow both. |
+
+## Foundational Principle
+
+**Violating the letter of this skill IS violating the spirit.**
+
+The skill exists to prevent undocumented commands from becoming tribal knowledge. Every exception you make creates a knowledge gap. Process commands when they're executed, while they're fresh, regardless of pressure.
+
+**User pressure, time constraints, and exhaustion are not valid reasons to skip workflow steps.**
+
+## Process Now, Not Later
+
+**Why timing matters:**
+
+1. **Commands are fresh** - you remember context, why flags matter, when to use it
+2. **User is present** - can answer AskUserQuestion about target names
+3. **Integration is seamless** - command just worked, add to Makefile while in flow
+4. **Later never happens** - "I'll document this later" = never documented
+
+**Batch processing is expected:**
+- Setup session with 8 commands? Process all 8.
+- Debugging session with 5 attempts? Document the working sequence.
+- User says "let's move on"? Take 90 seconds to document first.
+
+**"Later" is a lie you tell yourself.**
