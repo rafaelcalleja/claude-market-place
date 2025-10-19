@@ -390,6 +390,284 @@ python scripts/analyze_session.py | jq -r '.[].command' | while read cmd; do
 done
 ```
 
+## Bulk Initialization Mode
+
+**Use this mode for ONE-TIME setup when building a Makefile from your entire command history.**
+
+### When to Use Bulk Mode
+
+**Use bulk mode when:**
+- ✅ First time setting up makefile-assistant
+- ✅ Migrating existing project to Makefile workflow
+- ✅ You have 100+ historical commands to process
+- ✅ Want comprehensive Makefile from all past work
+- ✅ New team member wants project's common commands documented
+
+**Don't use bulk mode for:**
+- ❌ Ongoing incremental updates (use regular mode)
+- ❌ Processing just 2-3 commands (use regular mode)
+- ❌ Real-time command capture (automatic in regular mode)
+
+### Bulk Mode vs Regular Mode
+
+| Feature | Regular Mode | Bulk Mode |
+|---------|--------------|-----------|
+| **Trigger** | After each Bash execution | User-initiated command |
+| **Scope** | New commands only (since last) | Full cchistory (all sessions) |
+| **Selection** | Command-by-command | Batch multi-select by category |
+| **Frequency** | Continuous/automatic | One-time setup |
+| **State tracking** | Uses `.makefile-last-line` | Ignores state file |
+| **User interaction** | Per command | Per category batch (5-10 at a time) |
+| **Volume** | 1-10 commands per session | 50-500+ commands total |
+| **Purpose** | Incremental documentation | Comprehensive initialization |
+
+### Bulk Mode Workflow (8 Steps)
+
+#### 1. Fetch Full History
+```bash
+python scripts/bulk_init.py
+```
+
+Reads **ALL** cchistory (not just new commands):
+```
+Analyzing full cchistory...
+Found 347 commands across 50 sessions
+```
+
+#### 2. Filter & Group
+
+**Auto-filters:**
+- Trivial commands (ls, cd, pwd, echo, clear, cat)
+- Commands executed only 1-2 times (configurable threshold)
+- Instance-specific IDs (e.g., `docker logs xyz-12345`)
+
+**Groups similar commands:**
+```
+npm test → executed 15 times
+pytest tests/ --cov=src → executed 12 times
+docker-compose up -d → executed 25 times
+```
+
+**Output:**
+```
+After filtering: 42 unique commands
+Grouped into 8 categories
+```
+
+#### 3. Categorize for Presentation
+
+Commands grouped by category for batch selection:
+- Testing (5 commands)
+- Docker (8 commands)
+- Build (6 commands)
+- Database (4 commands)
+- Linting (3 commands)
+- Development (7 commands)
+- Deployment (4 commands)
+- Misc (5 commands)
+
+#### 4. Interactive Elicitation (Multi-Select)
+
+Uses `AskUserQuestion` with `multiSelect: true` per category:
+
+```
+Category: Testing Commands (5 unique)
+
+Select commands to include in Makefile:
+☑ npm test (15 times)
+☑ pytest tests/ --cov=src (12 times)
+☐ pytest tests/unit/ (3 times)
+☑ npm run test:e2e (8 times)
+☐ jest --watch (2 times)
+
+[User selects 3 out of 5]
+```
+
+**Batch size:** 5-10 commands per question
+**Progress shown:** "Batch 3/8 categories"
+
+#### 5. Similarity Detection (Per Selected)
+
+For each selected command, run similarity check:
+
+```
+Command: npm test
+Existing target: 'test' in testing.mk
+Similarity: 0.92
+
+Options:
+- Create variant 'test-ci'
+- Update existing 'test'
+- Skip (use existing)
+```
+
+If no existing targets (cold start), skip to generation.
+
+#### 6. Bulk Generation
+
+Generate all selected targets:
+```
+Processing 18 selected commands...
+✓ Created 'test' in testing.mk
+✓ Created 'test-coverage' in testing.mk
+✓ Created 'docker-up' in docker.mk
+✓ Created 'docker-down' in docker.mk
+...
+```
+
+#### 7. Categorize & Organize
+
+Place targets in appropriate .mk files:
+```
+Created targets across 6 files:
+  testing.mk: 3 targets
+  docker.mk: 5 targets
+  build.mk: 2 targets
+  database.mk: 2 targets
+  dev.mk: 4 targets
+  misc.mk: 2 targets
+```
+
+#### 8. Update Help (REQUIRED)
+
+```bash
+python scripts/generate_help.py .
+```
+
+**Even in bulk mode, Step 8 is REQUIRED.**
+
+Don't skip help update because:
+- Makes targets discoverable via `make help`
+- Organized by category
+- Shows "When to use" descriptions
+
+### Example: Complete Bulk Initialization
+
+```bash
+$ python scripts/bulk_init.py
+
+Analyzing full cchistory...
+Found 347 commands across 50 sessions
+After filtering: 42 unique commands
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Batch 1/8: Testing Commands (5 unique)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Select commands to include:
+☑ npm test (15 times)
+☑ pytest tests/ --cov=src (12 times)
+☐ pytest tests/unit/ (3 times)
+☑ npm run test:e2e (8 times)
+☐ jest --watch (2 times)
+
+→ Selected 3/5 testing commands
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Batch 2/8: Docker Commands (8 unique)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Select commands to include:
+☑ docker-compose up -d (25 times)
+☑ docker-compose down (18 times)
+☑ docker ps (12 times)
+☐ docker logs api-server (6 times) ⚠️ instance-specific
+...
+
+[... continues through 8 categories ...]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing 18 selected commands
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Checking similarity...
+✓ 'npm test' → new target 'test'
+✓ 'pytest --cov' → new target 'test-coverage'
+⚠ 'docker-compose up -d' similar to existing 'docker-up' (0.95)
+  → Creating variant 'docker-up-detached'
+
+Generating targets...
+✓ testing.mk: 3 targets created
+✓ docker.mk: 5 targets created
+✓ build.mk: 2 targets created
+✓ database.mk: 2 targets created
+✓ dev.mk: 4 targets created
+✓ misc.mk: 2 targets created
+
+Updating help...
+✓ Root Makefile updated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created 18 targets across 6 files
+.claude/makefiles/ ready for use
+
+Run 'make help' to see all available targets
+```
+
+### CRITICAL: Bulk Mode Red Flags
+
+**If you catch yourself thinking these, STOP and follow the workflow:**
+
+- 🚩 "Too many commands (100+), bulk mode won't work" → Batching makes it manageable
+- 🚩 "User is tired of questions, auto-include rest" → Complete all batches
+- 🚩 "High frequency = must be important" → Check if debug/temp file
+- 🚩 "Instance-specific should auto-filter" → Let user decide via selection
+- 🚩 "Category doesn't matter, skip ambiguous" → Use primary category, continue
+- 🚩 "No existing targets, skip similarity" → Still run workflow, returns empty
+- 🚩 "66% done is good enough" → Complete all selected commands
+- 🚩 "Duplicates found, abandon bulk mode" → User decides update/variant/skip
+- 🚩 "No undo, just proceed" → Offer restart or selective removal
+- 🚩 "Help update optional in bulk" → Step 8 REQUIRED in ALL modes
+
+### Bulk Mode Rationalization Table
+
+| Excuse | Reality |
+|--------|---------|
+| "Too many commands to process" | Batching by category makes 100+ manageable. User selects 5-10 at a time. |
+| "User tired of questions" | 8 category batches = 3-5 minutes total. Faster than manual Makefile creation. |
+| "Auto-filter instance-specific" | User might want pattern documented. Show with ⚠️ warning, let them decide. |
+| "Category ambiguity = skip it" | Use primary category from categorize_target.py. Don't skip valuable commands. |
+| "Empty project = skip similarity" | Run workflow anyway. Quick when no targets exist. Maintains consistency. |
+| "Partial completion sufficient" | Completing all selected = original agreement. 4 more minutes for 100% coverage. |
+| "Duplicates = wrong mode" | Bulk mode updates/variants valid. User chooses per command via AskUserQuestion. |
+| "Help update optional in bulk" | Step 8 REQUIRED. Discoverability is the whole point. No exceptions. |
+
+### Bulk Mode Foundational Principles
+
+1. **Volume is not an excuse** - Batching and multi-select handle 100s of commands
+2. **User fatigue is expected** - Process is designed for it (8 batches, not 100 questions)
+3. **Smart filtering helps, doesn't replace user choice** - Warn about instances/debug files, but show them
+4. **Workflow consistency** - All 8 steps apply in bulk mode, no shortcuts
+5. **Instance-specific vs generic** - Mark with ⚠️, let user decide
+6. **Frequency ≠ value** - 50x execution of debug file ≠ important target
+7. **Help update is REQUIRED** - No exceptions, even in bulk mode
+
+### When Bulk Mode Completes
+
+After bulk initialization:
+
+```bash
+# Verify targets work
+make help
+
+# Test a few targets
+make test
+make docker-up
+make build
+
+# Commit to version control
+git add .claude/makefiles/ Makefile
+git commit -m "feat: initialize Makefile from cchistory bulk mode"
+
+# Switch to regular incremental mode
+# Future commands will be processed automatically
+```
+
+**After bulk init, regular mode takes over** for incremental updates.
+
 ## References
 
 This skill includes comprehensive reference documentation:
