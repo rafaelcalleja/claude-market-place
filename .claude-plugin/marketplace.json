@@ -78,14 +78,15 @@
     {
       "name": "example-skills",
       "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, visual design, algorithmic art, internal communications, web testing, artifact building, Slack GIFs, and theme styling",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "source": "./skills/",
       "strict": false,
       "skills": [
         "./skill-creator",
         "./mcp-builder",
         "./webapp-testing",
-        "./makefile-assistant"
+        "./makefile-assistant",
+        "./codex-cli"
       ]
     }
   ]
