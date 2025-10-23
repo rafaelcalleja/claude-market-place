@@ -78,7 +78,7 @@
     {
       "name": "example-skills",
       "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, visual design, algorithmic art, internal communications, web testing, artifact building, Slack GIFs, and theme styling",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "source": "./skills/",
       "strict": false,
       "skills": [
@@ -86,7 +86,8 @@
         "./mcp-builder",
         "./webapp-testing",
         "./makefile-assistant",
-        "./codex-cli"
+        "./codex-cli",
+        "./fabric-ai"
       ]
     }
   ]
