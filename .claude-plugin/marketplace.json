@@ -89,6 +89,18 @@
         "./codex-cli",
         "./fabric-ai"
       ]
+    },
+    {
+      "name": "custom-hooks",
+      "description": "Custom UserPromptSubmit hook that adds AskUserQuestion reminder to all prompts",
+      "version": "1.0.0",
+      "author": {
+        "name": "Rafael Calleja"
+      },
+      "source": "./plugins/custom-hooks",
+      "category": "productivity",
+      "keywords": ["hooks", "productivity", "reminder", "questions"],
+      "license": "MIT"
     }
   ]
 }
