@@ -117,7 +117,7 @@
     {
       "name": "personal-ai-infrastructure",
       "description": "Complete Personal AI Infrastructure (PAI) platform with skills, agents, research capabilities, and automation workflows including Fabric patterns integration",
-      "version": "latest",
+      "version": "1.2.0",
       "author": {
         "name": "Daniel Miessler",
         "url": "https://danielmiessler.com"
