@@ -113,6 +113,20 @@
       "category": "productivity",
       "keywords": ["hooks", "workflow", "automation", "session-management", "code-quality", "security"],
       "license": "MIT"
+    },
+    {
+      "name": "personal-ai-infrastructure",
+      "description": "Complete Personal AI Infrastructure (PAI) platform with skills, agents, research capabilities, and automation workflows including Fabric patterns integration",
+      "version": "0.6.0",
+      "author": {
+        "name": "Daniel Miessler",
+        "url": "https://danielmiessler.com"
+      },
+      "source": "./plugins/personal-ai-infrastructure",
+      "category": "framework",
+      "keywords": ["personal-ai", "skills", "fabric", "research", "workflows", "agents", "automation", "productivity"],
+      "license": "MIT",
+      "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure"
     }
   ]
 }

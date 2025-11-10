@@ -1,7 +1,10 @@
-.PHONY: help validate lint clean install test format sync-superclaude upgrade-superclaude build-superclaude-plugin validate-superclaude clean-superclaude superclaude-all
+.PHONY: help validate lint clean install test format sync-superclaude upgrade-superclaude build-superclaude-plugin validate-superclaude clean-superclaude superclaude-all sync-pai upgrade-pai build-pai-plugin validate-pai clean-pai pai-all
 
 # SuperClaude Framework version
 SUPERCLAUDE_VERSION ?= 4.1.5
+
+# Personal AI Infrastructure version
+PAI_VERSION ?= 0.6.0
 
 # Default target
 help:
@@ -23,6 +26,14 @@ help:
 	@echo "  make clean-superclaude          - Clean SuperClaude plugin components"
 	@echo "  make upgrade-superclaude        - Upgrade SuperClaude to new version (interactive)"
 	@echo "  make superclaude-all            - Complete workflow: clean → build → validate → lint"
+	@echo ""
+	@echo "Personal AI Infrastructure:"
+	@echo "  make sync-pai                   - Download PAI release (v$(PAI_VERSION))"
+	@echo "  make build-pai-plugin           - Build PAI plugin from downloaded source"
+	@echo "  make validate-pai               - Validate PAI plugin"
+	@echo "  make clean-pai                  - Clean PAI plugin components"
+	@echo "  make upgrade-pai                - Upgrade PAI to new version (interactive)"
+	@echo "  make pai-all                    - Complete workflow: clean → build → validate → lint"
 	@echo ""
 
 # Validate marketplace and plugin configurations
@@ -149,6 +160,77 @@ superclaude-all:
 	@echo ""
 	@echo "[3/4] Validating plugin..."
 	@$(MAKE) validate-superclaude
+	@echo ""
+	@echo "[4/4] Validating marketplace..."
+	@$(MAKE) lint
+	@echo ""
+	@echo "=================================================="
+	@echo "✓ Complete workflow finished successfully!"
+	@echo "=================================================="
+
+# ============================================
+# Personal AI Infrastructure Targets
+# ============================================
+
+# Download Personal AI Infrastructure release
+sync-pai:
+	@echo "Downloading Personal AI Infrastructure v$(PAI_VERSION)..."
+	@mkdir -p /tmp
+	@cd /tmp && \
+		wget -q "https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/refs/tags/v$(PAI_VERSION).tar.gz" \
+		-O pai-$(PAI_VERSION).tar.gz && \
+		tar -xzf pai-$(PAI_VERSION).tar.gz && \
+		rm pai-$(PAI_VERSION).tar.gz
+	@echo "✓ Personal AI Infrastructure v$(PAI_VERSION) downloaded to /tmp/Personal_AI_Infrastructure-$(PAI_VERSION)"
+
+# Build PAI plugin from downloaded source
+build-pai-plugin:
+	@./scripts/build-pai-plugin.sh $(PAI_VERSION)
+
+# Validate PAI plugin
+validate-pai:
+	@claude plugin validate plugins/personal-ai-infrastructure
+
+# Clean PAI plugin components
+clean-pai:
+	@echo "Cleaning PAI components..."
+	@rm -rf plugins/personal-ai-infrastructure/agents/
+	@rm -rf plugins/personal-ai-infrastructure/commands/
+	@rm -rf plugins/personal-ai-infrastructure/skills/
+	@rm -rf plugins/personal-ai-infrastructure/hooks/
+	@rm -rf plugins/personal-ai-infrastructure/documentation/
+	@rm -f plugins/personal-ai-infrastructure/.mcp.json
+	@rm -f plugins/personal-ai-infrastructure/PAI.md
+	@echo "✓ PAI cleaned"
+
+# Upgrade PAI to new version (interactive)
+upgrade-pai:
+	@echo "Current version: $(PAI_VERSION)"
+	@read -p "Enter new version: " NEW_VERSION; \
+	if [ -z "$$NEW_VERSION" ]; then \
+		echo "✗ No version provided"; \
+		exit 1; \
+	fi; \
+	echo "Upgrading to v$$NEW_VERSION..."; \
+	$(MAKE) build-pai-plugin PAI_VERSION=$$NEW_VERSION && \
+	$(MAKE) validate-pai && \
+	echo "✓ Personal AI Infrastructure upgraded to v$$NEW_VERSION"
+
+# Complete PAI workflow: clean → build → validate → lint
+pai-all:
+	@echo "=================================================="
+	@echo "Personal AI Infrastructure Complete Workflow"
+	@echo "Version: $(PAI_VERSION)"
+	@echo "=================================================="
+	@echo ""
+	@echo "[1/4] Cleaning..."
+	@$(MAKE) clean-pai
+	@echo ""
+	@echo "[2/4] Building..."
+	@$(MAKE) build-pai-plugin
+	@echo ""
+	@echo "[3/4] Validating plugin..."
+	@$(MAKE) validate-pai
 	@echo ""
 	@echo "[4/4] Validating marketplace..."
 	@$(MAKE) lint

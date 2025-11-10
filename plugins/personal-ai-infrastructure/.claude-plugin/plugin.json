@@ -1,0 +1,24 @@
+{
+  "name": "personal-ai-infrastructure",
+  "version": "0.6.0",
+  "description": "Personal AI Infrastructure (PAI) - Complete personal AI platform with skills, agents, research capabilities, and automation workflows",
+  "author": {
+    "name": "Daniel Miessler",
+    "url": "https://danielmiessler.com"
+  },
+  "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure",
+  "repository": "https://github.com/danielmiessler/Personal_AI_Infrastructure",
+  "license": "MIT",
+  "keywords": [
+    "personal-ai",
+    "skills",
+    "fabric",
+    "research",
+    "workflows",
+    "agents",
+    "automation",
+    "productivity"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}

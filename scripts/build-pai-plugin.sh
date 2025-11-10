@@ -1,0 +1,179 @@
+#!/bin/bash
+set -euo pipefail
+
+# Build Personal AI Infrastructure (PAI) plugin from upstream release
+# Usage: ./scripts/build-pai-plugin.sh [VERSION]
+
+VERSION=${1:-0.6.0}
+PLUGIN_DIR="plugins/personal-ai-infrastructure"
+TMP_DIR="/tmp/pai-build-$$"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "=============================================="
+echo "Building Personal AI Infrastructure Plugin"
+echo "Version: ${VERSION}"
+echo "=============================================="
+echo ""
+
+# Create temp directory
+mkdir -p "${TMP_DIR}"
+cd "${TMP_DIR}"
+
+# Download release
+echo "[1/8] Downloading Personal AI Infrastructure v${VERSION}..."
+wget -q "https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/refs/tags/v${VERSION}.tar.gz" \
+  -O pai.tar.gz || {
+  echo "ERROR: Failed to download PAI v${VERSION}"
+  echo "Check if version exists: https://github.com/danielmiessler/Personal_AI_Infrastructure/releases"
+  exit 1
+}
+
+# Extract
+echo "[2/8] Extracting archive..."
+tar -xzf pai.tar.gz
+
+SOURCE_DIR="${TMP_DIR}/Personal_AI_Infrastructure-${VERSION}/.claude"
+if [ ! -d "${SOURCE_DIR}" ]; then
+  echo "ERROR: Source directory not found: ${SOURCE_DIR}"
+  exit 1
+fi
+
+# Create plugin structure
+echo "[3/8] Creating plugin directory structure..."
+cd "${REPO_ROOT}"
+mkdir -p "${PLUGIN_DIR}/.claude-plugin"
+
+# Copy entire .claude directory contents
+echo "[4/8] Copying PAI components..."
+rsync -av --exclude='settings.json' --exclude='setup.sh' "${SOURCE_DIR}/" "${PLUGIN_DIR}/"
+
+# Create hooks.json configuration
+echo "[5/8] Creating hooks configuration..."
+cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-tool-output.ts"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-session-summary.ts"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/update-tab-titles.ts"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/initialize-pai-session.ts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.ts"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/subagent-stop-hook.ts"
+          }
+        ]
+      }
+    ]
+  }
+}
+HOOKSEOF
+
+# Count components
+AGENTS_COUNT=$(find "${PLUGIN_DIR}/agents" -name "*.md" 2>/dev/null | wc -l)
+COMMANDS_COUNT=$(find "${PLUGIN_DIR}/commands" -name "*.md" 2>/dev/null | wc -l)
+SKILLS_COUNT=$(find "${PLUGIN_DIR}/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+HOOKS_COUNT=$(find "${PLUGIN_DIR}/hooks" -name "*.ts" 2>/dev/null | wc -l)
+
+# Create plugin.json
+echo "[6/8] Creating plugin manifest..."
+cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
+{
+  "name": "personal-ai-infrastructure",
+  "version": "${VERSION}",
+  "description": "Personal AI Infrastructure (PAI) - Complete personal AI platform with skills, agents, research capabilities, and automation workflows",
+  "author": {
+    "name": "Daniel Miessler",
+    "url": "https://danielmiessler.com"
+  },
+  "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure",
+  "repository": "https://github.com/danielmiessler/Personal_AI_Infrastructure",
+  "license": "MIT",
+  "keywords": [
+    "personal-ai",
+    "skills",
+    "fabric",
+    "research",
+    "workflows",
+    "agents",
+    "automation",
+    "productivity"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}
+JSONEOF
+
+# Make hooks executable
+echo "[7/8] Making hooks executable..."
+chmod +x "${PLUGIN_DIR}"/hooks/*.ts 2>/dev/null || true
+
+# Cleanup
+echo "[8/8] Cleaning up..."
+rm -rf "${TMP_DIR}"
+
+# Summary
+echo ""
+echo "=============================================="
+echo "Build Complete!"
+echo "=============================================="
+echo ""
+echo "Plugin Location: ${PLUGIN_DIR}"
+echo "Agents: ${AGENTS_COUNT}"
+echo "Commands: ${COMMANDS_COUNT}"
+echo "Skills: ${SKILLS_COUNT}"
+echo "Hooks: ${HOOKS_COUNT} (configured in hooks.json)"
+echo ""
+echo "Next Steps:"
+echo "  1. Validate: make validate-pai"
+echo "  2. Install: claude plugin install ${PLUGIN_DIR}"
+echo "  3. Configure API keys in .mcp.json if needed"
+echo ""
