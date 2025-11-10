@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/schemas/plugin.json",
   "name": "hook-workflow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Comprehensive workflow automation using Claude Code hooks for session management, code quality enforcement, security scanning, token tracking, and git validation",
   "author": {
     "name": "Rafael Calleja"

@@ -105,7 +105,7 @@
     {
       "name": "hook-workflow",
       "description": "Comprehensive workflow automation using Claude Code hooks for session management, code quality enforcement, security scanning, token tracking, and git validation",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Rafael Calleja"
       },
