@@ -1,8 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Build Personal AI Infrastructure (PAI) plugin from upstream release
-# Usage: ./scripts/build-pai-plugin.sh [VERSION]
+# Build Personal AI Infrastructure (PAI) plugin from upstream release or commit
+# Usage: ./scripts/build-pai-plugin.sh [VERSION|COMMIT_SHA]
+# Examples:
+#   ./scripts/build-pai-plugin.sh 0.6.0              # Download tagged release v0.6.0
+#   ./scripts/build-pai-plugin.sh 42a7aa754fa86f27   # Download specific commit
 
 VERSION=${1:-0.6.0}
 PLUGIN_DIR="plugins/personal-ai-infrastructure"
@@ -11,7 +14,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "=============================================="
 echo "Building Personal AI Infrastructure Plugin"
-echo "Version: ${VERSION}"
+echo "Version/Commit: ${VERSION}"
 echo "=============================================="
 echo ""
 
@@ -19,12 +22,24 @@ echo ""
 mkdir -p "${TMP_DIR}"
 cd "${TMP_DIR}"
 
-# Download release
-echo "[1/8] Downloading Personal AI Infrastructure v${VERSION}..."
-wget -q "https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/refs/tags/v${VERSION}.tar.gz" \
-  -O pai.tar.gz || {
-  echo "ERROR: Failed to download PAI v${VERSION}"
-  echo "Check if version exists: https://github.com/danielmiessler/Personal_AI_Infrastructure/releases"
+# Determine if VERSION is a commit SHA (40 chars hex) or a version tag
+if [[ ${VERSION} =~ ^[0-9a-f]{7,40}$ ]]; then
+  # It's a commit SHA
+  DOWNLOAD_URL="https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/${VERSION}.tar.gz"
+  EXTRACT_DIR="Personal_AI_Infrastructure-${VERSION}"
+  echo "[1/8] Downloading PAI commit ${VERSION}..."
+else
+  # It's a version tag
+  DOWNLOAD_URL="https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/refs/tags/v${VERSION}.tar.gz"
+  EXTRACT_DIR="Personal_AI_Infrastructure-${VERSION}"
+  echo "[1/8] Downloading PAI release v${VERSION}..."
+fi
+
+wget -q "${DOWNLOAD_URL}" -O pai.tar.gz || {
+  echo "ERROR: Failed to download PAI ${VERSION}"
+  echo "Check if version/commit exists:"
+  echo "  - Releases: https://github.com/danielmiessler/Personal_AI_Infrastructure/releases"
+  echo "  - Commits: https://github.com/danielmiessler/Personal_AI_Infrastructure/commits"
   exit 1
 }
 
@@ -32,7 +47,7 @@ wget -q "https://github.com/danielmiessler/Personal_AI_Infrastructure/archive/re
 echo "[2/8] Extracting archive..."
 tar -xzf pai.tar.gz
 
-SOURCE_DIR="${TMP_DIR}/Personal_AI_Infrastructure-${VERSION}/.claude"
+SOURCE_DIR="${TMP_DIR}/${EXTRACT_DIR}/.claude"
 if [ ! -d "${SOURCE_DIR}" ]; then
   echo "ERROR: Source directory not found: ${SOURCE_DIR}"
   exit 1

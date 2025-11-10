@@ -4,7 +4,8 @@
 SUPERCLAUDE_VERSION ?= 4.1.5
 
 # Personal AI Infrastructure version
-PAI_VERSION ?= 0.6.0
+# Can be: version tag (0.6.0), commit SHA (42a7aa754fa86f27), or "latest"
+PAI_VERSION ?= 42a7aa754fa86f271b0498e03c23665470ed52f3
 
 # Default target
 help:
