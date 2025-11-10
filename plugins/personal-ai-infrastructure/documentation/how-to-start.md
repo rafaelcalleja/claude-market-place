@@ -2,6 +2,13 @@
 
 **Welcome! Let's get your Personal AI Infrastructure up and running.**
 
+> [!NOTE]
+> **📦 v0.6.0 Repository Structure**
+> As of v0.6.0, the PAI repository uses a `.claude/` directory structure to match the actual working system:
+> - Repository structure: `/PAI/.claude/` contains all infrastructure
+> - Your system: `~/.claude/` contains your personal PAI instance
+> - Simply copy or symlink `.claude/` from the repo to `~/.claude/` on your system
+
 ---
 
 ## 👋 Hey there!
@@ -26,7 +33,7 @@ Choose whichever makes you comfortable. Both get you to the same place!
 
 ```bash
 # Download and run the automated setup script
-curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/.claude/setup.sh | bash
 ```
 
 That's it! The script will:
@@ -338,7 +345,7 @@ echo "# My Amazing Project" > $PAI_DIR/skills/my-project/SKILL.md
 **Customize the PAI skill** (tells PAI who you are):
 ```bash
 # Open the main PAI skill
-open -e $PAI_DIR/skills/PAI/SKILL.md
+open -e $PAI_DIR/skills/CORE/SKILL.md
 
 # Look for lines that say [CUSTOMIZE:] and update them with YOUR information
 ```
@@ -520,7 +527,7 @@ Make PAI truly yours:
 
 **Edit the PAI skill:**
 ```bash
-open -e $PAI_DIR/skills/PAI/SKILL.md
+open -e $PAI_DIR/skills/CORE/SKILL.md
 ```
 
 Look for `[CUSTOMIZE:]` markers and update:

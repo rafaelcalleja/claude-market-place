@@ -1,5 +1,14 @@
 # PAI System Architecture
 
+> [!IMPORTANT]
+> **v0.6.0 Directory Structure Update**
+> As of v0.6.0, all PAI infrastructure lives in the `.claude/` directory:
+> - **Repository:** `/PAI/.claude/` contains all infrastructure
+> - **Your System:** `~/.claude/` is where you install PAI
+> - **Migration:** Copy `.claude/` from repo to `~/.claude/` on your system
+>
+> This structure ensures the repository properly mirrors how PAI works in production.
+
 ## Overview
 
 PAI (Personal AI Infrastructure) is a modular, event-driven system that enhances AI assistants with dynamic context management, automation, and extensibility. The architecture follows a layered approach with clear separation of concerns.
@@ -56,7 +65,7 @@ The hook system provides event-driven automation throughout the AI interaction l
 - **Tool hooks**: Intercept and modify tool calls
 - **Post-execution hooks**: Run after commands complete
 
-**Location:** `${PAI_DIR}/hooks/`
+**Location:** `~/.claude/hooks/`
 
 ### 2. Skills System
 
@@ -68,7 +77,7 @@ The Skills System provides modular, self-contained capability packages that exte
 - **Modular Design**: Self-contained with templates and components
 - **Global Inheritance**: All skills automatically access global context
 
-**Location:** `${PAI_DIR}/skills/`
+**Location:** `~/.claude/skills/`
 
 ### 3. Agent System
 

@@ -2,6 +2,12 @@
 
 **Bookmark this page!** This is your quick reference for common PAI commands and tasks.
 
+> [!NOTE]
+> **📦 v0.6.0 Update:** Repository now uses `.claude/` directory structure.
+> - On your system: `~/.claude/` contains your PAI installation
+> - Path references below use `~/.claude/` for installed system
+> - Repository structure: `PAI/.claude/` for development
+
 ---
 
 ## 🚀 Getting Started
@@ -10,7 +16,7 @@
 
 ```bash
 # Run the automated setup script
-curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/.claude/setup.sh | bash
 
 # Or manual setup - see documentation/how-to-start.md
 ```
@@ -209,10 +215,10 @@ cd $PAI_DIR && git status
 
 ```bash
 # Open main PAI skill
-open -e $PAI_DIR/skills/PAI/SKILL.md
+open -e $PAI_DIR/skills/CORE/SKILL.md
 
 # Look for [CUSTOMIZE:] markers
-grep -n "CUSTOMIZE:" $PAI_DIR/skills/PAI/SKILL.md
+grep -n "CUSTOMIZE:" $PAI_DIR/skills/CORE/SKILL.md
 ```
 
 ### Change AI Assistant Name
@@ -308,7 +314,7 @@ cp PAI.old/.env PAI/.env
 
 ```bash
 # Re-run setup script
-cd ~ && curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/setup.sh | bash
+cd ~ && curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/.claude/setup.sh | bash
 ```
 
 ---
@@ -384,7 +390,7 @@ alias pcmds='ls $PAI_DIR/commands'
 
 # Quick edits
 alias pai-env='open -e $PAI_DIR/.env'
-alias pai-skill='open -e $PAI_DIR/skills/PAI/SKILL.md'
+alias pai-skill='open -e $PAI_DIR/skills/CORE/SKILL.md'
 alias pai-shell='open -e ~/.zshrc'
 
 # Updates

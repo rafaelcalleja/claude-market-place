@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment_1": "=================================================================",
+  "_comment_2": "PAI Settings Configuration Example",
+  "_comment_3": "=================================================================",
+  "_comment_4": "This file shows a complete PAI setup with all hooks configured.",
+  "_comment_5": "Copy this to settings.json and customize for your environment.",
+  "_comment_6": "",
+  "_comment_7": "IMPORTANT: Update these values:",
+  "_comment_8": "  - MCP_API_KEY: Your actual MCP API key",
+  "_comment_9": "  - PAI_DIR: Path to your .claude directory",
+  "_comment_10": "  - DA: Your digital assistant name",
+  "_comment_11": "=================================================================",
+
+  "env": {
+    "MCP_API_KEY": "your_mcp_api_key_here",
+    "DA": "Kai",
+    "PAI_DIR": "$HOME/.claude",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "LS(*)",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "NotebookRead(*)",
+      "NotebookEdit(*)",
+      "TodoWrite(*)",
+      "ExitPlanMode(*)",
+      "Task(*)",
+      "mcp__*"
+    ],
+    "deny": [
+      "Bash(diskutil partitionDisk)",
+      "Bash(diskutil eraseDisk)",
+      "Bash(diskutil eraseVolume)",
+      "Bash(diskutil reformat)",
+      "Bash(diskutil zeroDisk)",
+      "Bash(diskutil appleRAID)",
+      "Bash(diskutil randomDisk)",
+      "Bash(diskutil coreStorage)",
+      "Bash(diskutil cs)",
+      "Bash(diskutil disableJournal)",
+      "Bash(diskutil resetFusion)",
+      "Bash(diskutil disableOwnership)",
+      "Bash(diskutil apfs deleteContainer)",
+      "Bash(diskutil apfs eraseVolume)",
+      "Bash(diskutil apfs decryptVolume)",
+      "Bash(diskutil apfs changePassphrase)",
+      "Bash(diskutil apfs deleteVolume)",
+      "Bash(diskutil apfs deleteVolumeGroup)",
+      "Bash(diskutil apfs deleteSnapshot)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf $HOME)",
+      "Bash(rm -rf $PAI_HOME)",
+      "Bash(rm -rf $PAI_DIR)",
+      "Bash(sudo rm -rf /)",
+      "Bash(sudo rm -rf /*)",
+      "Bash(fork bomb)",
+      "Bash(dd if=/dev/zero of=/dev/sda)",
+      "Bash(mkfs.ext4 /dev/sda)",
+      "Bash( /dev/sda)",
+      "Bash(> /dev/sda)"
+    ]
+  },
+
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [],
+
+  "_hooks_comment_1": "=================================================================",
+  "_hooks_comment_2": "HOOKS CONFIGURATION - Complete set of PAI lifecycle hooks",
+  "_hooks_comment_3": "=================================================================",
+  "_hooks_comment_4": "PreToolUse: Captures events BEFORE each tool execution",
+  "_hooks_comment_5": "PostToolUse: Captures events AFTER each tool completes",
+  "_hooks_comment_6": "SessionEnd: Runs when conversation ends - creates summaries",
+  "_hooks_comment_7": "UserPromptSubmit: Runs on prompt submit - updates UI",
+  "_hooks_comment_8": "SessionStart: Runs on session start - loads context",
+  "_hooks_comment_9": "Stop: Runs when user clicks Stop button",
+  "_hooks_comment_10": "SubagentStop: Runs when subagent process stops",
+  "_hooks_comment_11": "PreCompact: Runs before context compression",
+  "_hooks_comment_12": "=================================================================",
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PostToolUse"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-session-summary.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionEnd"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/update-tab-titles.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/load-core-context.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/initialize-pai-session.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionStart"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/stop-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type Stop"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/subagent-stop-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SubagentStop"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/context-compression-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreCompact"
+          }
+        ]
+      }
+    ]
+  },
+
+  "statusLine": {
+    "type": "command",
+    "command": "${PAI_DIR}/statusline-command.sh"
+  },
+
+  "alwaysThinkingEnabled": true,
+
+  "feedbackSurveyState": {
+    "lastShownTime": 1735430400000
+  },
+
+  "max_tokens": 4096
+}

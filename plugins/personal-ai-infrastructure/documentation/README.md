@@ -1,5 +1,11 @@
 # PAI System Documentation
 
+> [!IMPORTANT]
+> **v0.6.0 MAJOR UPDATE:** Directory structure changed to `.claude/`
+> - All PAI infrastructure now in `.claude/` directory
+> - Repository mirrors your actual `~/.claude/` working system
+> - Copy `.claude/` from repo to `~/.claude/` for installation
+
 Welcome to the Personal AI Infrastructure (PAI) documentation. PAI is a comprehensive system for integrating AI assistants into your personal workflow with advanced context management, automation, and extensibility.
 
 ## 📚 Documentation Index
@@ -72,23 +78,23 @@ PAI (Personal AI Infrastructure) is a powerful framework that enhances AI assist
 ## 🏗️ System Components
 
 ```
-PAI/
-├── PAI_DIRECTORY/          # PAI system configuration
-│   ├── skills/             # Modular capability packages
-│   ├── hooks/              # Event hooks
-│   ├── commands/           # Custom slash commands
-│   ├── agents/             # Specialized AI agents
-│   └── voice-server/       # Voice notification server
-├── Documentation/          # System documentation
-├── Projects/               # User projects
-└── Library/               # System libraries and logs
+~/.claude/                  # PAI installation directory
+├── skills/                 # Modular capability packages
+├── hooks/                  # Event hooks
+├── commands/               # Custom slash commands
+├── agents/                 # Specialized AI agents
+├── voice-server/           # Voice notification server
+├── documentation/          # System documentation
+├── settings.json           # Configuration
+├── .mcp.json              # MCP servers
+└── .env                   # Environment variables (create from .env.example)
 ```
 
 ## 🔧 Environment Variables
 
 PAI uses environment variables for configuration:
 
-- `PAI_DIR`: PAI configuration directory (points to PAI_DIRECTORY)
+- `PAI_DIR`: PAI repository root directory (e.g., `~/Projects/PAI`)
 - `PAI_HOME`: Your home directory
 - `PORT`: Voice server port (default: 8888)
 - `DA`: Digital Assistant name (optional)
@@ -114,29 +120,35 @@ PAI uses environment variables for configuration:
 
 ```bash
 # Clone PAI repository
-git clone https://github.com/yourusername/PAI.git
-cd PAI
+git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
+cd Personal_AI_Infrastructure
 
-# Set PAI_DIR
-export PAI_DIR="$HOME/PAI/PAI_DIRECTORY"
-
-# Install voice server (optional)
-cd PAI_DIRECTORY/voice-server
-./install.sh
+# Copy .claude directory to your home
+cp -r .claude ~/.claude
 
 # Configure environment
-cp ${PAI_DIR}/env-example ${PAI_DIR}/.env
-# Edit ${PAI_DIR}/.env with your settings
+cp ~/.claude/.env.example ~/.claude/.env
+# Edit ~/.claude/.env with your settings
+
+# Set PAI_DIR (optional, for repo development)
+export PAI_DIR="$HOME/PAI"  # Points to repo root
+export PAI_HOME="$HOME"
+
+# Start voice server (optional)
+cd ~/.claude/voice-server
+bun server.ts &
 ```
 
 ## Configuration
 
 PAI is configured through:
-1. Environment variables in `${PAI_DIR}/.env`
-2. Skills in `${PAI_DIR}/skills/`
-3. Hook scripts in `${PAI_DIR}/hooks/`
-4. Agent definitions in `${PAI_DIR}/agents/`
-5. Slash commands in `${PAI_DIR}/commands/`
+1. Environment variables in `~/.claude/.env`
+2. Skills in `~/.claude/skills/`
+3. Hook scripts in `~/.claude/hooks/`
+4. Agent definitions in `~/.claude/agents/`
+5. Slash commands in `~/.claude/commands/`
+6. MCP servers in `~/.claude/.mcp.json`
+7. Settings in `~/.claude/settings.json`
 
 ## Usage Examples
 
