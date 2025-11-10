@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/session_start.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/session_start.py",
             "timeout": 30
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/context_recovery_helper.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/context_recovery_helper.py",
             "timeout": 30
           }
         ]
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/pre_session_hook.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/pre_session_hook.py",
             "timeout": 30
           }
         ]
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/session_start.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/session_start.py",
             "timeout": 30
           }
         ]
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/post_session_hook.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/post_session_hook.py",
             "timeout": 30
           }
         ]
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/detect_session_finish.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/detect_session_finish.py",
             "timeout": 10
           }
         ]
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/auto_compact.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/auto_compact.py",
             "timeout": 360
           }
         ]
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/auto_compact.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/auto_compact.py",
             "timeout": 360
           }
         ]
@@ -92,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/token_manager.py check",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/token_manager.py check",
             "timeout": 10
           }
         ]
@@ -102,27 +102,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/command_restrictor.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/command_restrictor.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/pattern_enforcer.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/pattern_enforcer.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/no_mock_code.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/no_mock_code.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/secret_scanner.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/secret_scanner.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/timestamp_validator.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/timestamp_validator.py",
             "timeout": 10
           }
         ]
@@ -132,12 +132,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/no_mock_code.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/no_mock_code.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/secret_scanner.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/secret_scanner.py",
             "timeout": 10
           }
         ]
@@ -147,12 +147,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/command_restrictor.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/command_restrictor.py",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/validate_git_commit.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/validate_git_commit.py",
             "timeout": 10
           }
         ]
@@ -162,7 +162,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/command_restrictor.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/command_restrictor.py",
             "timeout": 10
           }
         ]
@@ -174,7 +174,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/token_manager.py extract",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/token_manager.py extract",
             "timeout": 180
           }
         ]
@@ -184,7 +184,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"CLAUDE_PLUGIN_ROOT\"/hook_scripts/post_tool_use_compact_progress.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hook_scripts/post_tool_use_compact_progress.py",
             "timeout": 5
           }
         ]
