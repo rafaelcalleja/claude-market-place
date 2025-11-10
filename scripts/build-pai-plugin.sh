@@ -62,18 +62,29 @@ mkdir -p "${PLUGIN_DIR}/.claude-plugin"
 echo "[4/8] Copying PAI components..."
 rsync -av --exclude='settings.json' --exclude='setup.sh' "${SOURCE_DIR}/" "${PLUGIN_DIR}/"
 
-# Create hooks.json configuration
+# Create hooks.json configuration (based on PAI settings.json)
 echo "[5/8] Creating hooks configuration..."
 cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type PreToolUse"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-tool-output.ts"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type PostToolUse"
           }
         ]
       }
@@ -84,6 +95,10 @@ cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-session-summary.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type SessionEnd"
           }
         ]
       }
@@ -94,6 +109,10 @@ cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/update-tab-titles.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type UserPromptSubmit"
           }
         ]
       }
@@ -103,7 +122,15 @@ cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
         "hooks": [
           {
             "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/load-core-context.ts"
+          },
+          {
+            "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/initialize-pai-session.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type SessionStart"
           }
         ]
       }
@@ -114,6 +141,10 @@ cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type Stop"
           }
         ]
       }
@@ -124,6 +155,25 @@ cat > "${PLUGIN_DIR}/hooks/hooks.json" <<'HOOKSEOF'
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/subagent-stop-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type SubagentStop"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/context-compression-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/capture-all-events.ts --event-type PreCompact"
           }
         ]
       }
