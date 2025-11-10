@@ -1,0 +1,31 @@
+{
+  "name": "claudekit-skills",
+  "version": "main",
+  "description": "ClaudeKit Skills - Comprehensive collection of specialized agent skills, commands, and agents for authentication, AI/ML, web development, cloud platforms, databases, debugging, documentation, problem-solving, and more",
+  "author": {
+    "name": "mrgoonie",
+    "url": "https://github.com/mrgoonie"
+  },
+  "homepage": "https://github.com/mrgoonie/claudekit-skills",
+  "repository": "https://github.com/mrgoonie/claudekit-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "agents",
+    "commands",
+    "authentication",
+    "ai-ml",
+    "web-development",
+    "cloud-platforms",
+    "databases",
+    "debugging",
+    "documentation",
+    "problem-solving",
+    "productivity",
+    "git",
+    "mcp"
+  ],
+  "skills": [
+    "./skills/ai-multimodal","./skills/better-auth","./skills/chrome-devtools","./skills/claude-code","./skills/code-review","./skills/common","./skills/databases","./skills/debugging","./skills/devops","./skills/docs-seeker","./skills/document-skills","./skills/google-adk-python","./skills/mcp-builder","./skills/mcp-management","./skills/media-processing","./skills/problem-solving","./skills/repomix","./skills/sequential-thinking","./skills/shopify","./skills/skill-creator","./skills/template-skill","./skills/ui-styling","./skills/web-frameworks"
+  ]
+}
