@@ -101,6 +101,18 @@
       "category": "productivity",
       "keywords": ["hooks", "productivity", "reminder", "questions"],
       "license": "MIT"
+    },
+    {
+      "name": "hook-workflow",
+      "description": "Comprehensive workflow automation using Claude Code hooks for session management, code quality enforcement, security scanning, token tracking, and git validation",
+      "version": "1.0.0",
+      "author": {
+        "name": "Rafael Calleja"
+      },
+      "source": "./plugins/hook-workflow",
+      "category": "productivity",
+      "keywords": ["hooks", "workflow", "automation", "session-management", "code-quality", "security"],
+      "license": "MIT"
     }
   ]
 }
