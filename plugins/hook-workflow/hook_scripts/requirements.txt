@@ -1,3 +1,4 @@
 sentry-sdk
 rich
 typer
+pyyaml
