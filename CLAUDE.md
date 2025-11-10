@@ -34,6 +34,34 @@ This plugin marketplace was created using comprehensive research from official A
 
 ---
 
+## Plugin Integration
+
+### Creating New Plugins from External Repositories
+
+For detailed step-by-step instructions on integrating external repositories as plugins, see:
+
+**[Plugin Integration Guide](docs/PLUGIN_INTEGRATION_GUIDE.md)**
+
+This guide covers:
+- Repository analysis and component identification
+- Automated build script creation
+- Makefile integration for repeatable workflows
+- Marketplace registration
+- Validation and testing procedures
+- Troubleshooting common issues
+- Real-world examples (SuperClaude, Personal AI Infrastructure)
+
+**Quick Start:**
+```bash
+# Example: Build Personal AI Infrastructure plugin
+make pai-all
+
+# Example: Build SuperClaude Framework plugin
+make superclaude-all
+```
+
+---
+
 ## Plugin Validation
 
 ### Validate Marketplace Structure
