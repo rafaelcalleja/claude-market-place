@@ -19,6 +19,5 @@
     "automation",
     "productivity"
   ],
-  "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }

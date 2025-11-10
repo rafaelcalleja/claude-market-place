@@ -212,7 +212,6 @@ cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
     "automation",
     "productivity"
   ],
-  "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }
 JSONEOF
