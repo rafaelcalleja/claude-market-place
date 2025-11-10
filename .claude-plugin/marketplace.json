@@ -130,7 +130,7 @@
     },
     {
       "name": "claudekit-skills",
-      "description": "ClaudeKit Skills - Comprehensive collection of specialized agent skills including authentication (better-auth), AI/ML (multimodal, Google ADK), web development (Next.js, Turborepo, shadcn/ui), cloud platforms (Cloudflare, Docker, GCP), databases (MongoDB, PostgreSQL), debugging frameworks, document processing (DOCX, PDF, PPTX, XLSX), problem-solving frameworks, and advanced reasoning patterns",
+      "description": "ClaudeKit Skills - Complete plugin with 23 specialized skills, 5 slash commands (/use-mcp, /skill:create, /git:cm, /git:cp, /git:pr), and MCP manager agent. Covers authentication, AI/ML, web development, cloud platforms, databases, debugging, document processing (DOCX/PDF/PPTX/XLSX), and problem-solving frameworks",
       "version": "main",
       "author": {
         "name": "mrgoonie",
@@ -138,7 +138,7 @@
       },
       "source": "./plugins/claudekit-skills",
       "category": "skills",
-      "keywords": ["skills", "agents", "authentication", "ai-ml", "web-development", "cloud-platforms", "databases", "debugging", "documentation", "problem-solving", "productivity"],
+      "keywords": ["skills", "agents", "commands", "authentication", "ai-ml", "web-development", "cloud-platforms", "databases", "debugging", "documentation", "problem-solving", "productivity", "git", "mcp"],
       "license": "MIT",
       "homepage": "https://github.com/mrgoonie/claudekit-skills"
     }
