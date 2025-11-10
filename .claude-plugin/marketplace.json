@@ -127,6 +127,20 @@
       "keywords": ["personal-ai", "skills", "fabric", "research", "workflows", "agents", "automation", "productivity"],
       "license": "MIT",
       "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure"
+    },
+    {
+      "name": "claudekit-skills",
+      "description": "ClaudeKit Skills - Comprehensive collection of specialized agent skills including authentication (better-auth), AI/ML (multimodal, Google ADK), web development (Next.js, Turborepo, shadcn/ui), cloud platforms (Cloudflare, Docker, GCP), databases (MongoDB, PostgreSQL), debugging frameworks, document processing (DOCX, PDF, PPTX, XLSX), problem-solving frameworks, and advanced reasoning patterns",
+      "version": "main",
+      "author": {
+        "name": "mrgoonie",
+        "url": "https://github.com/mrgoonie"
+      },
+      "source": "./plugins/claudekit-skills",
+      "category": "skills",
+      "keywords": ["skills", "agents", "authentication", "ai-ml", "web-development", "cloud-platforms", "databases", "debugging", "documentation", "problem-solving", "productivity"],
+      "license": "MIT",
+      "homepage": "https://github.com/mrgoonie/claudekit-skills"
     }
   ]
 }

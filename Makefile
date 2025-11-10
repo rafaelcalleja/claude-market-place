@@ -1,4 +1,4 @@
-.PHONY: help validate lint clean install test format sync-superclaude upgrade-superclaude build-superclaude-plugin validate-superclaude clean-superclaude superclaude-all sync-pai upgrade-pai build-pai-plugin validate-pai clean-pai pai-all
+.PHONY: help validate lint clean install test format sync-superclaude upgrade-superclaude build-superclaude-plugin validate-superclaude clean-superclaude superclaude-all sync-pai upgrade-pai build-pai-plugin validate-pai clean-pai pai-all sync-claudekit upgrade-claudekit build-claudekit-plugin validate-claudekit clean-claudekit claudekit-all
 
 # SuperClaude Framework version
 SUPERCLAUDE_VERSION ?= 4.1.5
@@ -6,6 +6,10 @@ SUPERCLAUDE_VERSION ?= 4.1.5
 # Personal AI Infrastructure version
 # Can be: version tag (0.6.0), commit SHA (42a7aa754fa86f27), or "latest"
 PAI_VERSION ?= 42a7aa754fa86f271b0498e03c23665470ed52f3
+
+# ClaudeKit Skills version
+# Can be: version tag (1.0.0), commit SHA, or branch name (main)
+CLAUDEKIT_VERSION ?= main
 
 # Default target
 help:
@@ -35,6 +39,14 @@ help:
 	@echo "  make clean-pai                  - Clean PAI plugin components"
 	@echo "  make upgrade-pai                - Upgrade PAI to new version (interactive)"
 	@echo "  make pai-all                    - Complete workflow: clean → build → validate → lint"
+	@echo ""
+	@echo "ClaudeKit Skills:"
+	@echo "  make sync-claudekit             - Download ClaudeKit Skills ($(CLAUDEKIT_VERSION))"
+	@echo "  make build-claudekit-plugin     - Build ClaudeKit Skills plugin from source"
+	@echo "  make validate-claudekit         - Validate ClaudeKit Skills plugin"
+	@echo "  make clean-claudekit            - Clean ClaudeKit Skills plugin components"
+	@echo "  make upgrade-claudekit          - Upgrade ClaudeKit Skills to new version (interactive)"
+	@echo "  make claudekit-all              - Complete workflow: clean → build → validate → lint"
 	@echo ""
 
 # Validate marketplace and plugin configurations
@@ -232,6 +244,84 @@ pai-all:
 	@echo ""
 	@echo "[3/4] Validating plugin..."
 	@$(MAKE) validate-pai
+	@echo ""
+	@echo "[4/4] Validating marketplace..."
+	@$(MAKE) lint
+	@echo ""
+	@echo "=================================================="
+	@echo "✓ Complete workflow finished successfully!"
+	@echo "=================================================="
+
+# ============================================
+# ClaudeKit Skills Targets
+# ============================================
+
+# Download ClaudeKit Skills release/branch
+sync-claudekit:
+	@echo "Downloading ClaudeKit Skills $(CLAUDEKIT_VERSION)..."
+	@mkdir -p /tmp
+	@cd /tmp && \
+		if [[ "$(CLAUDEKIT_VERSION)" =~ ^[0-9]+\.[0-9]+\.[0-9]+$$ ]]; then \
+			wget -q "https://github.com/mrgoonie/claudekit-skills/archive/refs/tags/v$(CLAUDEKIT_VERSION).tar.gz" \
+				-O claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			tar -xzf claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			rm claudekit-$(CLAUDEKIT_VERSION).tar.gz; \
+		elif [[ "$(CLAUDEKIT_VERSION)" =~ ^[0-9a-f]{7,40}$$ ]]; then \
+			wget -q "https://github.com/mrgoonie/claudekit-skills/archive/$(CLAUDEKIT_VERSION).tar.gz" \
+				-O claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			tar -xzf claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			rm claudekit-$(CLAUDEKIT_VERSION).tar.gz; \
+		else \
+			wget -q "https://github.com/mrgoonie/claudekit-skills/archive/refs/heads/$(CLAUDEKIT_VERSION).tar.gz" \
+				-O claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			tar -xzf claudekit-$(CLAUDEKIT_VERSION).tar.gz && \
+			rm claudekit-$(CLAUDEKIT_VERSION).tar.gz; \
+		fi
+	@echo "✓ ClaudeKit Skills $(CLAUDEKIT_VERSION) downloaded to /tmp"
+
+# Build ClaudeKit Skills plugin from downloaded source
+build-claudekit-plugin:
+	@./scripts/build-claudekit-plugin.sh $(CLAUDEKIT_VERSION)
+
+# Validate ClaudeKit Skills plugin
+validate-claudekit:
+	@claude plugin validate plugins/claudekit-skills
+
+# Clean ClaudeKit Skills plugin components
+clean-claudekit:
+	@echo "Cleaning ClaudeKit Skills components..."
+	@rm -rf plugins/claudekit-skills/skills/
+	@rm -f plugins/claudekit-skills/.claude-plugin/plugin.json
+	@echo "✓ ClaudeKit Skills cleaned"
+
+# Upgrade ClaudeKit Skills to new version (interactive)
+upgrade-claudekit:
+	@echo "Current version: $(CLAUDEKIT_VERSION)"
+	@read -p "Enter new version/branch: " NEW_VERSION; \
+	if [ -z "$$NEW_VERSION" ]; then \
+		echo "✗ No version provided"; \
+		exit 1; \
+	fi; \
+	echo "Upgrading to $$NEW_VERSION..."; \
+	$(MAKE) build-claudekit-plugin CLAUDEKIT_VERSION=$$NEW_VERSION && \
+	$(MAKE) validate-claudekit && \
+	echo "✓ ClaudeKit Skills upgraded to $$NEW_VERSION"
+
+# Complete ClaudeKit Skills workflow: clean → build → validate → lint
+claudekit-all:
+	@echo "=================================================="
+	@echo "ClaudeKit Skills Complete Workflow"
+	@echo "Version: $(CLAUDEKIT_VERSION)"
+	@echo "=================================================="
+	@echo ""
+	@echo "[1/4] Cleaning..."
+	@$(MAKE) clean-claudekit
+	@echo ""
+	@echo "[2/4] Building..."
+	@$(MAKE) build-claudekit-plugin
+	@echo ""
+	@echo "[3/4] Validating plugin..."
+	@$(MAKE) validate-claudekit
 	@echo ""
 	@echo "[4/4] Validating marketplace..."
 	@$(MAKE) lint
