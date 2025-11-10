@@ -68,11 +68,13 @@ mkdir -p "${PLUGIN_DIR}/.claude-plugin"
 echo "[4/7] Copying ClaudeKit Skills components..."
 rsync -av --exclude='.gitignore' "${SOURCE_DIR}/" "${PLUGIN_DIR}/"
 
-# Count skills
+# Count components
 SKILLS_COUNT=$(find "${PLUGIN_DIR}/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+COMMANDS_COUNT=$(find "${PLUGIN_DIR}/commands" -name "*.md" -type f 2>/dev/null | wc -l)
+AGENTS_COUNT=$(find "${PLUGIN_DIR}/agents" -name "*.md" -type f 2>/dev/null | wc -l)
 
 # Get list of skills for plugin manifest
-echo "[5/7] Discovering skills..."
+echo "[5/9] Discovering skills..."
 SKILLS_LIST=()
 if [ -d "${PLUGIN_DIR}/skills" ]; then
   while IFS= read -r -d '' skill_dir; do
@@ -84,13 +86,13 @@ fi
 # Join skills array with commas
 SKILLS_JSON=$(IFS=,; echo "${SKILLS_LIST[*]}")
 
-# Create plugin.json with skills array
-echo "[6/7] Creating plugin manifest..."
+# Create plugin.json with all components
+echo "[6/9] Creating plugin manifest..."
 cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
 {
   "name": "claudekit-skills",
   "version": "${VERSION}",
-  "description": "ClaudeKit Skills - Comprehensive collection of specialized agent skills for authentication, AI/ML, web development, cloud platforms, databases, debugging, documentation, problem-solving, and more",
+  "description": "ClaudeKit Skills - Comprehensive collection of specialized agent skills, commands, and agents for authentication, AI/ML, web development, cloud platforms, databases, debugging, documentation, problem-solving, and more",
   "author": {
     "name": "mrgoonie",
     "url": "https://github.com/mrgoonie"
@@ -101,6 +103,7 @@ cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
   "keywords": [
     "skills",
     "agents",
+    "commands",
     "authentication",
     "ai-ml",
     "web-development",
@@ -109,7 +112,9 @@ cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
     "debugging",
     "documentation",
     "problem-solving",
-    "productivity"
+    "productivity",
+    "git",
+    "mcp"
   ],
   "skills": [
     ${SKILLS_JSON}
@@ -117,8 +122,20 @@ cat > "${PLUGIN_DIR}/.claude-plugin/plugin.json" <<JSONEOF
 }
 JSONEOF
 
+# Create commands index if commands exist
+if [ ${COMMANDS_COUNT} -gt 0 ]; then
+  echo "[7/9] Indexing commands..."
+  # Commands are already in place, just need to be referenced by Claude Code
+fi
+
+# Create agents index if agents exist
+if [ ${AGENTS_COUNT} -gt 0 ]; then
+  echo "[8/9] Indexing agents..."
+  # Agents are already in place, just need to be referenced by Claude Code
+fi
+
 # Cleanup
-echo "[7/7] Cleaning up..."
+echo "[9/9] Cleaning up..."
 rm -rf "${TMP_DIR}"
 
 # Summary
@@ -129,6 +146,8 @@ echo "=============================================="
 echo ""
 echo "Plugin Location: ${PLUGIN_DIR}"
 echo "Skills: ${SKILLS_COUNT}"
+echo "Commands: ${COMMANDS_COUNT}"
+echo "Agents: ${AGENTS_COUNT}"
 echo ""
 echo "Skill Categories:"
 echo "  - Authentication & Security"
@@ -148,8 +167,21 @@ echo "  - Problem-Solving Frameworks"
 echo "  - Advanced Reasoning"
 echo "  - Meta Skills"
 echo ""
+echo ""
+echo "Components:"
+echo "  Commands:"
+[ ${COMMANDS_COUNT} -gt 0 ] && find "${PLUGIN_DIR}/commands" -name "*.md" -type f | while read cmd; do
+  echo "    - $(basename $(dirname $cmd))/$(basename $cmd .md)" | sed 's|^\./||'
+done
+echo "  Agents:"
+[ ${AGENTS_COUNT} -gt 0 ] && find "${PLUGIN_DIR}/agents" -name "*.md" -type f | while read agent; do
+  echo "    - $(basename $agent .md)"
+done
+echo ""
 echo "Next Steps:"
 echo "  1. Validate: make validate-claudekit"
 echo "  2. Install: claude plugin install ${PLUGIN_DIR}"
-echo "  3. Browse skills: Available via skill selector in Claude Code"
+echo "  3. Use commands: /use-mcp, /skill:create, /git:cm, /git:cp, /git:pr"
+echo "  4. Use agents: Available via Task tool"
+echo "  5. Browse skills: Available via skill selector"
 echo ""
