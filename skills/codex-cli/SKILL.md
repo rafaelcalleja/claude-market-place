@@ -1,5 +1,5 @@
 ---
-name: codex
+name: codex-cli
 description: Use when the user asks to run Codex CLI (codex exec, codex resume) or references OpenAI Codex for code analysis, refactoring, or automated editing
 ---
 

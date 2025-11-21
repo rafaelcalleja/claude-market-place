@@ -78,7 +78,7 @@
     {
       "name": "example-skills",
       "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, visual design, algorithmic art, internal communications, web testing, artifact building, Slack GIFs, and theme styling",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "source": "./skills/",
       "strict": false,
       "skills": [
