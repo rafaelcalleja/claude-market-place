@@ -1,6 +1,6 @@
 {
   "name": "custom-hooks",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Custom UserPromptSubmit hook that adds AskUserQuestion reminder to all prompts",
   "author": {
     "name": "Rafael Calleja"

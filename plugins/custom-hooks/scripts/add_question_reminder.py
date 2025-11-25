@@ -13,8 +13,12 @@ try:
     # Extraer el prompt del usuario (opcional, solo para validación)
     prompt = input_data.get("prompt", "")
 
-    # El recordatorio que se añadirá al final del prompt
-    reminder = "\n\nSi tienes dudas usa la tool AskUserQuestion"
+    # Checklist de recordatorios
+    reminder = """
+
+Pregunta al usuario usando la tool AskUserQuestion para:
+- [ ] Validar cualquier decision o supuesto
+- [ ] Resolver dudas"""
 
     # Método simple: imprimir el recordatorio
     # Para UserPromptSubmit, el stdout con exit code 0 se añade como contexto
