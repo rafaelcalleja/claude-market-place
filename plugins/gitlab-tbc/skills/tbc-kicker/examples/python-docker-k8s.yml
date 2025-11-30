@@ -1,0 +1,73 @@
+# Python Microservice with Docker and Kubernetes Deployment
+# This configuration demonstrates a complete CI/CD pipeline for:
+# - Python application with pytest testing
+# - Security scanning with Bandit and Trivy
+# - Docker image building with Kaniko
+# - Kubernetes deployment using Helm
+# - SonarQube code analysis
+
+include:
+  # Python build template
+  - component: $CI_SERVER_FQDN/to-be-continuous/python/python@5
+    inputs:
+      image: "python:3.12-slim"
+      build-system: "poetry"
+      pytest-enabled: true
+      pytest-opts: "--cov=src --cov-report=xml --cov-report=html"
+      bandit-enabled: true
+      ruff-enabled: true
+      mypy-enabled: true
+      sbom-disabled: false
+
+  # SonarQube analysis
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@5
+    inputs:
+      sonar-url: "https://sonarqube.example.com"
+      project-key: "my-python-service"
+      quality-gate-enabled: true
+
+  # Docker packaging with Kaniko
+  - component: $CI_SERVER_FQDN/to-be-continuous/docker/docker@6
+    inputs:
+      build-tool: "kaniko"
+      file: "Dockerfile"
+      snapshot-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+      release-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+      trivy-enabled: true
+      cosign-when: "onrelease"
+      hadolint-disabled: false
+
+  # Helm deployment to Kubernetes
+  - component: $CI_SERVER_FQDN/to-be-continuous/helm/helm@5
+    inputs:
+      chart-dir: "charts/my-service"
+      values-file: "charts/my-service/values.yaml"
+      lint-disabled: false
+      kubescore-enabled: true
+      review-namespace: "review-$CI_COMMIT_REF_SLUG"
+      review-autostop-duration: "4 hours"
+      integ-namespace: "integration"
+      staging-namespace: "staging"
+      prod-namespace: "production"
+      prod-deploy-strategy: "manual"
+
+  # Semantic release for versioning
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@5
+    inputs:
+      changelog-enabled: true
+      auto-release: true
+
+# Secret variables - define in GitLab CI/CD settings
+# SONAR_TOKEN: SonarQube authentication token
+# DOCKER_REGISTRY_PASSWORD: Container registry password
+# K8S_TOKEN: Kubernetes service account token
+
+variables:
+  # Python configuration
+  PYTHON_PROJECT_DIR: "."
+
+  # Helm values per environment
+  HELM_REVIEW_VALUES_FILE: "charts/my-service/values-review.yaml"
+  HELM_INTEG_VALUES_FILE: "charts/my-service/values-integration.yaml"
+  HELM_STAGING_VALUES_FILE: "charts/my-service/values-staging.yaml"
+  HELM_PROD_VALUES_FILE: "charts/my-service/values-production.yaml"

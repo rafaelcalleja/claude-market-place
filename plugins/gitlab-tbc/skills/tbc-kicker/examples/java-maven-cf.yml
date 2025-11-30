@@ -1,0 +1,86 @@
+# Java Maven Application with Cloud Foundry Deployment
+# This configuration demonstrates:
+# - Maven build with Java 21
+# - SonarQube code analysis
+# - Dependency check security scanning
+# - Maven artifact deployment to Nexus
+# - Cloud Foundry deployment with zero-downtime
+
+include:
+  # Maven build template
+  - component: $CI_SERVER_FQDN/to-be-continuous/maven/maven@6
+    inputs:
+      image: "maven:3.9-eclipse-temurin-21"
+      project-dir: "."
+      build-args: "clean verify"
+      # Code quality
+      sonar-enabled: true
+      sonar-args: "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
+      quality-gate-enabled: true
+      # Security
+      dependency-check-enabled: true
+      snapshot-check-disabled: false
+      # SBOM
+      sbom-disabled: false
+      # Deployment
+      deploy-enabled: true
+      deploy-protected-only: true
+
+  # SonarQube server configuration
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@5
+    inputs:
+      sonar-url: "https://sonarqube.example.com"
+      project-key: "com.example:my-java-app"
+      quality-gate-enabled: true
+
+  # Cloud Foundry deployment
+  - component: $CI_SERVER_FQDN/to-be-continuous/cf/cf@6
+    inputs:
+      manifest-file: "manifest"
+      api-url: "https://api.cf.example.com"
+      org: "my-organization"
+      base-app-name: "my-java-app"
+      native-zerodowntime: true
+      # Review environment
+      review-space: "development"
+      review-domain: "apps.cf-dev.example.com"
+      review-autostop-duration: "4 hours"
+      # Integration environment
+      integ-space: "integration"
+      integ-domain: "apps.cf-dev.example.com"
+      integ-zerodowntime-enabled: true
+      # Staging environment
+      staging-space: "staging"
+      staging-domain: "apps.cf-staging.example.com"
+      staging-zerodowntime-enabled: true
+      # Production environment
+      prod-space: "production"
+      prod-domain: "apps.cf.example.com"
+      prod-zerodowntime-enabled: true
+      prod-deploy-strategy: "manual"
+
+  # Semantic release
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@5
+    inputs:
+      release-enabled: true
+      auto-release: false
+
+# Secret variables - define in GitLab CI/CD settings
+# SONAR_TOKEN: SonarQube authentication token
+# MVN_DEPLOY_USERNAME: Nexus username
+# MVN_DEPLOY_PASSWORD: Nexus password
+# CF_USERNAME: Cloud Foundry username
+# CF_PASSWORD: Cloud Foundry password
+
+variables:
+  # Maven configuration
+  MAVEN_OPTS: "-Xmx1024m -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+  # Maven settings for Nexus
+  MVN_SETTINGS_FILE: ".mvn/settings.xml"
+
+  # JaCoCo coverage for SonarQube
+  MVN_BUILD_ARGS: "clean verify jacoco:report"
+
+  # Cloud Foundry manifest files per environment
+  # manifest-review.yml, manifest-integration.yml, manifest-staging.yml, manifest-production.yml
