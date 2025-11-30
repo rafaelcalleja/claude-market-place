@@ -1,0 +1,139 @@
+# Sample GitLab CI/CD Pipeline
+# Demonstrates AWS CLI component usage for S3 + CloudFront deployment
+
+stages:
+  - build
+  - deploy
+  - verify
+
+variables:
+  # S3 bucket configuration
+  S3_BUCKET: "my-static-website"
+  CLOUDFRONT_DISTRIBUTION_ID: "E1234567890ABC"
+
+# =============================================================================
+# Build Stage - Build static website
+# =============================================================================
+
+build-website:
+  stage: build
+  image: node:18-alpine
+  script:
+    - echo "Installing dependencies..."
+    - npm ci
+    - echo "Building static website..."
+    - npm run build
+    - echo "Build completed successfully"
+    - ls -lah dist/
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  only:
+    - branches
+    - tags
+
+# =============================================================================
+# Deploy Stage - Deploy to AWS using OIDC variant
+# =============================================================================
+
+include:
+  # Use OIDC variant for secure, keyless authentication
+  - component: $CI_SERVER_FQDN/to-be-continuous/awscli/gitlab-ci-awscli-oidc@1.0.0
+    inputs:
+      # AWS region
+      aws-region: "us-east-1"
+
+      # OIDC role ARNs per environment
+      oidc-role-arn: "arn:aws:iam::123456789012:role/GitLabCI-Staging"
+      production-oidc-role-arn: "arn:aws:iam::123456789012:role/GitLabCI-Production"
+
+      # Install jq for JSON parsing
+      install-extras: "jq"
+
+      # Use deployment script file
+      script-file: "./scripts/deploy.sh"
+
+      # Export outputs for verification job
+      export-outputs: true
+
+# Override default job to add dependencies and environment
+awscli-execute:
+  stage: deploy
+  needs:
+    - build-website
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    url: https://${S3_BUCKET}.s3-website-us-east-1.amazonaws.com
+    on_stop: cleanup-review
+  only:
+    - main
+    - production
+    - /^feature\/.*$/
+
+# =============================================================================
+# Deploy Stage - Cleanup review environments
+# =============================================================================
+
+cleanup-review:
+  stage: deploy
+  image: amazon/aws-cli:latest
+  id_tokens:
+    AWS_JWT:
+      aud: "$CI_SERVER_URL"
+  variables:
+    AWS_DEFAULT_REGION: "us-east-1"
+    AWSCLI_OIDC_ROLE_ARN: "arn:aws:iam::123456789012:role/GitLabCI-Staging"
+  before_script:
+    # Assume role using OIDC
+    - |
+      CREDENTIALS=$(aws sts assume-role-with-web-identity \
+        --role-arn "$AWSCLI_OIDC_ROLE_ARN" \
+        --role-session-name "gitlab-ci-cleanup-${CI_PIPELINE_ID}" \
+        --web-identity-token "$AWS_JWT" \
+        --duration-seconds 900 \
+        --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+  script:
+    - echo "Cleaning up review environment S3 objects..."
+    - |
+      # Delete all objects in the review environment prefix
+      aws s3 rm s3://${S3_BUCKET}/${CI_ENVIRONMENT_SLUG}/ --recursive
+    - echo "Review environment cleaned up"
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    action: stop
+  when: manual
+  only:
+    - /^feature\/.*$/
+
+# =============================================================================
+# Verify Stage - Smoke tests
+# =============================================================================
+
+verify-deployment:
+  stage: verify
+  image: curlimages/curl:latest
+  needs:
+    - awscli-execute
+  script:
+    - echo "Verifying deployment..."
+    - echo "S3 website URL: ${website_url}"
+    - echo "CloudFront URL: ${cloudfront_url}"
+
+    - echo "Testing S3 direct access..."
+    - curl -f -I "${website_url}" || exit 1
+
+    - echo "Testing CloudFront distribution..."
+    - curl -f -I "${cloudfront_url}" || exit 1
+
+    - echo "Checking for critical assets..."
+    - curl -f "${cloudfront_url}/index.html" | grep -q "<title>" || exit 1
+    - curl -f "${cloudfront_url}/css/main.css" > /dev/null || exit 1
+
+    - echo "✓ Deployment verification successful"
+  only:
+    - main
+    - production

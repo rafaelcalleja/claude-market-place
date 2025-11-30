@@ -1,0 +1,357 @@
+# Component: awscli (OIDC variant)
+# Version: 1.0.0
+# Description: AWS CLI component with OIDC authentication for temporary credentials
+# Documentation: https://to-be-continuous.gitlab.io/doc/ref/awscli
+
+spec:
+  inputs:
+    # Docker image configuration
+    cli-image:
+      description: "Docker image containing AWS CLI"
+      type: string
+      default: "amazon/aws-cli:latest"
+
+    # AWS region configuration
+    aws-region:
+      description: "AWS region for operations"
+      type: string
+      default: "us-east-1"
+
+    # OIDC authentication configuration
+    oidc-aud:
+      description: "OIDC audience claim (typically GitLab URL)"
+      type: string
+      default: "$CI_SERVER_URL"
+
+    oidc-role-arn:
+      description: "Default IAM role ARN to assume via OIDC"
+      type: string
+
+    # Environment-specific role overrides
+    review-oidc-role-arn:
+      description: "IAM role ARN for review environments (overrides default)"
+      type: string
+      default: ""
+
+    integration-oidc-role-arn:
+      description: "IAM role ARN for integration environment (overrides default)"
+      type: string
+      default: ""
+
+    staging-oidc-role-arn:
+      description: "IAM role ARN for staging environment (overrides default)"
+      type: string
+      default: ""
+
+    production-oidc-role-arn:
+      description: "IAM role ARN for production environment (overrides default)"
+      type: string
+      default: ""
+
+    # Additional role assumption configuration
+    role-session-name:
+      description: "Session name when assuming role"
+      type: string
+      default: "gitlab-ci-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
+
+    role-duration:
+      description: "Duration in seconds for assumed role credentials (900-43200)"
+      type: number
+      default: 3600
+
+    external-id:
+      description: "External ID for role assumption (optional, for additional security)"
+      type: string
+      default: ""
+
+    # Script execution configuration
+    script-file:
+      description: "Path to AWS CLI script to execute (relative to repository root)"
+      type: string
+      default: ""
+
+    script-inline:
+      description: "Inline AWS CLI commands to execute (alternative to script-file)"
+      type: string
+      default: ""
+
+    # Output configuration
+    export-outputs:
+      description: "Export AWS outputs to dotenv artifact for downstream jobs"
+      type: boolean
+      default: true
+
+    # Advanced configuration
+    debug-mode:
+      description: "Enable AWS CLI debug output"
+      type: boolean
+      default: false
+
+    install-extras:
+      description: "Space-separated list of additional tools to install (e.g., 'jq yq')"
+      type: string
+      default: ""
+
+# Reusable script library
+.awscli-oidc-scripts: &awscli-oidc-scripts
+  - |
+    # Logging functions with ANSI colors
+    log_info() { echo -e "\033[1;34m[INFO]\033[0m $*"; }
+    log_warn() { echo -e "\033[1;33m[WARN]\033[0m $*"; }
+    log_error() { echo -e "\033[1;31m[ERROR]\033[0m $*"; }
+    log_success() { echo -e "\033[1;32m[SUCCESS]\033[0m $*"; }
+
+    # Detect package manager for multi-distro compatibility
+    detect_package_manager() {
+      if command -v apt-get &> /dev/null; then
+        echo "apt-get"
+      elif command -v yum &> /dev/null; then
+        echo "yum"
+      elif command -v apk &> /dev/null; then
+        echo "apk"
+      else
+        log_error "No supported package manager found"
+        return 1
+      fi
+    }
+
+    # Install additional tools if requested
+    install_extras() {
+      if [[ -n "$AWSCLI_INSTALL_EXTRAS" ]]; then
+        log_info "Installing additional tools: $AWSCLI_INSTALL_EXTRAS"
+        local pkg_mgr=$(detect_package_manager)
+
+        case $pkg_mgr in
+          apt-get)
+            apt-get update -qq
+            apt-get install -y -qq $AWSCLI_INSTALL_EXTRAS
+            ;;
+          yum)
+            yum install -y -q $AWSCLI_INSTALL_EXTRAS
+            ;;
+          apk)
+            apk add --no-cache $AWSCLI_INSTALL_EXTRAS
+            ;;
+        esac
+
+        log_success "Additional tools installed"
+      fi
+    }
+
+    # Determine environment-specific role ARN
+    get_effective_role_arn() {
+      local effective_role=""
+
+      # Determine environment based on CI/CD context
+      case "$CI_ENVIRONMENT_NAME" in
+        production)
+          effective_role="${AWSCLI_PRODUCTION_OIDC_ROLE_ARN:-$AWSCLI_OIDC_ROLE_ARN}"
+          ;;
+        staging)
+          effective_role="${AWSCLI_STAGING_OIDC_ROLE_ARN:-$AWSCLI_OIDC_ROLE_ARN}"
+          ;;
+        integration)
+          effective_role="${AWSCLI_INTEGRATION_OIDC_ROLE_ARN:-$AWSCLI_OIDC_ROLE_ARN}"
+          ;;
+        review/*)
+          effective_role="${AWSCLI_REVIEW_OIDC_ROLE_ARN:-$AWSCLI_OIDC_ROLE_ARN}"
+          ;;
+        *)
+          effective_role="$AWSCLI_OIDC_ROLE_ARN"
+          ;;
+      esac
+
+      if [[ -z "$effective_role" ]]; then
+        log_error "No role ARN configured for environment: ${CI_ENVIRONMENT_NAME:-default}"
+        return 1
+      fi
+
+      echo "$effective_role"
+    }
+
+    # Assume IAM role using OIDC (AssumeRoleWithWebIdentity)
+    assume_role_with_oidc() {
+      if [[ -z "$AWS_JWT" ]]; then
+        log_error "OIDC JWT token not found (AWS_JWT variable)"
+        log_error "Ensure GitLab OIDC is properly configured in the job"
+        return 1
+      fi
+
+      local role_arn=$(get_effective_role_arn)
+      if [[ $? -ne 0 ]]; then
+        return 1
+      fi
+
+      log_info "Assuming role via OIDC: $role_arn"
+      log_info "Session name: $AWSCLI_ROLE_SESSION_NAME"
+      log_info "Duration: $AWSCLI_ROLE_DURATION seconds"
+      log_info "Environment: ${CI_ENVIRONMENT_NAME:-default}"
+
+      # Build assume-role command
+      local assume_cmd=(
+        aws sts assume-role-with-web-identity
+        --role-arn "$role_arn"
+        --role-session-name "$AWSCLI_ROLE_SESSION_NAME"
+        --web-identity-token "$AWS_JWT"
+        --duration-seconds "$AWSCLI_ROLE_DURATION"
+      )
+
+      # Add external ID if provided (additional security layer)
+      if [[ -n "$AWSCLI_EXTERNAL_ID" ]]; then
+        log_info "Using external ID for additional security"
+        assume_cmd+=(--external-id "$AWSCLI_EXTERNAL_ID")
+      fi
+
+      assume_cmd+=(--output json)
+
+      # Execute assume role
+      local assume_output
+      assume_output=$("${assume_cmd[@]}" 2>&1)
+
+      if [[ $? -ne 0 ]]; then
+        log_error "Failed to assume role with OIDC"
+        log_error "$assume_output"
+        return 1
+      fi
+
+      # Extract temporary credentials from JSON response
+      export AWS_ACCESS_KEY_ID=$(echo "$assume_output" | grep -o '"AccessKeyId": "[^"]*' | cut -d'"' -f4)
+      export AWS_SECRET_ACCESS_KEY=$(echo "$assume_output" | grep -o '"SecretAccessKey": "[^"]*' | cut -d'"' -f4)
+      export AWS_SESSION_TOKEN=$(echo "$assume_output" | grep -o '"SessionToken": "[^"]*' | cut -d'"' -f4)
+
+      if [[ -z "$AWS_ACCESS_KEY_ID" ]] || [[ -z "$AWS_SECRET_ACCESS_KEY" ]] || [[ -z "$AWS_SESSION_TOKEN" ]]; then
+        log_error "Failed to extract credentials from assume-role response"
+        return 1
+      fi
+
+      # Verify assumed role identity
+      local assumed_identity=$(aws sts get-caller-identity --output json 2>&1)
+      if [[ $? -ne 0 ]]; then
+        log_error "Failed to verify assumed role identity"
+        log_error "$assumed_identity"
+        return 1
+      fi
+
+      local assumed_arn=$(echo "$assumed_identity" | grep -o '"Arn": "[^"]*' | cut -d'"' -f4)
+      local assumed_account=$(echo "$assumed_identity" | grep -o '"Account": "[^"]*' | cut -d'"' -f4)
+
+      log_success "Successfully assumed role via OIDC"
+      log_info "Identity: $assumed_arn"
+      log_info "Account: $assumed_account"
+
+      return 0
+    }
+
+    # Execute AWS CLI script
+    execute_aws_script() {
+      if [[ -n "$AWSCLI_SCRIPT_FILE" ]]; then
+        if [[ ! -f "$AWSCLI_SCRIPT_FILE" ]]; then
+          log_error "Script file not found: $AWSCLI_SCRIPT_FILE"
+          return 1
+        fi
+
+        log_info "Executing script file: $AWSCLI_SCRIPT_FILE"
+        chmod +x "$AWSCLI_SCRIPT_FILE"
+        bash -e "$AWSCLI_SCRIPT_FILE"
+
+      elif [[ -n "$AWSCLI_SCRIPT_INLINE" ]]; then
+        log_info "Executing inline script"
+        bash -e -c "$AWSCLI_SCRIPT_INLINE"
+
+      else
+        log_warn "No script specified (neither script-file nor script-inline)"
+        log_info "AWS CLI is ready for manual commands"
+        return 0
+      fi
+    }
+
+    # Export outputs to dotenv artifact
+    export_outputs() {
+      if [[ "$AWSCLI_EXPORT_OUTPUTS" != "true" ]]; then
+        return 0
+      fi
+
+      log_info "Exporting outputs to awscli.env"
+
+      {
+        echo "# AWS CLI Component Outputs (OIDC)"
+        echo "awscli_region=${AWS_DEFAULT_REGION}"
+        echo "awscli_executed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "awscli_auth_method=oidc"
+
+        local effective_role=$(get_effective_role_arn 2>/dev/null)
+        if [[ -n "$effective_role" ]]; then
+          echo "awscli_assumed_role=${effective_role}"
+        fi
+
+        if [[ -n "$CI_ENVIRONMENT_NAME" ]]; then
+          echo "awscli_environment=${CI_ENVIRONMENT_NAME}"
+        fi
+
+        # Allow user scripts to add custom outputs by writing to awscli-custom.env
+        if [[ -f "awscli-custom.env" ]]; then
+          log_info "Appending custom outputs from awscli-custom.env"
+          cat awscli-custom.env
+        fi
+      } > awscli.env
+
+      log_success "Outputs exported to awscli.env"
+    }
+
+# Hidden base job - extended by all component jobs
+.awscli-oidc-base:
+  image: $[[ inputs.cli-image ]]
+  tags:
+    - docker
+  id_tokens:
+    AWS_JWT:
+      aud: "$[[ inputs.oidc-aud ]]"
+  variables:
+    # Map inputs to variables for backward compatibility and script access
+    AWSCLI_REGION: $[[ inputs.aws-region ]]
+    AWSCLI_OIDC_AUD: $[[ inputs.oidc-aud ]]
+    AWSCLI_OIDC_ROLE_ARN: $[[ inputs.oidc-role-arn ]]
+    AWSCLI_REVIEW_OIDC_ROLE_ARN: $[[ inputs.review-oidc-role-arn ]]
+    AWSCLI_INTEGRATION_OIDC_ROLE_ARN: $[[ inputs.integration-oidc-role-arn ]]
+    AWSCLI_STAGING_OIDC_ROLE_ARN: $[[ inputs.staging-oidc-role-arn ]]
+    AWSCLI_PRODUCTION_OIDC_ROLE_ARN: $[[ inputs.production-oidc-role-arn ]]
+    AWSCLI_ROLE_SESSION_NAME: $[[ inputs.role-session-name ]]
+    AWSCLI_ROLE_DURATION: $[[ inputs.role-duration ]]
+    AWSCLI_EXTERNAL_ID: $[[ inputs.external-id ]]
+    AWSCLI_SCRIPT_FILE: $[[ inputs.script-file ]]
+    AWSCLI_SCRIPT_INLINE: $[[ inputs.script-inline ]]
+    AWSCLI_EXPORT_OUTPUTS: $[[ inputs.export-outputs ]]
+    AWSCLI_DEBUG_MODE: $[[ inputs.debug-mode ]]
+    AWSCLI_INSTALL_EXTRAS: $[[ inputs.install-extras ]]
+
+    # AWS CLI environment variables
+    AWS_DEFAULT_REGION: $[[ inputs.aws-region ]]
+    AWS_REGION: $[[ inputs.aws-region ]]
+
+    # Enable debug mode if requested
+    AWS_DEBUG: "$([[ \"$AWSCLI_DEBUG_MODE\" == \"true\" ]] && echo \"1\" || echo \"\")"
+  before_script:
+    - *awscli-oidc-scripts
+    - install_extras
+    - assume_role_with_oidc
+  rules:
+    - !reference [.tbc-workflow-rules, skip-back-merge]
+    - !reference [.tbc-workflow-rules, prefer-mr-pipeline]
+    - !reference [.tbc-workflow-rules, extended-skip-ci]
+
+# Main AWS CLI execution job
+awscli-execute:
+  stage: deploy
+  extends: .awscli-oidc-base
+  script:
+    - execute_aws_script
+    - export_outputs
+  artifacts:
+    reports:
+      dotenv: awscli.env
+    paths:
+      - awscli.env
+    expire_in: 1 week
+    when: always
+  rules:
+    - when: on_success

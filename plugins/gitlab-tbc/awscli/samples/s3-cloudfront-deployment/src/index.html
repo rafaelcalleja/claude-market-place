@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS CLI Component Sample - S3 + CloudFront</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 AWS CLI Component Demo</h1>
+            <p class="subtitle">Deployed with to-be-continuous AWS CLI component</p>
+        </header>
+
+        <main>
+            <section class="info-card">
+                <h2>✅ Deployment Successful</h2>
+                <p>This static website was deployed to AWS S3 and distributed via CloudFront using the <strong>AWS CLI component</strong> for GitLab CI/CD.</p>
+            </section>
+
+            <section class="features">
+                <h2>Key Features Demonstrated</h2>
+                <div class="feature-grid">
+                    <div class="feature">
+                        <h3>🔐 OIDC Authentication</h3>
+                        <p>No long-lived AWS credentials needed - uses OpenID Connect for temporary credentials</p>
+                    </div>
+                    <div class="feature">
+                        <h3>⚡ Optimized Caching</h3>
+                        <p>Smart cache headers per file type (HTML: no-cache, CSS/JS: 1 year, images: 30 days)</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🌍 CloudFront CDN</h3>
+                        <p>Global content delivery with automatic cache invalidation on deployment</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🔄 Environment-Specific</h3>
+                        <p>Different IAM roles for staging vs production environments</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="deployment-info">
+                <h2>Deployment Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Component:</strong>
+                        <code>to-be-continuous/awscli</code>
+                    </div>
+                    <div class="info-item">
+                        <strong>Variant:</strong>
+                        <code>OIDC</code>
+                    </div>
+                    <div class="info-item">
+                        <strong>Target:</strong>
+                        <code>AWS S3 + CloudFront</code>
+                    </div>
+                    <div class="info-item">
+                        <strong>Pipeline:</strong>
+                        <code>GitLab CI/CD</code>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cta">
+                <h2>Learn More</h2>
+                <p>Explore the component documentation and samples:</p>
+                <div class="button-group">
+                    <a href="https://to-be-continuous.gitlab.io/doc/ref/awscli" class="button primary">Documentation</a>
+                    <a href="https://gitlab.com/to-be-continuous/awscli" class="button secondary">Source Code</a>
+                    <a href="https://github.com/to-be-continuous" class="button secondary">GitHub</a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>
+                Built with ❤️ by <a href="https://to-be-continuous.io">to-be-continuous</a> |
+                <a href="https://gitlab.com/to-be-continuous/awscli">View on GitLab</a>
+            </p>
+            <p class="version">Component Version: 1.0.0</p>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

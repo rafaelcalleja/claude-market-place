@@ -1,0 +1,24 @@
+{
+  "name": "s3-cloudfront-deployment-sample",
+  "version": "1.0.0",
+  "description": "Sample static website for AWS CLI component demonstration",
+  "scripts": {
+    "build": "mkdir -p dist && npm run build:html && npm run build:css && npm run build:js && npm run build:assets",
+    "build:html": "cp src/index.html dist/",
+    "build:css": "mkdir -p dist/css && cp src/css/*.css dist/css/",
+    "build:js": "mkdir -p dist/js && cp src/js/*.js dist/js/",
+    "build:assets": "if [ -d src/images ]; then mkdir -p dist/images && cp -r src/images/* dist/images/; fi",
+    "dev": "python3 -m http.server 8000 --directory src",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "cloudfront",
+    "static-site",
+    "gitlab-ci"
+  ],
+  "author": "to-be-continuous",
+  "license": "MIT",
+  "devDependencies": {}
+}

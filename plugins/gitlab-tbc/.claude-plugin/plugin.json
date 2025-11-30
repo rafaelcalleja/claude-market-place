@@ -1,0 +1,18 @@
+{
+  "name": "gitlab-tbc",
+  "version": "0.3.1",
+  "description": "Interactive guide for building GitLab CI/CD pipelines with to-be-continuous templates (conversational, step-by-step, real examples) and creating compatible components",
+  "author": {
+    "name": "GitLab TBC Contributors"
+  },
+  "keywords": [
+    "gitlab",
+    "ci-cd",
+    "to-be-continuous",
+    "pipeline",
+    "templates",
+    "devops",
+    "component-creation"
+  ],
+  "homepage": "https://to-be-continuous.gitlab.io/doc"
+}

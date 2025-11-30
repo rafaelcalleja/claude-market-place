@@ -1,0 +1,61 @@
+# Vault Variant Example
+# Shows how to create a -vault variant with external secret management
+
+spec:
+  inputs:
+    app-name:
+      description: "Application name"
+      type: string
+
+    # Vault-specific inputs
+    vault-addr:
+      description: "Vault server address"
+      type: string
+      default: "https://vault.example.com"
+
+    vault-role:
+      description: "Vault role for authentication"
+      type: string
+      default: "gitlab-ci"
+
+    vault-secret-path:
+      description: "Path to secrets in Vault"
+      type: string
+
+# Reusable scripts
+.scripts: &vault-scripts
+  - |
+    log_info() { echo -e "\033[1;34m[INFO]\033[0m $*"; }
+    log_warn() { echo -e "\033[1;33m[WARN]\033[0m $*"; }
+
+# Hidden base job
+.example-vault-base:
+  image: alpine:latest
+  variables:
+    EXAMPLE_APP_NAME: $[[ inputs.app-name ]]
+    VAULT_ADDR: $[[ inputs.vault-addr ]]
+    VAULT_ROLE: $[[ inputs.vault-role ]]
+    VAULT_SECRET_PATH: $[[ inputs.vault-secret-path ]]
+
+    # Fetch secrets from Vault using @url@ syntax
+    REGISTRY_TOKEN: '@url@http://vault-secrets-provider/api/secrets/$[[ inputs.vault-secret-path ]]?field=registry_token'
+    DEPLOY_KEY: '@url@http://vault-secrets-provider/api/secrets/$[[ inputs.vault-secret-path ]]?field=deploy_key'
+
+  before_script:
+    - *vault-scripts
+  rules:
+    - !reference [.tbc-workflow-rules, skip-back-merge]
+    - !reference [.tbc-workflow-rules, prefer-mr-pipeline]
+    - !reference [.tbc-workflow-rules, extended-skip-ci]
+
+# Job using Vault secrets
+example-deploy-vault:
+  stage: deploy
+  extends: .example-vault-base
+  script:
+    - log_info "Deploying $EXAMPLE_APP_NAME using Vault secrets"
+    # REGISTRY_TOKEN and DEPLOY_KEY will be automatically fetched from Vault
+    - echo "Registry token length: ${#REGISTRY_TOKEN}"
+    - log_info "Deployment complete"
+  rules:
+    - when: on_success

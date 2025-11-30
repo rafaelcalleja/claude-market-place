@@ -1,0 +1,282 @@
+# GitLab CI/CD configuration for AWS CLI component
+# This pipeline tests the component itself before release
+
+stages:
+  - lint
+  - test
+  - validate
+  - publish
+
+variables:
+  # Semantic release configuration
+  SEMREL_AUTO_RELEASE_ENABLED: "true"
+  SEMREL_INFO_ON: "always"
+
+# =============================================================================
+# Linting Stage
+# =============================================================================
+
+yaml-lint:
+  stage: lint
+  image: cytopia/yamllint:latest
+  script:
+    - yamllint --version
+    - yamllint -f colored templates/gitlab-ci-awscli.yml
+    - yamllint -f colored templates/gitlab-ci-awscli-oidc.yml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+markdown-lint:
+  stage: lint
+  image: davidanson/markdownlint-cli2:latest
+  script:
+    - markdownlint-cli2 --version
+    - markdownlint-cli2 "**/*.md" "#node_modules"
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# =============================================================================
+# Testing Stage - Standard Variant
+# =============================================================================
+
+test-standard-basic:
+  stage: test
+  image: amazon/aws-cli:latest
+  before_script:
+    # Mock AWS credentials for testing
+    - export AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+    - export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    - export AWS_DEFAULT_REGION="us-east-1"
+    # Note: This will fail on actual AWS calls, but tests script loading
+  script:
+    - echo "Testing standard variant basic functionality"
+    # Source the scripts to test function definitions
+    - |
+      source <(cat templates/gitlab-ci-awscli.yml | \
+        grep -A 200 '.awscli-scripts:' | \
+        grep -v '.awscli-scripts:' | \
+        grep -v 'before_script:' | \
+        head -n 100)
+    - echo "Testing logging functions"
+    - log_info "Test info message"
+    - log_warn "Test warning message"
+    - log_success "Test success message"
+    - echo "Testing package manager detection"
+    - detect_package_manager
+    - echo "All basic tests passed"
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - templates/gitlab-ci-awscli.yml
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+test-standard-integration:
+  stage: test
+  # This job would run against real AWS (requires credentials)
+  # Include only when AWS credentials are available
+  image: amazon/aws-cli:latest
+  script:
+    - |
+      if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+        echo "Skipping integration test - no AWS credentials configured"
+        exit 0
+      fi
+    - echo "Running integration test with real AWS API"
+    - aws sts get-caller-identity
+    - echo "Integration test passed"
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $AWS_ACCESS_KEY_ID'
+      changes:
+        - templates/gitlab-ci-awscli.yml
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $AWS_ACCESS_KEY_ID'
+
+# =============================================================================
+# Testing Stage - OIDC Variant
+# =============================================================================
+
+test-oidc-basic:
+  stage: test
+  image: amazon/aws-cli:latest
+  script:
+    - echo "Testing OIDC variant basic functionality"
+    # Source the scripts to test function definitions
+    - |
+      source <(cat templates/gitlab-ci-awscli-oidc.yml | \
+        grep -A 250 '.awscli-oidc-scripts:' | \
+        grep -v '.awscli-oidc-scripts:' | \
+        grep -v 'before_script:' | \
+        head -n 150)
+    - echo "Testing logging functions"
+    - log_info "Test info message"
+    - log_warn "Test warning message"
+    - log_success "Test success message"
+    - echo "Testing environment detection"
+    - export CI_ENVIRONMENT_NAME="staging"
+    - export AWSCLI_STAGING_OIDC_ROLE_ARN="arn:aws:iam::123456789012:role/Staging"
+    - export AWSCLI_OIDC_ROLE_ARN="arn:aws:iam::123456789012:role/Default"
+    - ROLE=$(get_effective_role_arn)
+    - echo "Detected role: $ROLE"
+    - test "$ROLE" = "arn:aws:iam::123456789012:role/Staging" || exit 1
+    - echo "All basic OIDC tests passed"
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - templates/gitlab-ci-awscli-oidc.yml
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+test-oidc-jwt-generation:
+  stage: test
+  image: amazon/aws-cli:latest
+  id_tokens:
+    TEST_JWT:
+      aud: "$CI_SERVER_URL"
+  script:
+    - echo "Testing GitLab JWT token generation"
+    - |
+      if [[ -n "$TEST_JWT" ]]; then
+        echo "JWT token generated successfully"
+        # Decode JWT header and payload (not signature)
+        echo "JWT Header:"
+        echo $TEST_JWT | cut -d'.' -f1 | base64 -d 2>/dev/null || echo "Cannot decode"
+        echo "JWT Payload:"
+        echo $TEST_JWT | cut -d'.' -f2 | base64 -d 2>/dev/null || echo "Cannot decode"
+      else
+        echo "WARNING: JWT token not generated (GitLab version may not support OIDC)"
+      fi
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# =============================================================================
+# Validation Stage
+# =============================================================================
+
+validate-spec-syntax:
+  stage: validate
+  image: python:3.11-slim
+  before_script:
+    - pip install pyyaml
+  script:
+    - echo "Validating YAML spec syntax"
+    - python3 -c "
+      import yaml;
+      import sys;
+
+      def validate_spec(file_path):
+          with open(file_path, 'r') as f:
+              data = yaml.safe_load(f)
+
+          if 'spec' not in data:
+              print(f'ERROR: No spec found in {file_path}')
+              return False
+
+          if 'inputs' not in data['spec']:
+              print(f'ERROR: No inputs in spec for {file_path}')
+              return False
+
+          print(f'✓ {file_path} has valid spec structure')
+
+          # Validate inputs
+          inputs = data['spec']['inputs']
+          for input_name, input_def in inputs.items():
+              if 'description' not in input_def:
+                  print(f'WARNING: Input {input_name} missing description')
+              if 'type' not in input_def:
+                  print(f'ERROR: Input {input_name} missing type')
+                  return False
+
+          print(f'✓ All inputs in {file_path} have required fields')
+          return True
+
+      results = [
+          validate_spec('templates/gitlab-ci-awscli.yml'),
+          validate_spec('templates/gitlab-ci-awscli-oidc.yml')
+      ]
+
+      sys.exit(0 if all(results) else 1)
+      "
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+validate-documentation:
+  stage: validate
+  image: alpine:latest
+  script:
+    - echo "Validating documentation completeness"
+    - |
+      # Check required files exist
+      test -f README.md || (echo "ERROR: README.md missing"; exit 1)
+      test -f CHANGELOG.md || (echo "ERROR: CHANGELOG.md missing"; exit 1)
+
+      # Check README sections
+      grep -q "## Overview" README.md || (echo "ERROR: README missing Overview section"; exit 1)
+      grep -q "## Variants" README.md || (echo "ERROR: README missing Variants section"; exit 1)
+      grep -q "## Inputs" README.md || (echo "ERROR: README missing Inputs section"; exit 1)
+      grep -q "## Jobs" README.md || (echo "ERROR: README missing Jobs section"; exit 1)
+      grep -q "## Usage Examples" README.md || (echo "ERROR: README missing Usage Examples"; exit 1)
+      grep -q "## AWS IAM Configuration" README.md || (echo "ERROR: README missing IAM Configuration"; exit 1)
+      grep -q "## Troubleshooting" README.md || (echo "ERROR: README missing Troubleshooting"; exit 1)
+
+      # Check CHANGELOG format
+      grep -q "## \[1.0.0\]" CHANGELOG.md || (echo "ERROR: CHANGELOG missing version 1.0.0"; exit 1)
+
+      echo "✓ Documentation validation passed"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+validate-component-structure:
+  stage: validate
+  image: alpine:latest
+  script:
+    - echo "Validating component directory structure"
+    - |
+      # Check required directory structure
+      test -d templates || (echo "ERROR: templates/ directory missing"; exit 1)
+
+      # Check required template files
+      test -f templates/gitlab-ci-awscli.yml || (echo "ERROR: Standard variant missing"; exit 1)
+      test -f templates/gitlab-ci-awscli-oidc.yml || (echo "ERROR: OIDC variant missing"; exit 1)
+
+      # Check component naming conventions
+      grep -q "Component: awscli" templates/gitlab-ci-awscli.yml || \
+        (echo "ERROR: Standard variant missing component header"; exit 1)
+      grep -q "Component: awscli" templates/gitlab-ci-awscli-oidc.yml || \
+        (echo "ERROR: OIDC variant missing component header"; exit 1)
+
+      echo "✓ Component structure validation passed"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# =============================================================================
+# Publish Stage (Semantic Release)
+# =============================================================================
+
+include:
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@5
+    inputs:
+      release-branches: "main,master"
+
+# Override semrel job to add component-specific configuration
+semrel-release:
+  variables:
+    # Additional release assets
+    SEMREL_ASSETS: |
+      templates/gitlab-ci-awscli.yml
+      templates/gitlab-ci-awscli-oidc.yml
+      README.md
+      CHANGELOG.md
+  only:
+    - main
+    - master
+  except:
+    - tags

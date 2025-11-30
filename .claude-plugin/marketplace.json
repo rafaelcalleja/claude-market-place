@@ -142,6 +142,19 @@
       "keywords": ["skills", "agents", "commands", "authentication", "ai-ml", "web-development", "cloud-platforms", "databases", "debugging", "documentation", "problem-solving", "productivity", "git", "mcp"],
       "license": "MIT",
       "homepage": "https://github.com/mrgoonie/claudekit-skills"
+    },
+    {
+      "name": "gitlab-tbc",
+      "description": "Interactive guide for building GitLab CI/CD pipelines with to-be-continuous templates (conversational, step-by-step, real examples) and creating compatible components",
+      "version": "0.3.1",
+      "author": {
+        "name": "GitLab TBC Contributors"
+      },
+      "source": "./plugins/gitlab-tbc",
+      "category": "development",
+      "keywords": ["gitlab", "ci-cd", "to-be-continuous", "pipeline", "templates", "devops", "component-creation"],
+      "license": "MIT",
+      "homepage": "https://to-be-continuous.gitlab.io/doc"
     }
   ]
 }

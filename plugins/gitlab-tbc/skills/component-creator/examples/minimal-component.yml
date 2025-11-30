@@ -1,0 +1,28 @@
+# Minimal to-be-continuous Component Example
+# This is the simplest possible component structure
+
+spec:
+  inputs:
+    target:
+      description: "Deployment target (e.g., staging, production)"
+      type: string
+      default: "staging"
+
+# Hidden base job - users can override this
+.minimal-base:
+  image: alpine:latest
+  variables:
+    MINIMAL_TARGET: $[[ inputs.target ]]
+  rules:
+    - !reference [.tbc-workflow-rules, skip-back-merge]
+    - !reference [.tbc-workflow-rules, prefer-mr-pipeline]
+    - !reference [.tbc-workflow-rules, extended-skip-ci]
+
+# Single concrete job
+minimal-deploy:
+  stage: deploy
+  extends: .minimal-base
+  script:
+    - echo "Deploying to $MINIMAL_TARGET"
+  rules:
+    - when: on_success
