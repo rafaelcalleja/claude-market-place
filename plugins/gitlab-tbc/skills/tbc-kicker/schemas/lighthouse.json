@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lighthouse Template",
+  "description": "to-be-continuous/lighthouse",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Lighthouse template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Lighthouse CI (use browser images only).",
+          "default": "docker.io/cypress/browsers:latest"
+        },
+        "version": {
+          "type": "string",
+          "description": "Lighthouse CI version to run",
+          "default": "latest",
+          "x-advanced": true
+        },
+        "run-opts": {
+          "type": "string",
+          "description": "Lighthouse CI autorun options",
+          "default": "--upload.target=filesystem --collect.settings.chromeFlags=\"--no-sandbox\" --collect.url=\"%{environment_url}\"",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Cypress tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "LHCI_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

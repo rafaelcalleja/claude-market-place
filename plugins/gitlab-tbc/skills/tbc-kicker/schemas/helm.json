@@ -1,0 +1,454 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Helm Template",
+  "description": "to-be-continuous/helm",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Helm template",
+      "properties": {
+        "cli-image": {
+          "type": "string",
+          "description": "The Docker image used to run Helm - set the version required by your Kubernetes server",
+          "default": "docker.io/alpine/helm:latest"
+        },
+        "chart-dir": {
+          "type": "string",
+          "description": "The folder where the Helm chart is located",
+          "default": "."
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "The folder where hook scripts are located",
+          "default": "."
+        },
+        "common-values": {
+          "type": "string",
+          "description": "Common values file (used for all environments, overridden by specific per-env values files)"
+        },
+        "deploy-chart": {
+          "type": "string",
+          "description": "The Helm chart to deploy. Only required if you want to deploy an external chart."
+        },
+        "repos": {
+          "type": "string",
+          "description": "The Helm chart repositories to use (formatted as reponame1@repourl1 reponame2@repourl2 ...)",
+          "default": "stable@https://charts.helm.sh/stable bitnami@https://charts.bitnami.com/bitnami"
+        },
+        "kube-namespace": {
+          "type": "string",
+          "description": "The default Kubernetes namespace to use. Leave default if GitLab Kubernetes integration is enabled."
+        },
+        "default-kube-config": {
+          "type": "string",
+          "description": "The default kubeconfig content to use. Automatically set if GitLab Kubernetes integration is enabled.",
+          "default": "$KUBECONFIG"
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.helm.acme.com)"
+        },
+        "deploy-args": {
+          "type": "string",
+          "description": "The Helm command with options to deploy the application (without dynamic arguments such as release name and chart)",
+          "default": "upgrade --install --atomic --timeout 120s",
+          "x-advanced": true
+        },
+        "delete-args": {
+          "type": "string",
+          "description": "The Helm command with options to cleanup the application (without dynamic arguments such as release name)",
+          "default": "uninstall",
+          "x-advanced": true
+        },
+        "dependency-args": {
+          "type": "string",
+          "description": "The Helm command with options to update on-disk the chart dependencies (without dynamic arguments such as the chart path)",
+          "default": "dependency update",
+          "x-advanced": true
+        },
+        "env-value-name": {
+          "type": "string",
+          "description": "The name of the Helm value containing the environment type",
+          "default": "environmentType",
+          "x-advanced": true
+        },
+        "hostname-value-name": {
+          "type": "string",
+          "description": "The name of the Helm value containing the environment hostname (extracted from the environment URL)",
+          "default": "hostname",
+          "x-advanced": true
+        },
+        "lint-args": {
+          "type": "string",
+          "description": "The Helm command with options to trigger the analysis (without dynamic arguments such as the chart path)",
+          "default": "lint --strict",
+          "x-feature": "Helm Lint"
+        },
+        "test-args": {
+          "type": "string",
+          "description": "The Helm command with options to perform acceptance test (without dynamic arguments such as release name)",
+          "default": "test",
+          "x-feature": "Helm Test"
+        },
+        "yamllint-image": {
+          "type": "string",
+          "description": "The Docker image used to run YamlLint test",
+          "default": "docker.io/cytopia/yamllint",
+          "x-feature": "Yaml Lint"
+        },
+        "yamllint-config": {
+          "type": "string",
+          "description": "Config used with the yamllint tool",
+          "default": "{extends: relaxed, rules: {line-length: {max: 160}}}",
+          "x-feature": "Yaml Lint"
+        },
+        "yamllint-args": {
+          "type": "string",
+          "description": "Arguments used by the lint job",
+          "default": "-f colored --strict",
+          "x-feature": "Yaml Lint"
+        },
+        "kube-score-image": {
+          "type": "string",
+          "description": "The Docker image used to run Kube-Score",
+          "default": "docker.io/zegl/kube-score",
+          "x-feature": "Kube-Score"
+        },
+        "kube-score-args": {
+          "type": "string",
+          "description": "Arguments used by the kube-score job",
+          "x-feature": "Kube-Score"
+        },
+        "k8s-version": {
+          "type": "string",
+          "description": "Kubernetes version (so that .Capabilities.KubeVersion.Version can be correctly interpreted). Expected format: vX.YY",
+          "x-feature": "Kube-Score"
+        },
+        "package-args": {
+          "type": "string",
+          "description": "The Helm command with options to perform the packaging (without dynamic arguments such as the chart path)",
+          "default": "package --dependency-update",
+          "x-feature": "Package your chart"
+        },
+        "publish-snapshot-enabled": {
+          "type": "boolean",
+          "description": "Set to true to enable publishing the snapshot (untested) chart during the packaging step",
+          "x-feature": "Package your chart"
+        },
+        "semrel-release-disabled": {
+          "type": "boolean",
+          "description": "Disable semantic-release integration",
+          "x-feature": "Package your chart"
+        },
+        "publish-url": {
+          "type": "string",
+          "description": "The URL of the Helm repository to publish your Helm package",
+          "default": "oci://$CI_REGISTRY/$CI_PROJECT_PATH/charts",
+          "x-feature": "Publish your chart"
+        },
+        "publish-method": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "push",
+            "post",
+            "put",
+            "custom",
+            "disabled"
+          ],
+          "description": "HTTP method to use to push the package",
+          "default": "auto",
+          "x-feature": "Publish your chart"
+        },
+        "publish-user": {
+          "type": "string",
+          "description": "Helm repository username",
+          "default": "$CI_REGISTRY_USER",
+          "x-feature": "Publish your chart"
+        },
+        "publish-password": {
+          "type": "string",
+          "description": "Helm repository password",
+          "default": "$CI_REGISTRY_PASSWORD",
+          "x-feature": "Publish your chart"
+        },
+        "publish-on": {
+          "type": "string",
+          "enum": [
+            "prod",
+            "protected",
+            "all",
+            "tag"
+          ],
+          "description": "Defines on which Git reference(s) the publish job shall be enabled prod to enable on production branch only, protected to enable on protected references, all to enable on all Git branches and tag on G",
+          "default": "prod",
+          "x-feature": "Publish your chart"
+        },
+        "publish-strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the publish strategy.",
+          "default": "manual",
+          "x-feature": "Publish your chart"
+        },
+        "cm-push-plugin-version": {
+          "type": "string",
+          "description": "cm-push plugin version to install (only when using push method with a regular chart repository",
+          "x-feature": "Publish your chart"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "review-values": {
+          "type": "string",
+          "description": "The Values file to use with review environment",
+          "x-feature": "Review"
+        },
+        "review-namespace": {
+          "type": "string",
+          "description": "The Kubernetes namespace to use for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the integration env",
+          "default": "never",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "integ-values": {
+          "type": "string",
+          "description": "The Values file to use with integration environment",
+          "x-feature": "Integration"
+        },
+        "integ-namespace": {
+          "type": "string",
+          "description": "The Kubernetes namespace to use for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "default": "${HELM_BASE_APP_NAME}-staging",
+          "x-feature": "Staging"
+        },
+        "staging-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the staging env",
+          "default": "never",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "staging-values": {
+          "type": "string",
+          "description": "The Values file to use with staging environment",
+          "x-feature": "Staging"
+        },
+        "staging-namespace": {
+          "type": "string",
+          "description": "The Kubernetes namespace to use for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-values": {
+          "type": "string",
+          "description": "The Values file to use with production environment",
+          "x-feature": "Production"
+        },
+        "prod-namespace": {
+          "type": "string",
+          "description": "The Kubernetes namespace to use for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "tbc-gcp-provider-image": {
+          "type": "string",
+          "description": "The GCP Auth Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/gcp-auth-provider:latest",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment",
+          "x-variant": "Google Cloud"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "HELM_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Helm Lint",
+      "Helm Test",
+      "Yaml Lint",
+      "Kube-Score",
+      "Package your chart",
+      "Publish your chart",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud"
+    ],
+    "variable_count": 74
+  }
+}

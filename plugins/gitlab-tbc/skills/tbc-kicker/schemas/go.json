@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Go Template",
+  "description": "to-be-continuous/golang",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Go template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Go (build+test or build only) - set the version required by your project",
+          "default": "docker.io/library/golang:bookworm"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Go project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "goproxy": {
+          "type": "string",
+          "description": "URL of Go module proxy (see Go env)",
+          "x-advanced": true
+        },
+        "test-image": {
+          "type": "string",
+          "description": "Specific Docker image used to run Go tests (as a separate job)",
+          "x-advanced": true
+        },
+        "build-flags": {
+          "type": "string",
+          "description": "Flags used by the go build command",
+          "default": "-mod=readonly",
+          "x-advanced": true
+        },
+        "build-mode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "application",
+            "modules"
+          ],
+          "description": "The template build mode (accepted values are application, modules and auto)",
+          "default": "auto",
+          "x-advanced": true
+        },
+        "build-linker-flags": {
+          "type": "string",
+          "description": "Linker flags used by the go build command -ldflags",
+          "default": "-s -w",
+          "x-advanced": true
+        },
+        "build-packages": {
+          "type": "string",
+          "description": "Packages to build with the go build command",
+          "default": "./..."
+        },
+        "target-os": {
+          "type": "string",
+          "description": "The $GOOS target see available values Fallbacks to default $GOOS from the Go Docker image",
+          "x-advanced": true
+        },
+        "target-arch": {
+          "type": "string",
+          "description": "The $GOARCH target see available values Fallbacks to default $GOARCH from the Go Docker image",
+          "x-advanced": true
+        },
+        "test-flags": {
+          "type": "string",
+          "description": "Flags used by the go test command",
+          "default": "-mod=readonly -v -race",
+          "x-advanced": true
+        },
+        "test-packages": {
+          "type": "string",
+          "description": "Packages to test with the go test command",
+          "default": "./..."
+        },
+        "list-args": {
+          "type": "string",
+          "description": "Arguments used by the list command",
+          "default": "list -u -m -mod=readonly -json all",
+          "x-advanced": true
+        },
+        "cobertura-flags": {
+          "type": "string",
+          "description": "Build flags to add to use gocover-cobertura, leave blank if not needed",
+          "x-advanced": true
+        },
+        "generate-modules": {
+          "type": "string",
+          "description": "Space separated list of Go code generator modules (ex: stringer mockery)",
+          "x-feature": "go generate"
+        },
+        "ci-lint-image": {
+          "type": "string",
+          "description": "The Docker image used to run golangci-lint",
+          "default": "docker.io/golangci/golangci-lint:latest-alpine",
+          "x-feature": "GolangCI-Lint"
+        },
+        "ci-lint-args": {
+          "type": "string",
+          "description": "golangci-lint command line arguments",
+          "default": "-E gosec,goimports ./...",
+          "x-feature": "GolangCI-Lint"
+        },
+        "mod-outdated-args": {
+          "type": "string",
+          "description": "god-mod-outdated [command line arguments](https://github.com/psampaz/go-mod-outdated#usage",
+          "default": "-update -direct",
+          "x-feature": "Go-mod-outdated"
+        },
+        "sbom-image": {
+          "type": "string",
+          "default": "docker.io/cyclonedx/cyclonedx-gomod:latest",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "@cyclonedx/cyclonedx-gomod options used for SBOM analysis",
+          "default": "-main .",
+          "x-feature": "Software Bill of Materials"
+        },
+        "semgrep-image": {
+          "type": "string",
+          "description": "The Docker image used to run Semgrep",
+          "default": "docker.io/semgrep/semgrep:latest",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-args": {
+          "type": "string",
+          "description": "Semgrep scan options",
+          "default": "--metrics off --disable-version-check",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-rules": {
+          "type": "string",
+          "description": "Space-separated list of Semgrep rules. Can be both local YAML files or remote rules from the Semgrep Registry (denoted by the p/ prefix)",
+          "default": "p/golang p/gosec",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-download-rules-enabled": {
+          "type": "boolean",
+          "description": "Download Semgrep remote rules",
+          "default": "true",
+          "x-feature": "Semgrep"
+        },
+        "vulncheck-args": {
+          "type": "string",
+          "description": "govulncheck command line arguments",
+          "default": "./...",
+          "x-feature": "Govulncheck"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "GO_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "go generate",
+      "GolangCI-Lint",
+      "Go-mod-outdated",
+      "Software Bill of Materials",
+      "Semgrep",
+      "Govulncheck"
+    ],
+    "variants": [],
+    "variable_count": 25
+  }
+}

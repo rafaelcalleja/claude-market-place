@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Amazon Web Services Template",
+  "description": "to-be-continuous/aws",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Amazon Web Services template",
+      "properties": {
+        "cli-image": {
+          "type": "string",
+          "description": "The Docker image used to run AWS CLI commands",
+          "default": "docker.io/amazon/aws-cli:latest"
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.aws.acme.com)"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "Directory where AWS scripts (deploy & cleanup) are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "OpenID Connect"
+        },
+        "oidc-role-arn": {
+          "type": "string",
+          "description": "Default IAM Role ARN associated with GitLab to authenticate using OpenID Connect",
+          "x-variant": "OpenID Connect"
+        },
+        "review-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on review env (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "integ-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on integration env (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "staging-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on staging env (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "prod-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on production env (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "AWS_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "OpenID Connect",
+      "Vault"
+    ],
+    "variable_count": 25
+  }
+}

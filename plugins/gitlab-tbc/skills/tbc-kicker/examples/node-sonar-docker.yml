@@ -8,31 +8,27 @@
 
 include:
   # Node.js build template
-  - component: $CI_SERVER_FQDN/to-be-continuous/node/node@6
+  - component: $CI_SERVER_FQDN/to-be-continuous/node/gitlab-ci-node@4
     inputs:
       image: "node:20-alpine"
-      package-manager: "pnpm"
+      manager: "pnpm"
       build-args: "--filter=app build"
       test-args: "--filter=app test"
-      lint-disabled: false
       lint-args: "--filter=app lint"
-      audit-disabled: false
-      outdated-disabled: false
-      semgrep-enabled: true
-      sbom-disabled: false
-      publish-enabled: false
+      audit-args: "--audit-level=high"
+      semgrep-rules: "p/javascript,p/typescript"
 
   # SonarQube analysis
-  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/gitlab-ci-sonar@4
     inputs:
-      sonar-url: "https://sonarqube.example.com"
+      host-url: "https://sonarqube.example.com"
       project-key: "my-node-app"
       project-name: "My Node.js Application"
       quality-gate-enabled: true
-      args: "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
+      base-args: "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
 
   # Docker packaging with Buildah
-  - component: $CI_SERVER_FQDN/to-be-continuous/docker/docker@6
+  - component: $CI_SERVER_FQDN/to-be-continuous/docker/gitlab-ci-docker@6
     inputs:
       build-tool: "buildah"
       file: "Dockerfile"
@@ -40,14 +36,14 @@ include:
       release-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
       release-extra-tags-pattern: "^(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$"
       release-extra-tags: "latest \\g<major>.\\g<minor> \\g<major>"
-      trivy-enabled: true
-      hadolint-disabled: false
+      trivy-args: "--severity CRITICAL,HIGH"
+      hadolint-args: "--ignore DL3008"
 
   # Semantic release
-  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@3
     inputs:
       changelog-enabled: true
-      auto-release: true
+      auto-release-enabled: true
 
 # Secret variables - define in GitLab CI/CD settings
 # SONAR_TOKEN: SonarQube authentication token

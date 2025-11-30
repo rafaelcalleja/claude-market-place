@@ -1,0 +1,313 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Python Template",
+  "description": "to-be-continuous/python",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Python template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Python - set the version required by your project",
+          "default": "docker.io/library/python:3-slim"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Python project root directory",
+          "default": "."
+        },
+        "build-system": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "setuptools",
+            "poetry",
+            "pipenv",
+            "reqfile",
+            "uv"
+          ],
+          "description": "Python build-system to use to install dependencies, build and package the project",
+          "default": "auto",
+          "x-advanced": true
+        },
+        "reqs-file": {
+          "type": "string",
+          "description": "Main requirements file (relative to $PYTHONPROJECTDIR) For Requirements Files build-system only",
+          "default": "requirements.txt",
+          "x-advanced": true
+        },
+        "extra-reqs-files": {
+          "type": "string",
+          "description": "Extra dev requirements file(s) to install (relative to $PYTHONPROJECTDIR) For Requirements Files build-system only",
+          "default": "requirements-dev.txt",
+          "x-advanced": true
+        },
+        "compile-args": {
+          "type": "string",
+          "description": "compileall CLI options",
+          "default": "*",
+          "x-advanced": true
+        },
+        "pip-opts": {
+          "type": "string",
+          "description": "pip extra options",
+          "x-advanced": true
+        },
+        "extra-deps": {
+          "type": "string",
+          "description": "Extra sets of dependencies to install For Setuptools or Poetry only"
+        },
+        "pylint-args": {
+          "type": "string",
+          "description": "Additional pylint CLI options",
+          "x-feature": "pylint"
+        },
+        "pylint-files": {
+          "type": "string",
+          "description": "Files or directories to analyse",
+          "x-feature": "pylint"
+        },
+        "unittest-args": {
+          "type": "string",
+          "description": "Additional xmlrunner/unittest CLI options",
+          "x-feature": "unittest"
+        },
+        "pytest-args": {
+          "type": "string",
+          "description": "Additional pytest or pytest-cov CLI options",
+          "x-feature": "pytest"
+        },
+        "nosetests-args": {
+          "type": "string",
+          "description": "Additional nose CLI options",
+          "x-feature": "nose"
+        },
+        "bandit-args": {
+          "type": "string",
+          "description": "Additional Bandit CLI options",
+          "default": "--recursive .",
+          "x-feature": "Bandit"
+        },
+        "trivy-dist-url": {
+          "type": "string",
+          "description": "Url to the tar.gz package for linuxamd64 of Trivy to use When unset, the latest version will be used",
+          "x-feature": "Trivy"
+        },
+        "trivy-args": {
+          "type": "string",
+          "description": "Additional Trivy CLI options",
+          "default": "--ignore-unfixed --pkg-types library --detection-priority comprehensive",
+          "x-feature": "Trivy"
+        },
+        "sbom-syft-url": {
+          "type": "string",
+          "description": "Url to the tar.gz package for linuxamd64 of Syft to use When unset, the latest version will be used",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-name": {
+          "type": "string",
+          "description": "Component name of the emitted SBOM",
+          "default": "$CI_PROJECT_PATH/$PYTHON_PROJECT_DIR",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "Options for syft used for SBOM analysis",
+          "default": "--override-default-catalogers python-package-cataloger",
+          "x-feature": "Software Bill of Materials"
+        },
+        "release-next": {
+          "type": "string",
+          "enum": [
+            "",
+            "major",
+            "minor",
+            "patch"
+          ],
+          "description": "The part of the version to increase (one of: major, minor, patch)",
+          "default": "minor",
+          "x-feature": "Release"
+        },
+        "semrel-release-disabled": {
+          "type": "boolean",
+          "description": "Disable semantic-release integration",
+          "x-feature": "Release"
+        },
+        "release-commit-message": {
+          "type": "string",
+          "description": "The Git commit message to use on the release commit. This is templated using the Python Format String Syntax. Available in the template context are currentversion and newversion.",
+          "default": "chore(python-release): {current_version} \u2192 {new_version}",
+          "x-feature": "Release"
+        },
+        "git-username": {
+          "type": "string",
+          "description": "Git username for Git push operations",
+          "x-feature": "Release"
+        },
+        "git-password": {
+          "type": "string",
+          "description": "Git password for Git push operations",
+          "x-feature": "Release"
+        },
+        "git-private-key": {
+          "type": "string",
+          "description": "SSH key for Git push operations",
+          "x-feature": "Release"
+        },
+        "repository-url": {
+          "type": "string",
+          "description": "Target PyPI repository to publish packages. defaults to GitLab project's packages repository",
+          "default": "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/packages/pypi",
+          "x-feature": "Release"
+        },
+        "repository-username": {
+          "type": "string",
+          "description": "Target PyPI repository username credential",
+          "default": "gitlab-ci-token",
+          "x-feature": "Release"
+        },
+        "repository-password": {
+          "type": "string",
+          "description": "Target PyPI repository password credential",
+          "default": "$CI_JOB_TOKEN",
+          "x-feature": "Release"
+        },
+        "ruff-args": {
+          "type": "string",
+          "description": "Additional Ruff Linter CLI options",
+          "x-feature": "Ruff"
+        },
+        "mypy-args": {
+          "type": "string",
+          "description": "Additional mypy CLI options",
+          "x-feature": "mypy"
+        },
+        "mypy-files": {
+          "type": "string",
+          "description": "Files or directories to analyse",
+          "x-feature": "mypy"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "tbc-aws-provider-image": {
+          "type": "string",
+          "description": "The AWS Auth Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/aws-auth-provider:latest",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-region": {
+          "type": "string",
+          "description": "Default region (where the codeartifact repository is located)",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-oidc-role-arn": {
+          "type": "string",
+          "description": "Default IAM Role ARN associated with GitLab (only required for OIDC authentication)",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-access-key-id": {
+          "type": "string",
+          "description": "Default access key ID (only required for basic authentication)",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-secret-access-key": {
+          "type": "string",
+          "description": "Default secret access key (only required for basic authentication)",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-codeartifact-domain": {
+          "type": "string",
+          "description": "The AWS CodeArtifact domain",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-codeartifact-domain-owner": {
+          "type": "string",
+          "description": "The AWS CodeArtifact domain owner",
+          "x-variant": "AWS CodeArtifact"
+        },
+        "aws-codeartifact-repository": {
+          "type": "string",
+          "description": "The AWS CodeArtifact repository",
+          "x-variant": "AWS CodeArtifact"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "PYTHON_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "package",
+      "pylint",
+      "unittest",
+      "pytest",
+      "nose",
+      "Bandit",
+      "Trivy",
+      "Software Bill of Materials",
+      "Release",
+      "black",
+      "isort",
+      "Ruff",
+      "Ruff Format",
+      "mypy"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud",
+      "AWS CodeArtifact"
+    ],
+    "variable_count": 48
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Docker Compose Template",
+  "description": "to-be-continuous/docker-compose",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Docker Compose template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Docker Compose CLI commands - set the version required by your Docker Compose cluster",
+          "default": "docker.io/library/docker:latest"
+        },
+        "cmd": {
+          "type": "string",
+          "description": "The docker compose or stack command (empty means auto)",
+          "x-advanced": true
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.dcmp.acme.com)"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "Directory where Compose files, dotenv files and hook scripts are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "up-opts": {
+          "type": "string",
+          "description": "compose up options (only when using Docker Compose)",
+          "default": "--no-build --remove-orphans --wait --wait-timeout 180"
+        },
+        "down-opts": {
+          "type": "string",
+          "description": "compose down options (only when using Docker Compose)",
+          "default": "--volumes --remove-orphans --rmi all"
+        },
+        "stack-deploy-opts": {
+          "type": "string",
+          "description": "stack deploy options (only when using Docker Stack)",
+          "default": "--prune"
+        },
+        "ssh-private-key": {
+          "type": "string",
+          "description": "Default SSH key to use when connecting to Docker hosts over SSH (can be overridden per env)"
+        },
+        "ssh-known-hosts": {
+          "type": "string",
+          "description": "SSH knownhosts (file or text variable)"
+        },
+        "config-opts": {
+          "type": "string",
+          "description": "compose config options",
+          "default": "--quiet",
+          "x-feature": "Compose Config"
+        },
+        "stack-config-opts": {
+          "type": "string",
+          "description": "stack config options",
+          "x-feature": "Compose Config"
+        },
+        "stack-config-silent": {
+          "type": "boolean",
+          "description": "Silences standard output of stack config command",
+          "default": "true",
+          "x-feature": "Compose Config"
+        },
+        "review-docker-host": {
+          "type": "string",
+          "description": "Docker Host for review env (ex: ssh://docker@docker-host-for-review:2375)",
+          "x-feature": "Review"
+        },
+        "review-ssh-private-key": {
+          "type": "string",
+          "description": "review env specific SSH key to use when connecting to Docker Host over SSH",
+          "x-feature": "Review"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "integ-docker-host": {
+          "type": "string",
+          "description": "Docker Host for integration env (ex: ssh://docker@docker-host-for-integ:2375)",
+          "x-feature": "Integration"
+        },
+        "integ-ssh-private-key": {
+          "type": "string",
+          "description": "integration env specific SSH key to use when connecting to Docker Host over SSH",
+          "x-feature": "Integration"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "staging-docker-host": {
+          "type": "string",
+          "description": "Docker Host for staging env (ex: ssh://docker@docker-host-for-staging:2375)",
+          "x-feature": "Staging"
+        },
+        "staging-ssh-private-key": {
+          "type": "string",
+          "description": "staging env specific SSH key to use when connecting to Docker Host over SSH",
+          "x-feature": "Staging"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "prod-docker-host": {
+          "type": "string",
+          "description": "Docker Host for production env (ex: ssh://docker@docker-host-for-prod:2375)",
+          "x-feature": "Production"
+        },
+        "prod-ssh-private-key": {
+          "type": "string",
+          "description": "production env specific SSH key to use when connecting to Docker Host over SSH",
+          "x-feature": "Production"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "DCMP_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Compose Config",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [],
+    "variable_count": 31
+  }
+}

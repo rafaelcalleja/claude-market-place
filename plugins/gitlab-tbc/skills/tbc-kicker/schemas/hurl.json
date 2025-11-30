@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hurl Template",
+  "description": "to-be-continuous/hurl",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Hurl template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Hurl",
+          "default": "ghcr.io/orange-opensource/hurl:latest"
+        },
+        "test-files": {
+          "type": "string",
+          "description": "The Hurl test files to run",
+          "default": "--glob **/*.hurl"
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Hurl extra run options",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Hurl tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "HURL_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

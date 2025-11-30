@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DefectDojo Template",
+  "description": "to-be-continuous/defectdojo",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for DefectDojo template",
+      "properties": {
+        "base-image": {
+          "type": "string",
+          "description": "The Docker image used to run import",
+          "default": "docker.io/library/node:alpine3.11"
+        },
+        "server-url": {
+          "type": "string",
+          "description": "URL of DefectDojo server"
+        },
+        "api-key": {
+          "type": "string",
+          "description": "Your DefectDojo API v2 key - must be saved as a masked CI/CD variable"
+        },
+        "dir": {
+          "type": "string",
+          "description": "DefectDojo working directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "noprod-enabled": {
+          "type": "boolean",
+          "description": "Determines whether security reports produced in non-production branches are uploaded to DefectDojo"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Time zone used for naming imports in DefectDojo",
+          "default": "Europe/Paris",
+          "x-advanced": true
+        },
+        "smtp-server": {
+          "type": "string",
+          "description": "name:port of SMTP server used for notifications - if this value is set, DefectDojo will send an e-mail notification in case of new vulnerabilities",
+          "x-advanced": true
+        },
+        "notification-severities": {
+          "type": "string",
+          "description": "List of severities for which you want to be notified - DEFECTDOJOSMTPSERVER must be defined if you want to be notified",
+          "default": "Critical,High",
+          "x-advanced": true
+        },
+        "bandit-reports": {
+          "type": "string",
+          "description": "path to Bandit JSON reports",
+          "default": "bandit*.json reports/py-bandit.bandit.json",
+          "x-advanced": true
+        },
+        "dc-reports": {
+          "type": "string",
+          "description": "Path to Dependency Check reports",
+          "default": "dependency-check*.xml",
+          "x-advanced": true
+        },
+        "dc-gradle-reports": {
+          "type": "string",
+          "description": "Path to Dependency Check reports from Gradle template",
+          "default": "dependency-check*.xml",
+          "x-advanced": true
+        },
+        "gitleaks-reports": {
+          "type": "string",
+          "description": "Path to Gitleaks reports",
+          "default": "gitleaks/gitleaks-report.json reports/gitleaks.native.json",
+          "x-advanced": true
+        },
+        "hadolint-reports": {
+          "type": "string",
+          "description": "Path to Hadolint reports",
+          "default": "hadolint-json-*.json reports/docker-hadolint-*.native.json",
+          "x-advanced": true
+        },
+        "mobsf-reports": {
+          "type": "string",
+          "description": "Path to MobSF reports",
+          "default": "mobsf*.json",
+          "x-advanced": true
+        },
+        "nodejsscan-reports": {
+          "type": "string",
+          "description": "Path to NodeJSScan reports",
+          "default": "nodejsscan-report-sarif.json",
+          "x-advanced": true
+        },
+        "npmaudit-reports": {
+          "type": "string",
+          "description": "Path to NPMAudit reports",
+          "default": "npm-audit*.json",
+          "x-advanced": true
+        },
+        "testssl-reports": {
+          "type": "string",
+          "description": "Path to TestSSL reports",
+          "default": "reports/testssl.native.csv",
+          "x-advanced": true
+        },
+        "trivy-reports": {
+          "type": "string",
+          "description": "Path to Trivy reports",
+          "default": "trivy/*.json trivy-*.json reports/docker-trivy-*.native.json reports/py-trivy.trivy.json",
+          "x-advanced": true
+        },
+        "zap-reports": {
+          "type": "string",
+          "description": "Path to Zap reports",
+          "default": "reports/zap.native.xml",
+          "x-advanced": true
+        },
+        "zap-tpl-project": {
+          "type": "string",
+          "description": "Path to Zap template",
+          "x-advanced": true
+        },
+        "semgrep-reports": {
+          "type": "string",
+          "description": "Path to Semgrep reports",
+          "default": "reports/semgrep.native.json",
+          "x-advanced": true
+        },
+        "semgrep-template": {
+          "type": "string",
+          "description": "Path to Semgrep template",
+          "x-advanced": true
+        },
+        "sonarqube-sinceleakperiod": {
+          "type": "boolean",
+          "description": "Determines if delta analysis is activated for SonarQube export",
+          "x-advanced": true
+        },
+        "sonarqube-nosecurityhotspot": {
+          "type": "boolean",
+          "description": "Set this flag to true if SonarQube version does not support security hotspots (v < 7.3)",
+          "default": "true",
+          "x-advanced": true
+        },
+        "sonarqube-allbugs": {
+          "type": "boolean",
+          "description": "In SonarQube, determines if all bugs are exported (true) or only vulnerabilities (false)",
+          "x-advanced": true
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "DEFECTDOJO_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 30
+  }
+}

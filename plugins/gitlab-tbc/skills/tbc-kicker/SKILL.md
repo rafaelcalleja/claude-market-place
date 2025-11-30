@@ -331,16 +331,20 @@ Working configurations in `examples/`:
 1. Ask about project type, language, and deployment target
 2. Configure global options (recommend component mode, minor version)
 3. Select templates for each category
-4. Configure variables (focus on mandatory and image versions)
-5. Enable relevant features and variants
-6. Generate and explain the configuration
+4. Read `schemas/{template}.json` to get valid inputs, components, and versions
+5. Configure variables (focus on mandatory and image versions)
+6. Enable relevant features and variants
+7. Generate the configuration
+8. Validate with `python3 scripts/validate-inputs.py .gitlab-ci.yml`
 
 ### For Existing Projects
 
 1. Review current `.gitlab-ci.yml`
 2. Identify opportunities to use TBC templates
-3. Suggest equivalent TBC templates
-4. Provide migration guidance
+3. Read `schemas/{template}.json` to get valid inputs, components, and versions
+4. Suggest equivalent TBC templates
+5. Provide migration guidance
+6. Validate with `python3 scripts/validate-inputs.py .gitlab-ci.yml`
 
 ### Best Practices
 

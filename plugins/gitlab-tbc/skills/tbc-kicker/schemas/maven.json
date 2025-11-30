@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Maven Template",
+  "description": "to-be-continuous/maven",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Maven template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Maven - set the version required by your project",
+          "default": "docker.io/library/maven:latest"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Maven project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "cfg-dir": {
+          "type": "string",
+          "description": "The Maven configuration directory",
+          "default": ".m2",
+          "x-advanced": true
+        },
+        "settings-file": {
+          "type": "string",
+          "description": "The Maven settings.xml file path",
+          "default": "$MAVEN_CFG_DIR/settings.xml",
+          "x-advanced": true
+        },
+        "opts": {
+          "type": "string",
+          "description": "Global Maven options",
+          "default": "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=${MAVEN_CFG_DIR}/repository -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true",
+          "x-advanced": true
+        },
+        "cli-opts": {
+          "type": "string",
+          "description": "Additional Maven options used on the command line",
+          "default": "--no-transfer-progress --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true",
+          "x-advanced": true
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Maven arguments for the build & test job",
+          "default": "org.jacoco:jacoco-maven-plugin:prepare-agent verify org.jacoco:jacoco-maven-plugin:report",
+          "x-advanced": true
+        },
+        "sonar-host-url": {
+          "type": "string",
+          "description": "SonarQube server url",
+          "x-feature": "SONAR"
+        },
+        "sonar-token": {
+          "type": "string",
+          "description": "SonarQube authentication token (see https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/) - depends on your authentication method",
+          "x-feature": "SONAR"
+        },
+        "sonar-login": {
+          "type": "string",
+          "description": "SonarQube login (depends on your authentication method)",
+          "x-feature": "SONAR"
+        },
+        "sonar-password": {
+          "type": "string",
+          "description": "SonarQube password (depends on your authentication method)",
+          "x-feature": "SONAR"
+        },
+        "sonar-base-args": {
+          "type": "string",
+          "description": "SonarQube analysis arguments",
+          "default": "sonar:sonar -Dsonar.links.homepage=${CI_PROJECT_URL} -Dsonar.links.ci=${CI_PROJECT_URL}/-/pipelines -Dsonar.links.issue=${CI_PROJECT_URL}/-/issues",
+          "x-feature": "SONAR"
+        },
+        "sonar-quality-gate-enabled": {
+          "type": "boolean",
+          "description": "Enables SonarQube Quality Gate verification. Uses sonar.qualitygate.wait parameter (see doc).",
+          "x-feature": "SONAR"
+        },
+        "dependency-check-args": {
+          "type": "string",
+          "description": "Maven arguments for Dependency Check job",
+          "default": "org.owasp:dependency-check-maven:aggregate -DretireJsAnalyzerEnabled=false -DassemblyAnalyzerEnabled=false -Dformats=HTML,JSON,XML",
+          "x-feature": "Dependency-Check"
+        },
+        "sbom-gen-args": {
+          "type": "string",
+          "description": "Maven command used for SBOM analysis",
+          "default": "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom",
+          "x-feature": "Software Bill of Materials"
+        },
+        "deploy-args": {
+          "type": "string",
+          "description": "Maven arguments for the deploy job",
+          "default": "deploy -Dmaven.test.skip=true",
+          "x-feature": "Publish"
+        },
+        "deploy-from-unprotected-disabled": {
+          "type": "boolean",
+          "description": "Set to limit snapshot publication to protected branches",
+          "x-feature": "Publish"
+        },
+        "deploy-snapshot-with-slug-enabled": {
+          "type": "boolean",
+          "description": "Enable to inject the Git branch slug in SNAPSHOT versions",
+          "x-feature": "Publish"
+        },
+        "release-args": {
+          "type": "string",
+          "description": "Maven arguments for the release job",
+          "default": "release:prepare -DtagNameFormat=@{project.version} -Darguments=-Dmaven.test.skip=true",
+          "x-feature": "Publish"
+        },
+        "release-version": {
+          "type": "string",
+          "description": "Explicit version to use when triggering a release Otherwise uses the current snapshot version from pom.xml)",
+          "x-feature": "Publish"
+        },
+        "release-scm-comment-prefix": {
+          "type": "string",
+          "description": "Maven release plugin scmCommentPrefix parameter",
+          "default": "chore(maven-release): ",
+          "x-feature": "Publish"
+        },
+        "release-scm-release-comment": {
+          "type": "string",
+          "description": "Maven release plugin scmReleaseCommitComment parameter (since Maven 3.0.0-M1)",
+          "x-feature": "Publish"
+        },
+        "release-scm-dev-comment": {
+          "type": "string",
+          "description": "Maven release plugin scmDevelopmentCommitComment parameter (since Maven 3.0.0-M1)",
+          "x-feature": "Publish"
+        },
+        "mvn-semrel-release-disabled": {
+          "type": "string",
+          "description": "Disable semantic-release integration",
+          "x-feature": "Publish"
+        },
+        "git-username": {
+          "type": "string",
+          "description": "Git username (if you wish to release using Git credentials)",
+          "x-feature": "Publish"
+        },
+        "git-password": {
+          "type": "string",
+          "description": "Git password (if you wish to release using Git credentials)",
+          "x-feature": "Publish"
+        },
+        "git-private-key": {
+          "type": "string",
+          "description": "Git private SSH key (if you wish to release using SSH key or GitLab Deploy Key)",
+          "x-feature": "Publish"
+        },
+        "repository-username": {
+          "type": "string",
+          "description": "Maven repository username (inject in your settings.xml as ${env.MAVENREPOSITORYUSERNAME})",
+          "x-feature": "Publish"
+        },
+        "repository-password": {
+          "type": "string",
+          "description": "Maven repository password (inject in your settings.xml as ${env.MAVENREPOSITORYPASSWORD})",
+          "x-feature": "Publish"
+        },
+        "jib-snapshot-image": {
+          "type": "string",
+          "description": "Maven Jib Snapshot image",
+          "default": "$CI_REGISTRY_IMAGE/snapshot:$CI_COMMIT_REF_SLUG",
+          "x-variant": "Jib"
+        },
+        "jib-release-image": {
+          "type": "string",
+          "description": "Maven Jib Release image",
+          "default": "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME",
+          "x-variant": "Jib"
+        },
+        "skopeo-image": {
+          "type": "string",
+          "description": "The image used to publish images with Skopeo",
+          "default": "quay.io/skopeo/stable:latest",
+          "x-variant": "Jib"
+        },
+        "jib-build-args": {
+          "type": "string",
+          "description": "Jib Maven Plugin arguments",
+          "default": "-Djib.to.image=$MAVEN_JIB_SNAPSHOT_IMAGE",
+          "x-variant": "Jib"
+        },
+        "jib-prod-publish-strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the publish to production strategy.",
+          "default": "manual",
+          "x-variant": "Jib"
+        },
+        "jib-publish-args": {
+          "type": "string",
+          "description": "Additional skopeo copy arguments",
+          "x-variant": "Jib"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "MAVEN_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "SONAR",
+      "Dependency-Check",
+      "Snapshot dependencies verification",
+      "Software Bill of Materials",
+      "Publish"
+    ],
+    "variants": [
+      "Jib"
+    ],
+    "variable_count": 35
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PHP Template",
+  "description": "to-be-continuous/php",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for PHP template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run PHP - set the version required by your project",
+          "default": "docker.io/library/php:latest"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "The PHP project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "unit-args": {
+          "type": "string",
+          "description": "Additional PHPUnit options",
+          "x-feature": "PHPUnit"
+        },
+        "codesniffer-args": {
+          "type": "string",
+          "description": "PHPCodeSniffer options Either use this variable or use an XML configuration file in your project.",
+          "x-feature": "PHP_CodeSniffer"
+        },
+        "sbom-version": {
+          "type": "string",
+          "description": "Version of the cyclonedx-php-composer used for SBOM analysis",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "cyclonedx/cyclonedx-php options used for SBOM analysis",
+          "x-feature": "Software Bill of Materials"
+        },
+        "outdated-opts": {
+          "type": "string",
+          "description": "composer outdated options",
+          "default": "--direct",
+          "x-feature": "composer outdated"
+        },
+        "composer-audit-opts": {
+          "type": "string",
+          "description": "composer audit options",
+          "default": "--locked",
+          "x-feature": "composer audit"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "PHP_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "PHPUnit",
+      "PHP_CodeSniffer",
+      "Software Bill of Materials",
+      "composer outdated",
+      "composer audit"
+    ],
+    "variants": [],
+    "variable_count": 8
+  }
+}

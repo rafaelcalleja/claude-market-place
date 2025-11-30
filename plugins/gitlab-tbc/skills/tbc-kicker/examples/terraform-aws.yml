@@ -8,22 +8,19 @@
 
 include:
   # Terraform infrastructure template
-  - component: $CI_SERVER_FQDN/to-be-continuous/terraform/terraform@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/terraform/gitlab-ci-terraform@5
     inputs:
       image: "hashicorp/terraform:1.7"
       project-dir: "infrastructure"
-      # Security scanning
-      tfsec-enabled: true
-      checkov-enabled: true
-      trivy-enabled: true
+      # Security scanning arguments
+      tfsec-args: "--format json --out tfsec-report.json"
+      checkov-args: "-o cli -o junitxml --output-file-path console,checkov-report.xml"
+      trivy-args: "config --severity CRITICAL,HIGH ."
       # Cost estimation
-      infracost-enabled: true
+      infracost-args: "breakdown --path ."
       # Code quality
-      tflint-enabled: true
-      fmt-enabled: true
-      validate-enabled: true
-      # Documentation
-      docs-enabled: true
+      tflint-args: "--recursive"
+      docs-config: ".terraform-docs.yml"
       # Enable separate plan jobs for approval workflow
       review-plan-enabled: true
       staging-plan-enabled: true
@@ -39,18 +36,14 @@ include:
       prod-workspace: "production"
 
   # AWS deployment with OIDC authentication
-  - component: $CI_SERVER_FQDN/to-be-continuous/aws/aws@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/aws/gitlab-ci-aws@5
     inputs:
       scripts-dir: "infrastructure/scripts"
-      review-enabled: true
       review-autostop-duration: "4 hours"
-      integ-enabled: true
-      staging-enabled: true
-      prod-enabled: true
       prod-deploy-strategy: "manual"
 
   # AWS OIDC variant for secure authentication
-  - component: $CI_SERVER_FQDN/to-be-continuous/aws/aws-oidc@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/aws/gitlab-ci-aws-oidc@5
     inputs:
       oidc-aud: "$CI_SERVER_URL"
 

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SQLFluff lint Template",
+  "description": "to-be-continuous/sqlfluff",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for SQLFluff lint template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run SQLFluff",
+          "default": "docker.io/sqlfluff/sqlfluff:latest"
+        },
+        "working-dir": {
+          "type": "string",
+          "description": "Sqlfluff working directory, scope of configuration and sql files used",
+          "default": ".",
+          "x-advanced": true
+        },
+        "lint-args": {
+          "type": "string",
+          "description": "Lint options and arguments",
+          "x-advanced": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SQLFLUFF_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 3
+  }
+}

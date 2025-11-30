@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GNU Make Template",
+  "description": "to-be-continuous/make",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for GNU Make template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run GNU Make - set the image required by your project (see doc)",
+          "default": "docker.io/alpinelinux/build-base"
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Make options and goals for the build & test job",
+          "default": "all test"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Makefile root directory",
+          "default": ".",
+          "x-advanced": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "MAKE_",
+    "kind": "build",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 3
+  }
+}

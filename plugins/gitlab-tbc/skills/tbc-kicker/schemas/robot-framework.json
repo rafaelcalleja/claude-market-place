@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Robot Framework Template",
+  "description": "to-be-continuous/robotframework",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Robot Framework template",
+      "properties": {
+        "base-image": {
+          "type": "string",
+          "description": "The Docker image used to run Robot frame work CLI",
+          "default": "docker.io/ppodgorsek/robot-framework:latest"
+        },
+        "tests-dir": {
+          "type": "string",
+          "description": "Path to Robot Framework tests directory",
+          "default": "robot"
+        },
+        "browser": {
+          "type": "string",
+          "enum": [
+            "firefox",
+            "chrome"
+          ],
+          "description": "Browser to use",
+          "default": "firefox"
+        },
+        "options": {
+          "type": "string",
+          "description": "Robot Framework additional options",
+          "x-advanced": true
+        },
+        "threads": {
+          "type": "number",
+          "description": "Number of threads to execute Robot Framework tests (uses Pabot if > 1)",
+          "default": "1",
+          "x-advanced": true
+        },
+        "pabot-options": {
+          "type": "string",
+          "description": "Pabot additional options (if ROBOTTHREADS > 1)",
+          "x-advanced": true
+        },
+        "screen-colour-depth": {
+          "type": "number",
+          "description": "Screen colour depth for X Window Virtual Framebuffer",
+          "default": "24"
+        },
+        "screen-height": {
+          "type": "number",
+          "description": "Screen height for X Window Virtual Framebuffer",
+          "default": "1080"
+        },
+        "screen-width": {
+          "type": "number",
+          "description": "Screen width for X Window Virtual Framebuffer",
+          "default": "1920"
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Robot Framework tests on review environments (dynamic environments instantiated on development branches)"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "ROBOT_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [
+      "robotframework-lint"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 15
+  }
+}

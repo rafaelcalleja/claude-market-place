@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Source-to-Image Template",
+  "description": "to-be-continuous/s2i",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Source-to-Image template",
+      "properties": {
+        "dind-image": {
+          "type": "string",
+          "description": "The image used to run the Docker daemon",
+          "default": "docker.io/library/docker:dind"
+        },
+        "skopeo-image": {
+          "type": "string",
+          "description": "The image used to push the built container image with Skopeo",
+          "default": "quay.io/skopeo/stable:latest"
+        },
+        "version": {
+          "type": "string",
+          "description": "The target S2I version to install/use",
+          "default": "latest",
+          "x-advanced": true
+        },
+        "platform": {
+          "type": "string",
+          "description": "The target S2I platform to install/use",
+          "default": "linux-386",
+          "x-advanced": true
+        },
+        "builder-image": {
+          "type": "string",
+          "description": "The S2I builder image used to build your application image"
+        },
+        "root-dir": {
+          "type": "string",
+          "description": "Relative path to the application source code base directory in your repository",
+          "default": ".",
+          "x-advanced": true
+        },
+        "build-extra-flags": {
+          "type": "string",
+          "description": "S2I build extra flags",
+          "x-advanced": true
+        },
+        "snapshot-image": {
+          "type": "string",
+          "description": "S2I snapshot image",
+          "default": "$CI_REGISTRY_IMAGE/snapshot:$CI_COMMIT_REF_SLUG"
+        },
+        "release-image": {
+          "type": "string",
+          "description": "S2I release image",
+          "default": "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "Additional skopeo copy arguments",
+          "x-advanced": true
+        },
+        "prod-publish-strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the publish to production strategy.",
+          "default": "manual"
+        },
+        "release-extra-tags-pattern": {
+          "type": "string",
+          "description": "Defines the image tag pattern that $S2IRELEASEIMAGE should match to push extra tags (supports capturing groups) Defaults to SemVer pattern.",
+          "default": "^v?(?P<major>[0-9]+)\\.(?P<minor>[0-9]+)\\.(?P<patch>[0-9]+)(?P<suffix>(?P<prerelease>-[0-9A-Za-z-\\.]+)?(?P<build>\\+[0-9A-Za-z-\\.]+)?)$",
+          "x-advanced": true
+        },
+        "release-extra-tags": {
+          "type": "string",
+          "description": "Defines extra tags to publish the release image Supports capturing group references from $S2IRELEASEEXTRATAGSPATTERN (ex: latest \\g<major>.\\g<minor> \\g<major>)",
+          "x-advanced": true
+        },
+        "semrel-release-disabled": {
+          "type": "boolean",
+          "description": "Disable integration with the semantic release template"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "S2I_",
+    "kind": "package",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 14
+  }
+}

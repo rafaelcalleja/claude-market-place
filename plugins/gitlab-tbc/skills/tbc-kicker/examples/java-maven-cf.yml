@@ -8,62 +8,56 @@
 
 include:
   # Maven build template
-  - component: $CI_SERVER_FQDN/to-be-continuous/maven/maven@6
+  - component: $CI_SERVER_FQDN/to-be-continuous/maven/gitlab-ci-maven@4
     inputs:
       image: "maven:3.9-eclipse-temurin-21"
       project-dir: "."
       build-args: "clean verify"
       # Code quality
-      sonar-enabled: true
-      sonar-args: "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
-      quality-gate-enabled: true
+      sonar-base-args: "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"
+      sonar-quality-gate-enabled: true
       # Security
-      dependency-check-enabled: true
-      snapshot-check-disabled: false
-      # SBOM
-      sbom-disabled: false
+      dependency-check-args: "--format HTML --format XML"
       # Deployment
-      deploy-enabled: true
-      deploy-protected-only: true
+      deploy-args: "-DskipTests"
+      deploy-from-unprotected-disabled: true
 
   # SonarQube server configuration
-  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/gitlab-ci-sonar@4
     inputs:
-      sonar-url: "https://sonarqube.example.com"
+      host-url: "https://sonarqube.example.com"
       project-key: "com.example:my-java-app"
       quality-gate-enabled: true
 
   # Cloud Foundry deployment
-  - component: $CI_SERVER_FQDN/to-be-continuous/cf/cf@6
+  - component: $CI_SERVER_FQDN/to-be-continuous/cf/gitlab-ci-cf@6
     inputs:
-      manifest-file: "manifest"
-      api-url: "https://api.cf.example.com"
+      manifest-basename: "manifest"
+      url: "https://api.cf.example.com"
       org: "my-organization"
       base-app-name: "my-java-app"
-      native-zerodowntime: true
+      rolling-strategy: true
       # Review environment
       review-space: "development"
       review-domain: "apps.cf-dev.example.com"
-      review-autostop-duration: "4 hours"
       # Integration environment
       integ-space: "integration"
       integ-domain: "apps.cf-dev.example.com"
-      integ-zerodowntime-enabled: true
+      integ-zerodowntime: true
       # Staging environment
       staging-space: "staging"
       staging-domain: "apps.cf-staging.example.com"
-      staging-zerodowntime-enabled: true
+      staging-zerodowntime: true
       # Production environment
       prod-space: "production"
       prod-domain: "apps.cf.example.com"
-      prod-zerodowntime-enabled: true
+      prod-zerodowntime: true
       prod-deploy-strategy: "manual"
 
   # Semantic release
-  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@3
     inputs:
-      release-enabled: true
-      auto-release: false
+      auto-release-enabled: false
 
 # Secret variables - define in GitLab CI/CD settings
 # SONAR_TOKEN: SonarQube authentication token

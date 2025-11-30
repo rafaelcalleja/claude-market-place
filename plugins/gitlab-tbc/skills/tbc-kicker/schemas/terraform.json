@@ -1,0 +1,502 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Terraform Template",
+  "description": "to-be-continuous/terraform",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Terraform template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "the Docker image used to run Terraform CLI commands - set the version required by your project",
+          "default": "docker.io/hashicorp/terraform:latest"
+        },
+        "gitlab-backend-disabled": {
+          "type": "boolean",
+          "description": "Set to disable GitLab managed Terraform State",
+          "x-advanced": true
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Terraform project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "Terraform (hook) scripts base directory (relative to $TFPROJECTDIR)",
+          "default": ".",
+          "x-advanced": true
+        },
+        "output-dir": {
+          "type": "string",
+          "description": "Terraform output directory (relative to $TFPROJECTDIR). Everything generated in this directory will be kept as job artifacts.",
+          "default": "tf-output",
+          "x-advanced": true
+        },
+        "extra-opts": {
+          "type": "string",
+          "description": "Default Terraform extra options (applies to all Terraform commands)",
+          "x-advanced": true
+        },
+        "init-opts": {
+          "type": "string",
+          "description": "Default Terraform extra init options",
+          "x-advanced": true
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Default Terraform project workspace",
+          "x-advanced": true
+        },
+        "plan-opts": {
+          "type": "string",
+          "description": "Default Terraform extra plan options",
+          "x-advanced": true
+        },
+        "apply-opts": {
+          "type": "string",
+          "description": "Default Terraform extra apply options",
+          "x-advanced": true
+        },
+        "destroy-opts": {
+          "type": "string",
+          "description": "Default Terraform extra destroy options",
+          "x-advanced": true
+        },
+        "tfsec-image": {
+          "type": "string",
+          "description": "tfsec docker image",
+          "default": "docker.io/aquasec/tfsec-ci",
+          "x-feature": "tfsec"
+        },
+        "tfsec-args": {
+          "type": "string",
+          "description": "tfsec options and args",
+          "default": ".",
+          "x-feature": "tfsec"
+        },
+        "trivy-image": {
+          "type": "string",
+          "description": "trivy docker image",
+          "default": "docker.io/aquasec/trivy",
+          "x-feature": "trivy"
+        },
+        "trivy-args": {
+          "type": "string",
+          "description": "trivy config options and args",
+          "default": ".",
+          "x-feature": "trivy"
+        },
+        "checkov-image": {
+          "type": "string",
+          "description": "checkov docker image",
+          "default": "docker.io/bridgecrew/checkov",
+          "x-feature": "checkov"
+        },
+        "checkov-args": {
+          "type": "string",
+          "description": "checkov options and args",
+          "default": "--framework terraform",
+          "x-feature": "checkov"
+        },
+        "infracost-image": {
+          "type": "string",
+          "description": "Infracost docker image",
+          "default": "docker.io/infracost/infracost",
+          "x-feature": "tf-infracost"
+        },
+        "infracost-args": {
+          "type": "string",
+          "description": "infracost CLI options and args",
+          "default": "breakdown",
+          "x-feature": "tf-infracost"
+        },
+        "infacost-usage-file": {
+          "type": "string",
+          "description": "infracost usage file",
+          "default": "infracost-usage.yml",
+          "x-feature": "tf-infracost"
+        },
+        "infracost-api-key": {
+          "type": "string",
+          "description": "the infracost API key",
+          "x-feature": "tf-infracost"
+        },
+        "tflint-image": {
+          "type": "string",
+          "description": "Tflint docker image",
+          "default": "ghcr.io/terraform-linters/tflint-bundle:latest",
+          "x-feature": "tf-tflint"
+        },
+        "tflint-args": {
+          "type": "string",
+          "description": "tflint extra options and args",
+          "default": "--enable-plugin=google --enable-plugin=azurerm --enable-plugin=aws --recursive",
+          "x-feature": "tf-tflint"
+        },
+        "fmt-args": {
+          "type": "string",
+          "description": "terraform fmt extra options",
+          "default": "-diff -recursive",
+          "x-feature": "tf-fmt"
+        },
+        "docs-image": {
+          "type": "string",
+          "description": "terraform docs container image",
+          "default": "quay.io/terraform-docs/terraform-docs:edge",
+          "x-feature": "terraform docs"
+        },
+        "docs-extra-opts": {
+          "type": "string",
+          "description": "Extra terraform docs options",
+          "x-feature": "terraform docs"
+        },
+        "docs-config": {
+          "type": "string",
+          "description": "terraform docs configuration file (relative to $TFPROJECTDIR)",
+          "default": ".terraform-docs.yml",
+          "x-feature": "terraform docs"
+        },
+        "docs-output-dir": {
+          "type": "string",
+          "description": "terraform docs output directory (relative to $TFPROJECTDIR)",
+          "default": "docs",
+          "x-feature": "terraform docs"
+        },
+        "publish-image": {
+          "type": "string",
+          "description": "container image used to publish module",
+          "default": "docker.io/curlimages/curl:latest",
+          "x-feature": "publish module"
+        },
+        "module-name": {
+          "type": "string",
+          "description": "The module name. May not contain any spaces or underscores.",
+          "default": "$CI_PROJECT_NAME",
+          "x-feature": "publish module"
+        },
+        "module-system": {
+          "type": "string",
+          "description": "The module system or provider (example: local, aws, google)",
+          "default": "local",
+          "x-feature": "publish module"
+        },
+        "module-version": {
+          "type": "string",
+          "description": "The module version. It must be valid according to the semantic versioning specification.",
+          "default": "$CI_COMMIT_TAG",
+          "x-feature": "publish module"
+        },
+        "module-files": {
+          "type": "string",
+          "description": "Glob patterns matching files to include into the Terraform module (:warning: does not support double star)",
+          "default": "*.tf *.tpl *.md",
+          "x-feature": "publish module"
+        },
+        "review-extra-opts": {
+          "type": "string",
+          "description": "Terraform extra options for review env (applies to all Terraform commands) (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-init-opts": {
+          "type": "string",
+          "description": "Terraform extra init options for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-workspace": {
+          "type": "string",
+          "description": "Terraform project workspace for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-plan-enabled": {
+          "type": "boolean",
+          "description": "Set to enable separate Terraform plan job for review env.",
+          "x-feature": "Review"
+        },
+        "review-plan-opts": {
+          "type": "string",
+          "description": "Terraform extra plan options for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-apply-opts": {
+          "type": "string",
+          "description": "Terraform extra apply options for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-destroy-opts": {
+          "type": "string",
+          "description": "Terraform extra destroy options for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "integ-extra-opts": {
+          "type": "string",
+          "description": "Terraform extra options for integration env (applies to all Terraform commands) (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-init-opts": {
+          "type": "string",
+          "description": "Terraform extra init options for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-workspace": {
+          "type": "string",
+          "description": "Terraform project workspace for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-plan-enabled": {
+          "type": "boolean",
+          "description": "Set to enable separate Terraform plan job for integration env.",
+          "x-feature": "Integration"
+        },
+        "integ-plan-opts": {
+          "type": "string",
+          "description": "Terraform extra plan options for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-apply-opts": {
+          "type": "string",
+          "description": "Terraform extra apply options for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-destroy-opts": {
+          "type": "string",
+          "description": "Terraform extra destroy options for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the integration env",
+          "default": "never",
+          "x-feature": "Integration"
+        },
+        "staging-extra-opts": {
+          "type": "string",
+          "description": "Terraform extra options for staging env (applies to all Terraform commands) (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-init-opts": {
+          "type": "string",
+          "description": "Terraform extra init options for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-workspace": {
+          "type": "string",
+          "description": "Terraform project workspace for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-plan-enabled": {
+          "type": "boolean",
+          "description": "Set to enable separate Terraform plan job for staging env.",
+          "x-feature": "Staging"
+        },
+        "staging-plan-opts": {
+          "type": "string",
+          "description": "Terraform extra plan options for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-apply-opts": {
+          "type": "string",
+          "description": "Terraform extra apply options for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-destroy-opts": {
+          "type": "string",
+          "description": "Terraform extra destroy options for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the staging env",
+          "default": "never",
+          "x-feature": "Staging"
+        },
+        "prod-extra-opts": {
+          "type": "string",
+          "description": "Terraform extra options for production env (applies to all Terraform commands) (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-init-opts": {
+          "type": "string",
+          "description": "Terraform extra init options for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-workspace": {
+          "type": "string",
+          "description": "Terraform project workspace for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-plan-enabled": {
+          "type": "boolean",
+          "description": "Set to enable separate Terraform plan job for production env.",
+          "default": "true",
+          "x-feature": "Production"
+        },
+        "prod-plan-opts": {
+          "type": "string",
+          "description": "Terraform extra plan options for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-apply-opts": {
+          "type": "string",
+          "description": "Terraform extra apply options for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-destroy-opts": {
+          "type": "string",
+          "description": "Terraform extra destroy options for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "aws-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "AWS"
+        },
+        "aws-oidc-role-arn": {
+          "type": "string",
+          "description": "Default IAM Role ARN associated with GitLab to authenticate using OpenID Connect",
+          "x-variant": "AWS"
+        },
+        "aws-review-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on review env (only define to override default)",
+          "x-variant": "AWS"
+        },
+        "aws-integ-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on integration env (only define to override default)",
+          "x-variant": "AWS"
+        },
+        "aws-staging-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on staging env (only define to override default)",
+          "x-variant": "AWS"
+        },
+        "aws-prod-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab to authenticate using OpenID Connect on production env (only define to override default)",
+          "x-variant": "AWS"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "TF_",
+    "kind": "infrastructure",
+    "is_component": true,
+    "features": [
+      "tfsec",
+      "trivy",
+      "checkov",
+      "tf-infracost",
+      "tf-tflint",
+      "tf-fmt",
+      "tf-validate",
+      "terraform docs",
+      "publish module",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud",
+      "AWS"
+    ],
+    "variable_count": 86
+  }
+}

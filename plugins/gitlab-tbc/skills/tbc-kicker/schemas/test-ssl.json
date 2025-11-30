@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test SSL Template",
+  "description": "to-be-continuous/testssl",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Test SSL template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Test SSL",
+          "default": "docker.io/drwetter/testssl.sh:latest"
+        },
+        "args": {
+          "type": "string",
+          "description": "Test SSL command-line options",
+          "default": "--severity MEDIUM",
+          "x-advanced": true
+        },
+        "url": {
+          "type": "string",
+          "description": "Server url to test TLS/SSL against Leave unset if you're using deployment templates"
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Test SSL tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "TESTSSL_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

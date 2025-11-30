@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dbt Template",
+  "description": "to-be-continuous/dbt",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for dbt template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run dbt",
+          "default": "ghcr.io/dbt-labs/dbt-core:latest"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "The dbtproject.yml dir",
+          "default": "."
+        },
+        "profiles-dir": {
+          "type": "string",
+          "description": "The dbt profile location",
+          "default": "."
+        },
+        "adapter": {
+          "type": "string",
+          "description": "The dbt adapter to use"
+        },
+        "target": {
+          "type": "string",
+          "description": "The dbt target to use"
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Arguments used by dbt cli",
+          "x-advanced": true
+        },
+        "sqlfluff-lint-args": {
+          "type": "string",
+          "description": "Lint options and arguments",
+          "x-feature": "SQLFluff lint"
+        },
+        "sqlfluff-working-dir": {
+          "type": "string",
+          "description": "Sqlfluff working directory, scope of configuration and sql files used",
+          "default": ".",
+          "x-feature": "SQLFluff lint"
+        },
+        "review-target": {
+          "type": "string",
+          "description": "dbt target for review env",
+          "x-feature": "Review"
+        },
+        "integ-target": {
+          "type": "string",
+          "description": "dbt target for integration env",
+          "x-feature": "Integration"
+        },
+        "staging-target": {
+          "type": "string",
+          "description": "dbt target for staging env",
+          "x-feature": "Staging"
+        },
+        "prod-target": {
+          "type": "string",
+          "description": "dbt target for production env",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "tbc-gcp-provider-image": {
+          "type": "string",
+          "description": "The GCP Auth Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/gcp-auth-provider:latest",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment",
+          "x-variant": "Google Cloud"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "DBT_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "SQLFluff lint",
+      "dbt deploy",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "GitLab Pages",
+      "Google Cloud"
+    ],
+    "variable_count": 25
+  }
+}

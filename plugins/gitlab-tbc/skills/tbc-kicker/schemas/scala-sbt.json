@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Scala/SBT Template",
+  "description": "to-be-continuous/sbt",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Scala/SBT template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run sbt - set the version required by your project",
+          "default": "docker.io/sbtscala/scala-sbt:17.0.2_1.6.2_3.1.3"
+        },
+        "build-args": {
+          "type": "string",
+          "description": "The sbt arguments for the sbt arguments for the build job packaging",
+          "default": "clean package",
+          "x-advanced": true
+        },
+        "test-args": {
+          "type": "string",
+          "description": "The sbt arguments for the sbt arguments for the build job test phase",
+          "default": "coverage test coverageAggregate",
+          "x-advanced": true
+        },
+        "opts": {
+          "type": "string",
+          "description": "Global sbt options",
+          "default": "-Dsbt.global.base=sbt-cache/sbtboot -Dsbt.boot.directory=sbt-cache/boot -Dsbt.coursier.home=sbt-cache/coursier -Dsbt.ci=true -Dsbt.color=always",
+          "x-advanced": true
+        },
+        "cli-opts": {
+          "type": "string",
+          "description": "Additional sbt options used on the command line",
+          "default": "--batch",
+          "x-advanced": true
+        },
+        "sbom-image": {
+          "type": "string",
+          "description": "The syft image used for SBOM analysis",
+          "default": "docker.io/anchore/syft:debug",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "Options for syft used for SBOM analysis",
+          "default": "dir:sbt-cache/coursier --catalogers java-cataloger",
+          "x-feature": "Software Bill of Materials"
+        },
+        "publish-mode": {
+          "type": "string",
+          "enum": [
+            "",
+            "snapshot",
+            "ontag",
+            "release"
+          ],
+          "description": "Publish mode (one of snapshot, ontag, release)",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "git-private-key": {
+          "type": "string",
+          "description": "Git private key to perform Git operations (for release publish mode)",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-host": {
+          "type": "string",
+          "description": "Global Maven repository host where credentials apply",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-username": {
+          "type": "string",
+          "description": "Global Maven repository username",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-password": {
+          "type": "string",
+          "description": "Global Maven repository password",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-publish-release-url": {
+          "type": "string",
+          "description": "Maven repository URL where to publish release artifacts",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-publish-snapshot-url": {
+          "type": "string",
+          "description": "Maven repository URL where to publish snapshot artifacts",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-publish-username": {
+          "type": "string",
+          "description": "Maven repository username used for publishing purposes",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "maven-repository-publish-password": {
+          "type": "string",
+          "description": "Maven repository password used for publishing purposes",
+          "x-feature": "Publish (snapshot & release)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SBT_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "Software Bill of Materials",
+      "Publish (snapshot & release)"
+    ],
+    "variants": [],
+    "variable_count": 16
+  }
+}

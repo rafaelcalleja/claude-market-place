@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SonarQube Template",
+  "description": "to-be-continuous/sonar",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for SonarQube template",
+      "properties": {
+        "scanner-image": {
+          "type": "string",
+          "description": "The Docker image used to run sonar-scanner",
+          "default": "docker.io/sonarsource/sonar-scanner-cli:latest"
+        },
+        "host-url": {
+          "type": "string",
+          "description": "SonarQube server url"
+        },
+        "project-key": {
+          "type": "string",
+          "description": "SonarQube Project Key (might also be set in the sonar-project.properties file)",
+          "x-advanced": true
+        },
+        "project-name": {
+          "type": "string",
+          "description": "SonarQube Project Name (might also be set in the sonar-project.properties file)",
+          "x-advanced": true
+        },
+        "token": {
+          "type": "string",
+          "description": "SonarQube authentication token (depends on your authentication method)"
+        },
+        "login": {
+          "type": "string",
+          "description": "SonarQube login (depends on your authentication method)"
+        },
+        "password": {
+          "type": "string",
+          "description": "SonarQube password (depends on your authentication method)"
+        },
+        "base-args": {
+          "type": "string",
+          "description": "SonarQube analysis arguments",
+          "default": "-Dsonar.links.homepage=${CI_PROJECT_URL} -Dsonar.links.ci=${CI_PROJECT_URL}/-/pipelines -Dsonar.links.issue=${CI_PROJECT_URL}/-/issues",
+          "x-advanced": true
+        },
+        "quality-gate-enabled": {
+          "type": "boolean",
+          "description": "Enables SonarQube Quality Gate verification. Uses sonar.qualitygate.wait parameter (see doc)."
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SONAR_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 14
+  }
+}

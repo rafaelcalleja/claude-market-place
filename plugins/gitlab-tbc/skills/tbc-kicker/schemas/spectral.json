@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spectral Template",
+  "description": "to-be-continuous/spectral",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Spectral template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run spectral",
+          "default": "docker.io/stoplight/spectral:latest"
+        },
+        "documents": {
+          "type": "string",
+          "description": "Location of JSON/YAML documents to be linted. Can be either a file, a glob or fetchable resource(s) on the web",
+          "default": "{,api/,src/main/resources/}*{openapi,oas,swagger,async}*.{json,yml,yaml}"
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Extra Spectral CLI options",
+          "x-advanced": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Set to true to disable this job",
+          "x-advanced": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SPECTRAL_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

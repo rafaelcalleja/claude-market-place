@@ -1,0 +1,347 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Docker Template",
+  "description": "to-be-continuous/docker",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Docker template",
+      "properties": {
+        "build-tool": {
+          "type": "string",
+          "enum": [
+            "kaniko",
+            "buildah",
+            "dind"
+          ],
+          "description": "The build tool to use for building container image",
+          "default": "kaniko"
+        },
+        "kaniko-image": {
+          "type": "string",
+          "description": "The image used to run kaniko for kaniko build only",
+          "default": "gcr.io/kaniko-project/executor:debug"
+        },
+        "buildah-image": {
+          "type": "string",
+          "description": "The image used to run buildah for buildah build only",
+          "default": "quay.io/buildah/stable:latest"
+        },
+        "image": {
+          "type": "string",
+          "description": "The image used to run the docker client for Docker-in-Docker(dind) build only",
+          "default": "docker.io/library/docker:latest"
+        },
+        "dind-image": {
+          "type": "string",
+          "description": "The image used to run the Docker daemon for Docker-in-Docker(dind) build only",
+          "default": "docker.io/library/docker:dind"
+        },
+        "skopeo-image": {
+          "type": "string",
+          "description": "The image used to publish docker image with Skopeo",
+          "default": "quay.io/skopeo/stable:latest"
+        },
+        "file": {
+          "type": "string",
+          "description": "The path to your Dockerfile",
+          "default": "Dockerfile"
+        },
+        "context-path": {
+          "type": "string",
+          "description": "The Docker context path (working directory) - only set if you want a context path different from the Dockerfile location",
+          "x-advanced": true
+        },
+        "config-file": {
+          "type": "string",
+          "description": "Path to the Docker configuration file (JSON)",
+          "default": ".docker/config.json",
+          "x-advanced": true
+        },
+        "snapshot-image": {
+          "type": "string",
+          "description": "Docker snapshot image",
+          "default": "$CI_REGISTRY_IMAGE/snapshot:$CI_COMMIT_REF_SLUG"
+        },
+        "release-image": {
+          "type": "string",
+          "description": "Docker release image",
+          "default": "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+        },
+        "release-extra-tags-pattern": {
+          "type": "string",
+          "description": "Defines the image tag pattern that $DOCKERRELEASEIMAGE should match to push extra tags (supports capturing groups) Defaults to SemVer pattern.",
+          "default": "^v?(?P<major>[0-9]+)\\.(?P<minor>[0-9]+)\\.(?P<patch>[0-9]+)(?P<suffix>(?P<prerelease>-[0-9A-Za-z-\\.]+)?(?P<build>\\+[0-9A-Za-z-\\.]+)?)$",
+          "x-advanced": true
+        },
+        "release-extra-tags": {
+          "type": "string",
+          "description": "Defines extra tags to publish the release image Supports capturing group references from $DOCKERRELEASEEXTRATAGSPATTERN (ex: latest \\g<major>.\\g<minor> \\g<major>)",
+          "x-advanced": true
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Additional docker/kaniko/buildah build arguments. If values contain spaces, ensure any required quote are correctly escaped when needed (not supported for Kaniko)"
+        },
+        "metadata": {
+          "type": "string",
+          "description": "Additional metadata to set as labels. If values contain spaces, ensure any required quote are correctly escaped when needed (not supported for Kaniko)",
+          "default": "--label \"org.opencontainers.image.url=${CI_PROJECT_URL}\" --label \"org.opencontainers.image.source=${CI_PROJECT_URL}\" --label \"org.opencontainers.image.title=${CI_PROJECT_PATH}\" --label \"org.opencontainers.image.ref.name=${CI_COMMIT_REF_NAME}\" --label \"org.opencontainers.image.revision=${CI_COMMIT_SHA}\" --label \"org.opencontainers.image.created=${CI_JOB_STARTED_AT}\"",
+          "x-advanced": true
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "Additional skopeo copy arguments"
+        },
+        "prod-publish-strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the publish to production strategy.",
+          "default": "manual"
+        },
+        "semrel-release-disabled": {
+          "type": "boolean",
+          "description": "Disable integration with the semantic release template"
+        },
+        "registry-mirror": {
+          "type": "string",
+          "description": "URL of a Docker registry mirror to use instead of default https://index.docker.io Used by kaniko and dind builds only"
+        },
+        "container-registries-config-file": {
+          "type": "string",
+          "description": "The registries.conf configuration to be used Used by the buildah build only",
+          "x-advanced": true
+        },
+        "kaniko-snapshot-image-cache": {
+          "type": "string",
+          "description": "Snapshot image repository that will be used to store cached layers (leave empty to use default: snapshot image repository + /cache) Used by the kaniko build only",
+          "x-advanced": true
+        },
+        "build-cache-disabled": {
+          "type": "boolean",
+          "description": "Set to true to disable the build cache.",
+          "x-advanced": true
+        },
+        "push-args": {
+          "type": "string",
+          "description": "Additional docker/buildah push arguments (executed right after build). Ex: --compression-format zstd --compression-level 20",
+          "x-advanced": true
+        },
+        "hadolint-image": {
+          "type": "string",
+          "description": "The docker image to lint your Dockerfile with Hadolint",
+          "default": "docker.io/hadolint/hadolint:latest-alpine",
+          "x-feature": "Hadolint"
+        },
+        "hadolint-args": {
+          "type": "string",
+          "description": "Additional hadolint arguments",
+          "x-feature": "Hadolint"
+        },
+        "healthcheck-timeout": {
+          "type": "number",
+          "description": "When testing an image, how long (in seconds) wait for the HealthCheck status",
+          "default": "60",
+          "x-feature": "Health Check"
+        },
+        "healthcheck-options": {
+          "type": "string",
+          "description": "Docker options for health check such as port mapping, environment...",
+          "x-feature": "Health Check"
+        },
+        "healthcheck-container-args": {
+          "type": "string",
+          "description": "Arguments sent to the running container for health check",
+          "x-feature": "Health Check"
+        },
+        "trivy-image": {
+          "type": "string",
+          "description": "The docker image used to scan images with Trivy",
+          "default": "docker.io/aquasec/trivy:latest",
+          "x-feature": "Trivy"
+        },
+        "trivy-args": {
+          "type": "string",
+          "description": "Additional trivy image options",
+          "default": "--ignore-unfixed --pkg-types os --exit-on-eol 1 --detection-priority comprehensive",
+          "x-feature": "Trivy"
+        },
+        "sbom-image": {
+          "type": "string",
+          "default": "docker.io/anchore/syft:debug",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "Options for syft used for SBOM analysis",
+          "default": "--override-default-catalogers rpm-db-cataloger,alpm-db-cataloger,apk-db-cataloger,dpkg-db-cataloger,portage-cataloger",
+          "x-feature": "Software Bill of Materials"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "tbc-gcp-provider-image": {
+          "type": "string",
+          "description": "The GCP Auth Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/gcp-auth-provider:latest",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-snapshot-oidc-account": {
+          "type": "string",
+          "description": "Service Account to use to push the snapshot image (only define to override default)",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-snapshot-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider to push the snapshot image (only define to override default)",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-release-oidc-account": {
+          "type": "string",
+          "description": "Service Account to use to push the release image (only define to override default)",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-release-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider to push the release image (only define to override default)",
+          "x-variant": "Google Cloud"
+        },
+        "tbc-aws-provider-image": {
+          "type": "string",
+          "description": "The AWS Auth Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/aws-auth-provider:latest",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-region": {
+          "type": "string",
+          "description": "Default region (where the ECR registry is located)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-snapshot-region": {
+          "type": "string",
+          "description": "Region of the ECR registry for the snapshot image (only define to override default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-release-region": {
+          "type": "string",
+          "description": "Region of the ECR registry for the release image (only define to override default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-oidc-role-arn": {
+          "type": "string",
+          "description": "Default IAM Role ARN associated with GitLab (only required for OIDC authentication)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-snapshot-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab for the snapshot image (only required for OIDC authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-release-oidc-role-arn": {
+          "type": "string",
+          "description": "IAM Role ARN associated with GitLab for the release image (only required for OIDC authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-access-key-id": {
+          "type": "string",
+          "description": "Default access key ID (only required for basic authentication)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-secret-access-key": {
+          "type": "string",
+          "description": "Default secret access key (only required for basic authentication)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-snapshot-access-key-id": {
+          "type": "string",
+          "description": "Access key ID for the snapshot image (only required for basic authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-snapshot-secret-access-key": {
+          "type": "string",
+          "description": "Secret access key for the snapshot image (only required for basic authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-release-access-key-id": {
+          "type": "string",
+          "description": "Access key ID for the release image (only required for basic authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        },
+        "aws-release-secret-access-key": {
+          "type": "string",
+          "description": "Secret access key for the release image (only required for basic authentication and if different from default)",
+          "x-variant": "Amazon ECR"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "DOCKER_",
+    "kind": "package",
+    "is_component": true,
+    "features": [
+      "Hadolint",
+      "Health Check",
+      "Trivy",
+      "Software Bill of Materials"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud",
+      "Amazon ECR"
+    ],
+    "variable_count": 59
+  }
+}

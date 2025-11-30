@@ -8,42 +8,37 @@
 
 include:
   # Python build template
-  - component: $CI_SERVER_FQDN/to-be-continuous/python/python@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/python/gitlab-ci-python@7
     inputs:
       image: "python:3.12-slim"
       build-system: "poetry"
-      pytest-enabled: true
-      pytest-opts: "--cov=src --cov-report=xml --cov-report=html"
-      bandit-enabled: true
-      ruff-enabled: true
-      mypy-enabled: true
-      sbom-disabled: false
+      pytest-args: "--cov=src --cov-report=xml --cov-report=html"
+      bandit-args: "-r src/"
+      mypy-files: "src/"
+      ruff-args: "src/"
 
   # SonarQube analysis
-  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/gitlab-ci-sonar@4
     inputs:
-      sonar-url: "https://sonarqube.example.com"
+      host-url: "https://sonarqube.example.com"
       project-key: "my-python-service"
       quality-gate-enabled: true
 
   # Docker packaging with Kaniko
-  - component: $CI_SERVER_FQDN/to-be-continuous/docker/docker@6
+  - component: $CI_SERVER_FQDN/to-be-continuous/docker/gitlab-ci-docker@6
     inputs:
       build-tool: "kaniko"
       file: "Dockerfile"
       snapshot-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
       release-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
-      trivy-enabled: true
-      cosign-when: "onrelease"
-      hadolint-disabled: false
+      trivy-args: "--severity CRITICAL,HIGH"
+      hadolint-args: "--ignore DL3008"
 
   # Helm deployment to Kubernetes
-  - component: $CI_SERVER_FQDN/to-be-continuous/helm/helm@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/helm/gitlab-ci-helm@5
     inputs:
       chart-dir: "charts/my-service"
-      values-file: "charts/my-service/values.yaml"
-      lint-disabled: false
-      kubescore-enabled: true
+      common-values: "charts/my-service/values.yaml"
       review-namespace: "review-$CI_COMMIT_REF_SLUG"
       review-autostop-duration: "4 hours"
       integ-namespace: "integration"
@@ -52,10 +47,10 @@ include:
       prod-deploy-strategy: "manual"
 
   # Semantic release for versioning
-  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@5
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@3
     inputs:
       changelog-enabled: true
-      auto-release: true
+      auto-release-enabled: true
 
 # Secret variables - define in GitLab CI/CD settings
 # SONAR_TOKEN: SonarQube authentication token

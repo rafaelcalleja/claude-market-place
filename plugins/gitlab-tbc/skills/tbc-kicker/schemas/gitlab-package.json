@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitLab Package Template",
+  "description": "to-be-continuous/gitlab-package",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for GitLab Package template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to publish packages",
+          "default": "docker.io/curlimages/curl:latest",
+          "x-advanced": true
+        },
+        "files": {
+          "type": "string",
+          "description": "Glob patterns matching files to include in the GitLab package (:warning: does not support double star)"
+        },
+        "package": {
+          "type": "string",
+          "description": "Name of the package to publish",
+          "default": "$CI_PROJECT_NAME"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "GLPKG_",
+    "kind": "build",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 3
+  }
+}

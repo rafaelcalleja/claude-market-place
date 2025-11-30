@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenShift Template",
+  "description": "to-be-continuous/openshift",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for OpenShift template",
+      "properties": {
+        "cli-image": {
+          "type": "string",
+          "description": "the Docker image used to run OpenShift Client (OC) CLI commands - set the version required by your OpenShift server",
+          "default": "quay.io/openshift/origin-cli:latest"
+        },
+        "url": {
+          "type": "string",
+          "description": "Global OpenShift API url"
+        },
+        "token": {
+          "type": "string",
+          "description": "Global OpenShift API token"
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "base-template-name": {
+          "type": "string",
+          "description": "Base OpenShift template name",
+          "default": "openshift",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.openshift.acme.com)"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "directory where OpenShift scripts (templates, hook scripts) are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "app-label": {
+          "type": "string",
+          "description": "The OpenShift label set with the $environmentname dynamic variable.",
+          "default": "app",
+          "x-advanced": true
+        },
+        "env-label": {
+          "type": "string",
+          "description": "The OpenShift label set with the $environmenttype dynamic variable.",
+          "default": "env",
+          "x-advanced": true
+        },
+        "review-project": {
+          "type": "string",
+          "description": "OpenShift project for review env",
+          "x-feature": "Review"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "review-url": {
+          "type": "string",
+          "description": "OpenShift API url for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-token": {
+          "type": "string",
+          "description": "OpenShift API token for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "cleanup-all-review": {
+          "type": "boolean",
+          "description": "Enables a manual job to cleanup all review envs at once. You may also use it to schedule cloud resources cleanup. See documentation.",
+          "x-feature": "Review"
+        },
+        "integ-project": {
+          "type": "string",
+          "description": "OpenShift project for integration env",
+          "x-feature": "Integration"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "integ-url": {
+          "type": "string",
+          "description": "OpenShift API url for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-token": {
+          "type": "string",
+          "description": "OpenShift API token for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "staging-project": {
+          "type": "string",
+          "description": "OpenShift project for staging env",
+          "x-feature": "Staging"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "staging-url": {
+          "type": "string",
+          "description": "OpenShift API url for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-token": {
+          "type": "string",
+          "description": "OpenShift API token for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "prod-project": {
+          "type": "string",
+          "description": "OpenShift project for production env",
+          "x-feature": "Production"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-url": {
+          "type": "string",
+          "description": "OpenShift API url for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-token": {
+          "type": "string",
+          "description": "OpenShift API token for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "OS_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 37
+  }
+}

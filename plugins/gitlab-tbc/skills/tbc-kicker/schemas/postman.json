@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Postman Template",
+  "description": "to-be-continuous/postman",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Postman template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Postman CLI.",
+          "default": "docker.io/postman/newman:latest"
+        },
+        "collections": {
+          "type": "string",
+          "description": "The matcher to select Postman collection file(s) to run.",
+          "default": "postman/*collection.json"
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Newman extra run options (to use global variables, an environment or a data source for e.g.)",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Postman tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "POSTMAN_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}
