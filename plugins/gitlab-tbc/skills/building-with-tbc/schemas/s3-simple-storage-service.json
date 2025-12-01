@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S3 (Simple Storage Service) Template",
+  "description": "to-be-continuous/s3",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for S3 (Simple Storage Service) template",
+      "properties": {
+        "cmd-image": {
+          "type": "string",
+          "description": "The Docker image used to run s3cmd commands",
+          "default": "docker.io/d3fk/s3cmd:latest",
+          "x-advanced": true
+        },
+        "endpoint-host": {
+          "type": "string",
+          "description": "Default S3 endpoint hostname (with port)",
+          "default": "s3.amazonaws.com"
+        },
+        "host-bucket": {
+          "type": "string",
+          "description": "Default DNS-style bucket+hostname:port template for accessing a bucket",
+          "default": "%(bucket)s.$S3_ENDPOINT_HOST"
+        },
+        "region": {
+          "type": "string",
+          "description": "Default region to create the buckets in (if not defined, the template won't create any)"
+        },
+        "access-key": {
+          "type": "string",
+          "description": "Default S3 service Access Key"
+        },
+        "secret-key": {
+          "type": "string",
+          "description": "Default S3 service Secret Key"
+        },
+        "base-bucket-name": {
+          "type": "string",
+          "description": "Base bucket name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "deploy-args": {
+          "type": "string",
+          "description": "s3cmd command and options to deploy files to the bucket",
+          "default": "sync --recursive --delete-removed --acl-public --no-mime-magic --guess-mime-type",
+          "x-advanced": true
+        },
+        "deploy-files": {
+          "type": "string",
+          "description": "Pattern(s) of files to deploy to the S3 bucket",
+          "default": "public/"
+        },
+        "website-disabled": {
+          "type": "boolean",
+          "description": "Disables WebSite hosting by your S3 bucket"
+        },
+        "website-endpoint": {
+          "type": "string",
+          "description": "Default WebSite endpoint url pattern (supports %(bucket)s and %(location)s placeholders)",
+          "default": "http://%(bucket)s.s3-website.%(location)s.amazonaws.com"
+        },
+        "website-args": {
+          "type": "string",
+          "description": "s3cmd command and options to enable WebSite hosting on the bucket",
+          "default": "ws-create --ws-index=index.html --ws-error=404.html",
+          "x-advanced": true
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Default S3 prefix to use as a root destination to upload objects in the S3 bucket"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "Directory where S3 hook scripts are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "review-endpoint-host": {
+          "type": "string",
+          "description": "S3 endpoint hostname (with port) for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-region": {
+          "type": "string",
+          "description": "Region to create the review buckets in (if not defined, the template won't create any)",
+          "x-feature": "Review"
+        },
+        "review-access-key": {
+          "type": "string",
+          "description": "S3 service Access Key for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-secret-key": {
+          "type": "string",
+          "description": "S3 service Secret Key for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-bucket-name": {
+          "type": "string",
+          "description": "Bucket name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "cleanup-all-review": {
+          "type": "boolean",
+          "description": "Enables a manual job to cleanup all review envs at once. You may also use it to schedule cloud resources cleanup. See documentation.",
+          "x-feature": "Review"
+        },
+        "review-prefix": {
+          "type": "string",
+          "description": "S3 prefix to use for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "integ-endpoint-host": {
+          "type": "string",
+          "description": "S3 endpoint hostname (with port) for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-region": {
+          "type": "string",
+          "description": "Region to create the integration bucket in",
+          "x-feature": "Integration"
+        },
+        "integ-access-key": {
+          "type": "string",
+          "description": "S3 service Access Key for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-secret-key": {
+          "type": "string",
+          "description": "S3 service Secret Key for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-bucket-name": {
+          "type": "string",
+          "description": "Bucket name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-prefix": {
+          "type": "string",
+          "description": "S3 prefix to use for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "staging-endpoint-host": {
+          "type": "string",
+          "description": "S3 endpoint hostname (with port) for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-region": {
+          "type": "string",
+          "description": "Region to create the staging bucket in",
+          "x-feature": "Staging"
+        },
+        "staging-access-key": {
+          "type": "string",
+          "description": "S3 service Access Key for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-secret-key": {
+          "type": "string",
+          "description": "S3 service Secret Key for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-bucket-name": {
+          "type": "string",
+          "description": "Bucket name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-prefix": {
+          "type": "string",
+          "description": "S3 prefix to use for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "prod-endpoint-host": {
+          "type": "string",
+          "description": "S3 endpoint hostname (with port) for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-region": {
+          "type": "string",
+          "description": "Region to create the production bucket in",
+          "x-feature": "Production"
+        },
+        "prod-access-key": {
+          "type": "string",
+          "description": "S3 service Access Key for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-secret-key": {
+          "type": "string",
+          "description": "S3 service Secret Key for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-bucket-name": {
+          "type": "string",
+          "description": "Bucket name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-prefix": {
+          "type": "string",
+          "description": "S3 prefix to use for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "S3_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 46
+  }
+}

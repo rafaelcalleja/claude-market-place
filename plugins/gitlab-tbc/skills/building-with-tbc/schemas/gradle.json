@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gradle Template",
+  "description": "to-be-continuous/gradle",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Gradle template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Gradle - set the version required by your project",
+          "default": "docker.io/library/gradle:latest"
+        },
+        "cli-opts": {
+          "type": "string",
+          "description": "Additional Gradle options used on the command line",
+          "x-advanced": true
+        },
+        "cli-bin": {
+          "type": "string",
+          "description": "The location of the gradle binary. If you prefer using a gradle wrapper you should override this (for e.g. gradlew)",
+          "default": "gradle",
+          "x-advanced": true
+        },
+        "user-home": {
+          "type": "string",
+          "description": "The gradle user home",
+          "default": "$CI_PROJECT_DIR/.gradle",
+          "x-advanced": true
+        },
+        "daemon": {
+          "type": "string",
+          "description": "Whether to use or not gradle daemon",
+          "default": "false",
+          "x-advanced": true
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Gradle arguments for the build & test job",
+          "default": "build",
+          "x-advanced": true
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Gradle project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "jacoco-csv-report": {
+          "type": "string",
+          "description": "Name of code coverage report",
+          "default": "jacocoTestReport.csv",
+          "x-advanced": true
+        },
+        "sonar-host-url": {
+          "type": "string",
+          "description": "SonarQube server url",
+          "x-feature": "SONAR"
+        },
+        "sonar-token": {
+          "type": "string",
+          "description": "SonarQube authentication token (see https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/)",
+          "x-feature": "SONAR"
+        },
+        "sonar-base-args": {
+          "type": "string",
+          "description": "SonarQube analysis arguments",
+          "default": "sonar -Dsonar.links.homepage=${CI_PROJECT_URL} -Dsonar.links.ci=${CI_PROJECT_URL}/-/pipelines -Dsonar.links.issue=${CI_PROJECT_URL}/-/issues",
+          "x-feature": "SONAR"
+        },
+        "sonar-quality-gate-enabled": {
+          "type": "boolean",
+          "description": "Enables SonarQube Quality Gate verification. Uses sonar.qualitygate.wait parameter (see doc).",
+          "x-feature": "SONAR"
+        },
+        "dependency-check-task": {
+          "type": "string",
+          "description": "The dependency-check task that is invoked",
+          "default": "dependencyCheckAnalyze",
+          "x-feature": "Dependency Check"
+        },
+        "sbom-version": {
+          "type": "string",
+          "description": "Version of the cyclonedx-gradle-plugin used for SBOM analysis. When unset, the latest version will be used",
+          "x-feature": "Software Bill of Materials"
+        },
+        "maven-plugin-url": {
+          "type": "string",
+          "description": "Maven Repository that is used to download the cyclonedx-gradle-plugin. No trailing slash.",
+          "default": "https://plugins.gradle.org/m2",
+          "x-feature": "Software Bill of Materials"
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "The publish task that is invoked",
+          "default": "publish",
+          "x-feature": "Publish (snapshot & release)"
+        },
+        "publish-version": {
+          "type": "string",
+          "description": "The value is propagated as gradle properties named version. It should be used in your publish task",
+          "default": "${CI_COMMIT_REF_SLUG}-SNAPSHOT",
+          "x-feature": "Publish (snapshot & release)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "GRADLE_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "SONAR",
+      "Dependency Check",
+      "Software Bill of Materials",
+      "Publish (snapshot & release)"
+    ],
+    "variants": [],
+    "variable_count": 17
+  }
+}

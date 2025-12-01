@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cypress Template",
+  "description": "to-be-continuous/cypress",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Cypress template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Cypress (use included images only).",
+          "default": "docker.io/cypress/included:13.13.3"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "The Cypress project directory (containing cypress.config.js or cypress.config.ts)",
+          "default": "."
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Cypress extra run options (to select a different browser, configuration or spec files for e.g.)",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Cypress tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "CYPRESS_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

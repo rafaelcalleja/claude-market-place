@@ -1,0 +1,441 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ansible Template",
+  "description": "to-be-continuous/ansible",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Ansible template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Ansible. The image may contain your Ansible sources. set the version required by your project",
+          "default": "docker.io/cytopia/ansible:latest-tools"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Ansible project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.acme.com)"
+        },
+        "vault-password": {
+          "type": "string",
+          "description": "The Ansible vault password used to decrypt vars"
+        },
+        "private-key": {
+          "type": "string",
+          "description": "The Ansible SSH private key to use in all stages (can be overridden per env)"
+        },
+        "public-key": {
+          "type": "string",
+          "description": "The Ansible SSH public key associated to the private key to be use in all stages (can be overridden per env)",
+          "x-advanced": true
+        },
+        "default-inventory": {
+          "type": "string",
+          "description": "The default inventory, if used"
+        },
+        "default-tags": {
+          "type": "string",
+          "description": "The default tags, if used"
+        },
+        "default-extra-args": {
+          "type": "string",
+          "description": "Optional default args to add to the ansible-playbook command line",
+          "x-advanced": true
+        },
+        "force-color": {
+          "type": "boolean",
+          "description": "Forces color on Ansible output",
+          "default": "true",
+          "x-advanced": true
+        },
+        "requirements-file": {
+          "type": "string",
+          "description": "The file used to install roles with ansible-galaxy role install",
+          "default": "requirements.yml",
+          "x-advanced": true
+        },
+        "galaxy-extra-args": {
+          "type": "string",
+          "description": "ansible-galaxy role install command extra options",
+          "x-advanced": true
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "The Ansible scripts base directory (relative to $ANSIBLEPROJECTDIR)",
+          "default": ".",
+          "x-advanced": true
+        },
+        "host-key-checking": {
+          "type": "boolean",
+          "description": "Enable or disable the SSH host key checking",
+          "default": "false",
+          "x-advanced": true
+        },
+        "default-roles-path": {
+          "type": "string",
+          "description": "The default path where the roles should be installed",
+          "default": "$CI_PROJECT_DIR/roles",
+          "x-advanced": true
+        },
+        "lint-image": {
+          "type": "string",
+          "description": "The Docker image used to run Ansible Lint.",
+          "default": "docker.io/haxorof/ansible-lint:latest",
+          "x-feature": "Ansible Lint"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "review-inventory": {
+          "type": "string",
+          "description": "The inventory for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-tags": {
+          "type": "string",
+          "description": "The tags for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-cleanup-tags": {
+          "type": "string",
+          "description": "The tags to cleanup the review env",
+          "x-feature": "Review"
+        },
+        "review-extra-args": {
+          "type": "string",
+          "description": "The command line extra args for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename for review env",
+          "x-feature": "Review"
+        },
+        "review-cleanup-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename to cleanup review env (only define if different from deployment playbook)",
+          "x-feature": "Review"
+        },
+        "review-private-key": {
+          "type": "string",
+          "description": "The SSH private key to be use in review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-public-key": {
+          "type": "string",
+          "description": "The SSH public key associated to the private key to be use in review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-vault-password": {
+          "type": "string",
+          "description": "The Ansible vault password for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the integration env",
+          "default": "never",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "integ-inventory": {
+          "type": "string",
+          "description": "The inventory for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-tags": {
+          "type": "string",
+          "description": "The tags for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-cleanup-tags": {
+          "type": "string",
+          "description": "The tags to cleanup the integration env",
+          "x-feature": "Integration"
+        },
+        "integ-extra-args": {
+          "type": "string",
+          "description": "The command line extra args for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename for integration env",
+          "x-feature": "Integration"
+        },
+        "integ-cleanup-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename to cleanup integration env (only define if different from deployment playbook)",
+          "x-feature": "Integration"
+        },
+        "integ-private-key": {
+          "type": "string",
+          "description": "The SSH private key to be use in integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-public-key": {
+          "type": "string",
+          "description": "The SSH public key associated to the private key to be use in integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-vault-password": {
+          "type": "string",
+          "description": "The Ansible vault password for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop the staging env",
+          "default": "never",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "staging-inventory": {
+          "type": "string",
+          "description": "The inventory for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-tags": {
+          "type": "string",
+          "description": "The tags for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-cleanup-tags": {
+          "type": "string",
+          "description": "The tags to cleanup the staging env",
+          "x-feature": "Staging"
+        },
+        "staging-extra-args": {
+          "type": "string",
+          "description": "The command line extra args for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename for staging env",
+          "x-feature": "Staging"
+        },
+        "staging-cleanup-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename to cleanup staging env (only define if different from deployment playbook)",
+          "x-feature": "Staging"
+        },
+        "staging-private-key": {
+          "type": "string",
+          "description": "The SSH private key to be use in staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-public-key": {
+          "type": "string",
+          "description": "The SSH public key associated to the private key to be use in staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-vault-password": {
+          "type": "string",
+          "description": "The Ansible vault password for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-inventory": {
+          "type": "string",
+          "description": "The inventory for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-tags": {
+          "type": "string",
+          "description": "The tags for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-extra-args": {
+          "type": "string",
+          "description": "The command line extra args for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-playbook-file": {
+          "type": "string",
+          "description": "The playbook filename for production env",
+          "x-feature": "Production"
+        },
+        "prod-private-key": {
+          "type": "string",
+          "description": "The SSH private key to be use in production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-public-key": {
+          "type": "string",
+          "description": "The SSH public key associated to the private key to be use in production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-vault-password": {
+          "type": "string",
+          "description": "The Ansible vault password for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment",
+          "x-variant": "Google Cloud"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "ANSIBLE_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Ansible Lint",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud"
+    ],
+    "variable_count": 79
+  }
+}

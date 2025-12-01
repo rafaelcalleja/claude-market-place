@@ -1,0 +1,66 @@
+# Terraform Infrastructure with AWS Deployment
+# This configuration demonstrates:
+# - Terraform infrastructure management
+# - Security scanning with tfsec, Checkov, Trivy
+# - Cost estimation with Infracost
+# - AWS deployment with OIDC authentication
+# - Multi-environment deployment (review, integration, staging, production)
+
+include:
+  # Terraform infrastructure template
+  - component: $CI_SERVER_FQDN/to-be-continuous/terraform/gitlab-ci-terraform@5
+    inputs:
+      image: "hashicorp/terraform:1.7"
+      project-dir: "infrastructure"
+      # Security scanning arguments
+      tfsec-args: "--format json --out tfsec-report.json"
+      checkov-args: "-o cli -o junitxml --output-file-path console,checkov-report.xml"
+      trivy-args: "config --severity CRITICAL,HIGH ."
+      # Cost estimation
+      infracost-args: "breakdown --path ."
+      # Code quality
+      tflint-args: "--recursive"
+      docs-config: ".terraform-docs.yml"
+      # Enable separate plan jobs for approval workflow
+      review-plan-enabled: true
+      staging-plan-enabled: true
+      prod-plan-enabled: true
+      # Review environment
+      review-workspace: "review-$CI_COMMIT_REF_SLUG"
+      review-autostop-duration: "4 hours"
+      # Integration environment
+      integ-workspace: "integration"
+      # Staging environment
+      staging-workspace: "staging"
+      # Production environment
+      prod-workspace: "production"
+
+  # AWS deployment with OIDC authentication
+  - component: $CI_SERVER_FQDN/to-be-continuous/aws/gitlab-ci-aws@5
+    inputs:
+      scripts-dir: "infrastructure/scripts"
+      review-autostop-duration: "4 hours"
+      prod-deploy-strategy: "manual"
+
+  # AWS OIDC variant for secure authentication
+  - component: $CI_SERVER_FQDN/to-be-continuous/aws/gitlab-ci-aws-oidc@5
+    inputs:
+      oidc-aud: "$CI_SERVER_URL"
+
+# Secret variables - define in GitLab CI/CD settings
+# AWS_OIDC_ROLE_ARN: IAM Role ARN for OIDC authentication
+# INFRACOST_API_KEY: Infracost API key
+
+variables:
+  # Terraform configuration
+  TF_VAR_environment: "$CI_ENVIRONMENT_NAME"
+  TF_VAR_project_name: "$CI_PROJECT_NAME"
+
+  # AWS OIDC roles per environment (optional overrides)
+  # AWS_REVIEW_OIDC_ROLE_ARN: ""
+  # AWS_INTEG_OIDC_ROLE_ARN: ""
+  # AWS_STAGING_OIDC_ROLE_ARN: ""
+  # AWS_PROD_OIDC_ROLE_ARN: ""
+
+  # Terraform backend configuration
+  TF_STATE_NAME: "$CI_PROJECT_NAME"

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Renovate Template",
+  "description": "to-be-continuous/renovate",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Renovate template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Renovate",
+          "default": "docker.io/renovate/renovate:latest"
+        },
+        "onboarding-config": {
+          "type": "string",
+          "description": "Renovate configuration to use for onboarding PRs",
+          "default": "{\n  \"$$schema\": \"https://docs.renovatebot.com/renovate-schema.json\",\n  \"extends\": [\n    \"config:recommended\",\n    \":dependencyDashboard\"\n  ],\n \"labels\": [\n   \"dependencies\"\n  ],\n  \"customManagers\": [\n    {\n      \"customType\": \"regex\",\n      \"fileMatch\": [ \"\\\\.gitlab-ci\\\\.ya?ml$\" ], \n      \"matchStrings\": [ \"\\\\s?_IMAGE:\\\\s['\\\"](?<registryUrls>.*?)\\\\/(?<depName>.*?):(?<currentValue>.*)['\\\"]\" ], \n      \"datasourceTemplate\": \"docker\" \n    },\n    {\n      \"customType\": \"regex\",\n      \"fileMatch\": [ \"\\\\.gitlab-ci\\\\.ya?ml$\" ], \n      \"matchStrings\": [ \"\\\\s?image:\\\\s['\\\"](?<registryUrls>.*?)\\\\/(?<depName>.*?):(?<currentValue>.*)['\\\"]\" ], \n      \"datasourceTemplate\": \"docker\" \n    }\n  ] \n}"
+        },
+        "token": {
+          "type": "string",
+          "description": "A GitLab access token to allow Renovate crawl your projects. See doc"
+        },
+        "github-com-token": {
+          "type": "string",
+          "description": "A GitHub access token to allow Renovate fetch changelogs. See doc"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "RENOVATE_",
+    "kind": "misc",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

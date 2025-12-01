@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Node.js Template",
+  "description": "to-be-continuous/node",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Node.js template",
+      "properties": {
+        "config-registry": {
+          "type": "string",
+          "description": "npm registry",
+          "x-advanced": true
+        },
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Node.js - set the version required by your project",
+          "default": "docker.io/library/node:lts-alpine"
+        },
+        "manager": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "npm",
+            "yarn",
+            "pnpm"
+          ],
+          "description": "The package manager used by your project (npm, yarn or pnpm) - if undefined, automatic detection",
+          "default": "auto",
+          "x-advanced": true
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Node project root directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "source-dir": {
+          "type": "string",
+          "description": "Sources directory",
+          "default": "src",
+          "x-advanced": true
+        },
+        "config-scoped-registries": {
+          "type": "string",
+          "description": "Space separated list of NPM scoped registries (formatted as @somescope:https://some.npm.registry/some/repo @anotherscope:https://another.npm.registry/another/repo)",
+          "x-advanced": true
+        },
+        "build-disabled": {
+          "type": "boolean",
+          "description": "Set to true to disable build",
+          "default": "false",
+          "x-advanced": true
+        },
+        "build-args": {
+          "type": "string",
+          "description": "npm run script arguments - yarn run script arguments - pnpm run script arguments \u26a0 default value should be overridden for pnpm as --prod is not a valid option",
+          "default": "run build --prod",
+          "x-advanced": true
+        },
+        "build-dir": {
+          "type": "string",
+          "description": "Variable to define build directory",
+          "default": "dist",
+          "x-advanced": true
+        },
+        "test-args": {
+          "type": "string",
+          "description": "npm test arguments - yarn test arguments - pnpm test arguments",
+          "default": "test -- --coverage",
+          "x-advanced": true
+        },
+        "install-extra-opts": {
+          "type": "string",
+          "description": "Extra options to install project dependencies (either npm ci, yarn install or pnpm install)",
+          "x-advanced": true
+        },
+        "lint-args": {
+          "type": "string",
+          "description": "npm run script arguments to execute the lint analysis - yarn run script arguments to execute the lint analysis - pnpm run script arguments to execute the lint analysis",
+          "default": "run lint",
+          "x-feature": "node lint"
+        },
+        "audit-args": {
+          "type": "string",
+          "description": "npm audit arguments - yarn audit arguments - pnpm audit arguments",
+          "default": "--audit-level=low",
+          "x-feature": "node audit"
+        },
+        "outdated-args": {
+          "type": "string",
+          "description": "npm outdated arguments - yarn outdated arguments - pnpm outdated arguments",
+          "default": "--long",
+          "x-feature": "node outdated"
+        },
+        "semgrep-image": {
+          "type": "string",
+          "description": "The Docker image used to run Semgrep",
+          "default": "docker.io/semgrep/semgrep:latest",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-args": {
+          "type": "string",
+          "description": "Semgrep scan options",
+          "default": "--metrics off --disable-version-check --no-suppress-errors",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-rules": {
+          "type": "string",
+          "description": "Space-separated list of Semgrep rules. Can be both local YAML files or remote rules from the Semgrep Registry (denoted by the p/ prefix).",
+          "default": "p/javascript p/eslint p/gitlab-eslint",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-registry-base-url": {
+          "type": "string",
+          "description": "The Semgrep Registry base URL that is used to download the rules. No trailing slash.",
+          "default": "https://semgrep.dev/c",
+          "x-feature": "Semgrep"
+        },
+        "semgrep-download-rules-enabled": {
+          "type": "boolean",
+          "description": "Download Semgrep remote rules",
+          "default": "true",
+          "x-feature": "Semgrep"
+        },
+        "sbom-version": {
+          "type": "string",
+          "description": "Version of the @cyclonedx/cyclonedx-npm used for SBOM analysis",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "Options for @cyclonedx/cyclonedx-npm used for SBOM analysis",
+          "default": "--omit dev",
+          "x-feature": "Software Bill of Materials"
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "npm publish extra arguments - yarn publish extra arguments - pnpm publish extra arguments",
+          "x-feature": "Publish"
+        },
+        "publish-token": {
+          "type": "string",
+          "description": "npm publication registry authentication token",
+          "x-feature": "Publish"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "NODE_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "node lint",
+      "node audit",
+      "node outdated",
+      "Semgrep",
+      "Software Bill of Materials",
+      "Publish"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 28
+  }
+}

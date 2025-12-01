@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dependency Track Template",
+  "description": "to-be-continuous/dependency-track",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Dependency Track template",
+      "properties": {
+        "sbom-scanner-image": {
+          "type": "string",
+          "description": "The container image with Dependency Track SBOM Scanner tool",
+          "default": "registry.gitlab.com/to-be-continuous/tools/dt-sbom-scanner:latest",
+          "x-advanced": true
+        },
+        "base-api-url": {
+          "type": "string",
+          "description": "Dependency Track server base API url (includes /api)"
+        },
+        "api-key": {
+          "type": "string",
+          "description": "Dependency Track API key"
+        },
+        "project-path": {
+          "type": "string",
+          "description": "Dependency Track target project path to publish SBOM files to",
+          "default": "$CI_PROJECT_NAMESPACE//$CI_PROJECT_PATH-{file_prefix}@$CI_COMMIT_REF_NAME"
+        },
+        "path-separator": {
+          "type": "string",
+          "description": "Separator to use in project path",
+          "default": "//",
+          "x-advanced": true
+        },
+        "merge": {
+          "type": "boolean",
+          "description": "Merge all SBOM files into one",
+          "default": "false"
+        },
+        "merge-output": {
+          "type": "string",
+          "description": "Output merged SBOM file (only used with merge enabled) - for debugging purpose",
+          "default": "reports/deptrack-merged.cyclonedx.json",
+          "x-advanced": true
+        },
+        "purl-max-len": {
+          "type": "number",
+          "description": "PURLs max length (-1: auto, 0: no trim, >0: trim to size - default: -1)",
+          "default": "-1",
+          "x-advanced": true
+        },
+        "sbom-patterns": {
+          "type": "string",
+          "description": "SBOM file patterns to publish (supports glob patterns)",
+          "default": "**/*.cyclonedx.json **/*.cyclonedx.xml",
+          "x-advanced": true
+        },
+        "show-findings": {
+          "type": "boolean",
+          "description": "Wait for analysis and display found vulnerabilities in logs",
+          "default": "false"
+        },
+        "risk-score-threshold": {
+          "type": "number",
+          "description": "Fail the job if risk score threshold is exceeded (<0: disabled - default: -1)",
+          "default": "-1"
+        },
+        "quality-gate-base-api-url": {
+          "type": "string",
+          "description": "Override Dependency Track server base API url (includes /api) to use for acceptance stage",
+          "x-feature": "Quality Gate"
+        },
+        "quality-gate-api-key": {
+          "type": "string",
+          "description": "Override Dependency Track API key to use for acceptance stage",
+          "x-feature": "Quality Gate"
+        },
+        "quality-gate-project-path": {
+          "type": "string",
+          "description": "Override Dependency Track target project path to publish SBOM files to during acceptance stage",
+          "x-feature": "Quality Gate"
+        },
+        "quality-gate-merge": {
+          "type": "string",
+          "description": "Merge all SBOM files into one during acceptance stage",
+          "x-feature": "Quality Gate"
+        },
+        "quality-gate-show-findings": {
+          "type": "string",
+          "description": "Wait for analysis and display found vulnerabilities in logs during acceptance stage",
+          "x-feature": "Quality Gate"
+        },
+        "quality-gate-risk-score-threshold": {
+          "type": "string",
+          "description": "Fail the acceptance job if risk score threshold is exceeded (<0: disabled - default: -1)",
+          "x-feature": "Quality Gate"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:master",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "DEPTRACK_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [
+      "Quality Gate"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 22
+  }
+}

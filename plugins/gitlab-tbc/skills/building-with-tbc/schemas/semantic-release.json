@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "semantic-release Template",
+  "description": "to-be-continuous/semantic-release",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for semantic-release template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run semantic-release",
+          "default": "docker.io/library/node:lts-slim"
+        },
+        "version": {
+          "type": "string",
+          "description": "The semantic-release version to use",
+          "default": "latest",
+          "x-advanced": true
+        },
+        "exec-version": {
+          "type": "string",
+          "description": "The @semantic-release/exec version to use",
+          "default": "latest",
+          "x-advanced": true
+        },
+        "gitlab-token": {
+          "type": "string",
+          "description": "A GitLab 'project access token' or 'personal access token' with api, readrepository and write repository scopes."
+        },
+        "config-dir": {
+          "type": "string",
+          "description": "directory containing your semantic-release configuration",
+          "default": ".",
+          "x-advanced": true
+        },
+        "tag-format": {
+          "type": "string",
+          "description": "For generated .releaserc file only. tagFormat semantic-release optione. :warning: don't forget to double the $ character so it is not interpreted by GitLab.",
+          "default": "$${version}",
+          "x-advanced": true
+        },
+        "required-plugins-file": {
+          "type": "string",
+          "description": "Full path to semrel-required-plugins.txt file (relative to $CIPROJECTDIR)",
+          "default": "semrel-required-plugins.txt",
+          "x-advanced": true
+        },
+        "changelog-enabled": {
+          "type": "boolean",
+          "description": "Add the @semantic-release/changelog plugin which will commit a changelog file in the repository.",
+          "x-feature": "semantic-release"
+        },
+        "changelog-file": {
+          "type": "string",
+          "description": "changelogFile @semantic-release/changelog option.",
+          "default": "CHANGELOG.md",
+          "x-feature": "semantic-release"
+        },
+        "changelog-title": {
+          "type": "string",
+          "description": "changelogTitle @semantic-release/changelog option. You might want to use markdown format (for example # MyApp Changelog).",
+          "x-feature": "semantic-release"
+        },
+        "dry-run": {
+          "type": "boolean",
+          "description": "For generated .releaserc file only. Activate the dryRun semantic-release option if present.",
+          "x-feature": "semantic-release"
+        },
+        "auto-release-enabled": {
+          "type": "boolean",
+          "description": "When set the job start automatically. When not set (default), the job is manual.",
+          "x-feature": "semantic-release"
+        },
+        "branches-ref": {
+          "type": "string",
+          "description": "Regular expression pattern matching branches from which releases should happen (should match your semantic-release configuration)",
+          "default": "/^(master|main)$/",
+          "x-feature": "semantic-release"
+        },
+        "hooks-dir": {
+          "type": "string",
+          "description": "Hook scripts folder.",
+          "default": ".",
+          "x-feature": "semantic-release"
+        },
+        "gpg-signkey": {
+          "type": "string",
+          "description": "Path to the GPG signkey exported with gpg --armor --export-secret-key.",
+          "x-feature": "semantic-release"
+        },
+        "commit-message": {
+          "type": "string",
+          "description": "message @semantic-release/git option",
+          "x-feature": "semantic-release"
+        },
+        "commit-spec": {
+          "type": "string",
+          "description": "Commit specification preset (possible values: angular, atom, codemirror, ember, eslint, express, jquery, jshint, conventionalcommits). The default is angular.",
+          "default": "angular",
+          "x-feature": "semantic-release"
+        },
+        "info-on": {
+          "type": "string",
+          "enum": [
+            "",
+            "prod",
+            "branches-ref",
+            "protected",
+            "all"
+          ],
+          "description": "Define on which branch(es) the job shall be run",
+          "x-feature": "semantic-release-info"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SEMREL_",
+    "kind": "publish",
+    "is_component": true,
+    "features": [
+      "semantic-release",
+      "semantic-release-info"
+    ],
+    "variants": [
+      "Vault"
+    ],
+    "variable_count": 23
+  }
+}

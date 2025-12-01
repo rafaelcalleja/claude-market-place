@@ -1,0 +1,59 @@
+# Node.js Application with SonarQube and Docker
+# This configuration demonstrates:
+# - Node.js build with pnpm package manager
+# - ESLint linting and security audit
+# - SonarQube code quality analysis
+# - Docker image building with Buildah
+# - Semantic release versioning
+
+include:
+  # Node.js build template
+  - component: $CI_SERVER_FQDN/to-be-continuous/node/gitlab-ci-node@4
+    inputs:
+      image: "node:20-alpine"
+      manager: "pnpm"
+      build-args: "--filter=app build"
+      test-args: "--filter=app test"
+      lint-args: "--filter=app lint"
+      audit-args: "--audit-level=high"
+      semgrep-rules: "p/javascript,p/typescript"
+
+  # SonarQube analysis
+  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/gitlab-ci-sonar@4
+    inputs:
+      host-url: "https://sonarqube.example.com"
+      project-key: "my-node-app"
+      project-name: "My Node.js Application"
+      quality-gate-enabled: true
+      base-args: "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
+
+  # Docker packaging with Buildah
+  - component: $CI_SERVER_FQDN/to-be-continuous/docker/gitlab-ci-docker@6
+    inputs:
+      build-tool: "buildah"
+      file: "Dockerfile"
+      snapshot-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+      release-image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+      release-extra-tags-pattern: "^(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$"
+      release-extra-tags: "latest \\g<major>.\\g<minor> \\g<major>"
+      trivy-args: "--severity CRITICAL,HIGH"
+      hadolint-args: "--ignore DL3008"
+
+  # Semantic release
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@3
+    inputs:
+      changelog-enabled: true
+      auto-release-enabled: true
+
+# Secret variables - define in GitLab CI/CD settings
+# SONAR_TOKEN: SonarQube authentication token
+# NPM_TOKEN: npm registry token (if publishing)
+
+variables:
+  # Node.js configuration
+  NODE_PROJECT_DIR: "."
+  NODE_SRC_DIR: "src"
+  NODE_BUILD_DIR: "dist"
+
+  # Coverage settings for SonarQube
+  NODE_TEST_ARGS: "test -- --coverage"

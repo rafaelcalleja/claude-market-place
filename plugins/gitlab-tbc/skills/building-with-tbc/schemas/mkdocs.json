@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MkDocs Template",
+  "description": "to-be-continuous/mkdocs",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for MkDocs template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run MkDocs",
+          "default": "docker.io/squidfunk/mkdocs-material:latest"
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Arguments used by the build job",
+          "x-advanced": true
+        },
+        "workspace-dir": {
+          "type": "string",
+          "description": "MkDocs sources directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "site-dir": {
+          "type": "string",
+          "description": "MkDocs generated site directory (relative to $MKDWORKSPACEDIR)",
+          "default": "site",
+          "x-advanced": true
+        },
+        "requirements-file": {
+          "type": "string",
+          "description": "Requirements file. If the file is not found in the repository, requirements are read from the MKDREQUIREMENTS variable",
+          "default": "requirements.txt",
+          "x-advanced": true
+        },
+        "requirements": {
+          "type": "string",
+          "description": "Space separated requirements (ignored if a requirement file is found)",
+          "default": "mkdocs",
+          "x-advanced": true
+        },
+        "prebuild-script": {
+          "type": "string",
+          "description": "Pre-build hook script",
+          "default": "mkdocs-pre-build.sh",
+          "x-advanced": true
+        },
+        "pip-opts": {
+          "type": "string",
+          "description": "pip extra options",
+          "x-advanced": true
+        },
+        "lychee-image": {
+          "type": "string",
+          "description": "The Docker image used to run lychee",
+          "default": "docker.io/lycheeverse/lychee:latest",
+          "x-feature": "lychee"
+        },
+        "lychee-args": {
+          "type": "string",
+          "description": "lychee arguments to execute",
+          "default": "docs/",
+          "x-feature": "lychee"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "MKD_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "lychee"
+    ],
+    "variants": [
+      "GitLab Pages"
+    ],
+    "variable_count": 10
+  }
+}

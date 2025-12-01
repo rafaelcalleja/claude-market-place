@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "k6 Template",
+  "description": "to-be-continuous/k6",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for k6 template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run k6 CLI.",
+          "default": "docker.io/grafana/k6:latest"
+        },
+        "tests-dir": {
+          "type": "string",
+          "description": "The k6 tests directory",
+          "default": "k6"
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "k6 extra command-line",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable k6 tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "K6_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cloud Native Buildpacks Template",
+  "description": "to-be-continuous/cnb",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Cloud Native Buildpacks template",
+      "properties": {
+        "builder-image": {
+          "type": "string",
+          "description": "The CNB builder image used to build your application image depending on your needs, choose the most appropriate one",
+          "default": "docker.io/paketobuildpacks/builder:base"
+        },
+        "app-dir": {
+          "type": "string",
+          "description": "Absolute root directory in final image",
+          "default": "/workspace",
+          "x-advanced": true
+        },
+        "src-app-dir": {
+          "type": "string",
+          "description": "Relative path to the application source code base directory in your repository",
+          "default": ".",
+          "x-advanced": true
+        },
+        "platform-api": {
+          "type": "string",
+          "description": "The CNB platform API version",
+          "default": "0.9",
+          "x-advanced": true
+        },
+        "snapshot-image": {
+          "type": "string",
+          "description": "CNB snapshot image",
+          "default": "$CI_REGISTRY_IMAGE/snapshot:$CI_COMMIT_REF_SLUG"
+        },
+        "release-image": {
+          "type": "string",
+          "description": "CNB release image",
+          "default": "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+        },
+        "trivy-image": {
+          "type": "string",
+          "description": "The docker image used to scan images with Trivy",
+          "default": "docker.io/aquasec/trivy:latest",
+          "x-feature": "Trivy"
+        },
+        "trivy-args": {
+          "type": "string",
+          "description": "Additional trivy image options",
+          "default": "--ignore-unfixed --vuln-type os --exit-on-eol 1",
+          "x-feature": "Trivy"
+        },
+        "skopeo-image": {
+          "type": "string",
+          "description": "The docker image used to publish docker image with Skopeo",
+          "default": "quay.io/skopeo/stable:latest",
+          "x-feature": "Publish"
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "Additional skopeo copy arguments",
+          "x-feature": "Publish"
+        },
+        "prod-publish-strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the publish to production strategy.",
+          "default": "manual",
+          "x-feature": "Publish"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "CNB_",
+    "kind": "package",
+    "is_component": true,
+    "features": [
+      "Trivy",
+      "Publish"
+    ],
+    "variants": [],
+    "variable_count": 11
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bash Template",
+  "description": "to-be-continuous/bash",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Bash template",
+      "properties": {
+        "shellcheck-image": {
+          "type": "string",
+          "description": "The Docker image used to run ShellCheck",
+          "default": "docker.io/koalaman/shellcheck-alpine:stable",
+          "x-feature": "ShellCheck"
+        },
+        "shellcheck-files": {
+          "type": "string",
+          "description": "Shell file(s) or pattern(s) to analyse",
+          "default": "**/*.sh",
+          "x-feature": "ShellCheck"
+        },
+        "shellcheck-opts": {
+          "type": "string",
+          "description": "ShellCheck options",
+          "x-feature": "ShellCheck"
+        },
+        "bats-image": {
+          "type": "string",
+          "description": "The Docker image used to run Bats",
+          "default": "docker.io/bats/bats:latest",
+          "x-feature": "Bats"
+        },
+        "bats-tests": {
+          "type": "string",
+          "description": "The path to a Bats test file, or the path to a directory containing Bats test files",
+          "default": "tests",
+          "x-feature": "Bats"
+        },
+        "bats-opts": {
+          "type": "string",
+          "description": "Bats options",
+          "x-feature": "Bats"
+        },
+        "bats-libraries": {
+          "type": "string",
+          "description": "Coma separated list of Bats libraries and add-ons Formatted as: libname1@archiveurl1 libname2@archiveurl2 ... Example: bats-support@https://github.com/bats-core/bats-support/archive/v0.3.0.zip bats-as",
+          "x-feature": "Bats"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "BASH_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "ShellCheck",
+      "Bats"
+    ],
+    "variants": [],
+    "variable_count": 7
+  }
+}

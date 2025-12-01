@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitLab Butler Template",
+  "description": "to-be-continuous/gitlab-butler",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for GitLab Butler template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run GitLab Butler",
+          "default": "registry.gitlab.com/to-be-continuous/tools/gitlab-butler:latest",
+          "x-advanced": true
+        },
+        "token": {
+          "type": "string",
+          "description": "A GitLab access token to allow GitLab Butler crawl your projects"
+        },
+        "group-path": {
+          "type": "string",
+          "description": "GitLab group to process",
+          "default": "$CI_PROJECT_NAMESPACE"
+        },
+        "pipelines-delete-older-than": {
+          "type": "string",
+          "description": "The max age (in days) after which pipelines are deleted",
+          "default": "90"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "BUTLER_",
+    "kind": "misc",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

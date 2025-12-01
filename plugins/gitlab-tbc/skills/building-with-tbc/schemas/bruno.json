@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bruno Template",
+  "description": "to-be-continuous/bruno",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Bruno template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run the Bruno CLI",
+          "default": "docker.io/library/node:lts-alpine"
+        },
+        "collections": {
+          "type": "string",
+          "description": "The matcher to select Bruno collection directory(ies) to run",
+          "default": "bruno"
+        },
+        "base-url": {
+          "type": "string",
+          "description": "Explicit base url environment to test. Auto-evaluated by default.",
+          "x-advanced": true
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Bruno extra run options",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Bruno tests on review environments (dynamic environments instantiated on development branches)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "BRU_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 5
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Playwright Template",
+  "description": "to-be-continuous/playwright",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Playwright template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Playwright",
+          "default": "mcr.microsoft.com/playwright:latest"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "The Playwright root project directory (contains the playwright.config.ts file)",
+          "default": "."
+        },
+        "extra-args": {
+          "type": "string",
+          "description": "Playwright extra run options",
+          "x-advanced": true
+        },
+        "review-enabled": {
+          "type": "boolean",
+          "description": "Set to enable Playwright tests on review environments (dynamic environments instantiated on development branches)"
+        },
+        "node-install-extra-opts": {
+          "type": "string",
+          "description": "Extra npm ci options to install project dependencies"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "PLAYWRIGHT_",
+    "kind": "acceptance",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 5
+  }
+}

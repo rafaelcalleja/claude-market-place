@@ -1,0 +1,330 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kubernetes Template",
+  "description": "to-be-continuous/kubernetes",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Kubernetes template",
+      "properties": {
+        "kubectl-image": {
+          "type": "string",
+          "description": "The Docker image used to run Kubernetes kubectl commands on GKE",
+          "default": "gcr.io/google.com/cloudsdktool/cloud-sdk:latest",
+          "x-variant": "Google Cloud"
+        },
+        "default-kube-config": {
+          "type": "string",
+          "description": "The default kubeconfig to use (either content or file variable) (only define if not using exploded kubeconfig parameters)"
+        },
+        "url": {
+          "type": "string",
+          "description": "Global Kubernetes API url (only define if using exploded kubeconfig parameters)"
+        },
+        "token": {
+          "type": "string",
+          "description": "Global Kubernetes API token (only define if using exploded kubeconfig parameters)"
+        },
+        "ca-cert": {
+          "type": "string",
+          "description": "Global Kubernetes cluster server certificate authority (only define if using exploded kubeconfig parameters)"
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.k8s.acme.com)"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "directory where Kubernetes scripts (templates, hook scripts) are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "kustomize-enabled": {
+          "type": "boolean",
+          "description": "Set to true to enable Kustomize",
+          "x-advanced": true
+        },
+        "kustomize-args": {
+          "type": "string",
+          "description": "Additional kubectl kustomize options For example: --enable-helm",
+          "x-advanced": true
+        },
+        "kube-score-image": {
+          "type": "string",
+          "description": "Docker image to run kube-score",
+          "default": "docker.io/zegl/kube-score:latest",
+          "x-feature": "kube-score"
+        },
+        "score-extra-opts": {
+          "type": "string",
+          "description": "Additional kube-score options",
+          "x-feature": "kube-score"
+        },
+        "review-space": {
+          "type": "string",
+          "description": "Kubernetes namespace for review env",
+          "x-feature": "Review"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "review-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for review env (only define if not using exploded parameters and if different from global)",
+          "x-feature": "Review"
+        },
+        "review-url": {
+          "type": "string",
+          "description": "Kubernetes API url for review env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Review"
+        },
+        "review-token": {
+          "type": "string",
+          "description": "Kubernetes API token for review env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Review"
+        },
+        "review-ca-cert": {
+          "type": "string",
+          "description": "Kubernetes cluster server certificate authority for review env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Review"
+        },
+        "integ-space": {
+          "type": "string",
+          "description": "Kubernetes namespace for integration env",
+          "x-feature": "Integration"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "integ-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for integration env (only define if not using exploded parameters and if different from global)",
+          "x-feature": "Integration"
+        },
+        "integ-url": {
+          "type": "string",
+          "description": "Kubernetes API url for integration env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Integration"
+        },
+        "integ-token": {
+          "type": "string",
+          "description": "Kubernetes API token for integration env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Integration"
+        },
+        "integ-ca-cert": {
+          "type": "string",
+          "description": "Kubernetes cluster server certificate authority for integration env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Integration"
+        },
+        "staging-space": {
+          "type": "string",
+          "description": "Kubernetes namespace for staging env",
+          "x-feature": "Staging"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "staging-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for staging env (only define if not using exploded parameters and if different from global)",
+          "x-feature": "Staging"
+        },
+        "staging-url": {
+          "type": "string",
+          "description": "Kubernetes API url for staging env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Staging"
+        },
+        "staging-token": {
+          "type": "string",
+          "description": "Kubernetes API token for staging env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Staging"
+        },
+        "staging-ca-cert": {
+          "type": "string",
+          "description": "Kubernetes cluster server certificate authority for staging env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Staging"
+        },
+        "prod-space": {
+          "type": "string",
+          "description": "Kubernetes namespace for production env",
+          "x-feature": "Production"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-kube-config": {
+          "type": "string",
+          "description": "Specific kubeconfig for production env (only define if not using exploded parameters and if different from global)",
+          "x-feature": "Production"
+        },
+        "prod-url": {
+          "type": "string",
+          "description": "Kubernetes API url for production env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Production"
+        },
+        "prod-token": {
+          "type": "string",
+          "description": "Kubernetes API token for production env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Production"
+        },
+        "prod-ca-cert": {
+          "type": "string",
+          "description": "Kubernetes cluster server certificate authority for production env (only define if using exploded kubeconfig parameters and if different from global)",
+          "x-feature": "Production"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        },
+        "gcp-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT token (only required for OIDC authentication)",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-oidc-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "Google Cloud"
+        },
+        "gcp-prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment",
+          "x-variant": "Google Cloud"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "K8S_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "kube-score",
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "Vault",
+      "Google Cloud"
+    ],
+    "variable_count": 58
+  }
+}

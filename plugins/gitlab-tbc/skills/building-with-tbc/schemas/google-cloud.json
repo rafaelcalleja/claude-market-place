@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Google Cloud Template",
+  "description": "to-be-continuous/gcloud",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Google Cloud template",
+      "properties": {
+        "cli-image": {
+          "type": "string",
+          "description": "The Docker image used to run Google Cloud CLI commands",
+          "default": "gcr.io/google.com/cloudsdktool/cloud-sdk:latest"
+        },
+        "key-file": {
+          "type": "string",
+          "description": "Global Service Account key file"
+        },
+        "workload-identity-provider": {
+          "type": "string",
+          "description": "Default Workload Identity Provider associated with GitLab to authenticate (has format projects/PROJECTNUMBER/locations/global/workloadIdentityPools/POOLID/providers/PROVIDERID)",
+          "x-advanced": true
+        },
+        "service-account": {
+          "type": "string",
+          "description": "Default Service Account to which impersonate with WIF authentication",
+          "x-advanced": true
+        },
+        "base-app-name": {
+          "type": "string",
+          "description": "Base application name",
+          "default": "$CI_PROJECT_NAME",
+          "x-advanced": true
+        },
+        "environment-url": {
+          "type": "string",
+          "description": "The default environments url (only define for static environment URLs declaration) supports late variable expansion (ex: https://%{environmentname}.gcloud.acme.com)"
+        },
+        "scripts-dir": {
+          "type": "string",
+          "description": "Directory where Google Cloud scripts (deploy & cleanup) are located",
+          "default": ".",
+          "x-advanced": true
+        },
+        "review-project": {
+          "type": "string",
+          "description": "Google Cloud project ID for review env",
+          "x-feature": "Review"
+        },
+        "review-app-name": {
+          "type": "string",
+          "description": "The application name for review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "review-autostop-duration": {
+          "type": "string",
+          "description": "The amount of time before GitLab will automatically stop review environments",
+          "default": "4 hours",
+          "x-feature": "Review"
+        },
+        "review-environment-url": {
+          "type": "string",
+          "description": "The review environments url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Review"
+        },
+        "review-key-file": {
+          "type": "string",
+          "description": "Service Account key file to authenticate on review env (only define to override default)",
+          "x-feature": "Review"
+        },
+        "integ-project": {
+          "type": "string",
+          "description": "Google Cloud project ID for integration env",
+          "x-feature": "Integration"
+        },
+        "integ-app-name": {
+          "type": "string",
+          "description": "The application name for integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "integ-environment-url": {
+          "type": "string",
+          "description": "The integration environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Integration"
+        },
+        "integ-key-file": {
+          "type": "string",
+          "description": "Service Account key file to authenticate on integration env (only define to override default)",
+          "x-feature": "Integration"
+        },
+        "staging-project": {
+          "type": "string",
+          "description": "Google Cloud project ID for staging env",
+          "x-feature": "Staging"
+        },
+        "staging-app-name": {
+          "type": "string",
+          "description": "The application name for staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "staging-environment-url": {
+          "type": "string",
+          "description": "The staging environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Staging"
+        },
+        "staging-key-file": {
+          "type": "string",
+          "description": "Service Account key file to authenticate on staging env (only define to override default)",
+          "x-feature": "Staging"
+        },
+        "prod-project": {
+          "type": "string",
+          "description": "Google Cloud project ID for production env",
+          "x-feature": "Production"
+        },
+        "prod-app-name": {
+          "type": "string",
+          "description": "The application name for production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "prod-environment-url": {
+          "type": "string",
+          "description": "The production environment url (only define for static environment URLs declaration and if different from default)",
+          "x-feature": "Production"
+        },
+        "prod-deploy-strategy": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "auto"
+          ],
+          "description": "Defines the deployment to production strategy.",
+          "default": "manual",
+          "x-feature": "Production"
+        },
+        "prod-key-file": {
+          "type": "string",
+          "description": "Service Account key file to authenticate on production env (only define to override default)",
+          "x-feature": "Production"
+        },
+        "oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "OpenID Connect"
+        },
+        "oidc-provider": {
+          "type": "string",
+          "description": "Global Workload Identity Provider associated with GitLab to authenticate with OpenID Connect",
+          "x-variant": "OpenID Connect"
+        },
+        "oidc-account": {
+          "type": "string",
+          "description": "Global Service Account to which impersonate with OpenID Connect authentication",
+          "x-variant": "OpenID Connect"
+        },
+        "review-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on review environment (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "review-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on review environment",
+          "x-variant": "OpenID Connect"
+        },
+        "integ-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on integration environment (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "integ-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on integration environment",
+          "x-variant": "OpenID Connect"
+        },
+        "staging-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on staging environment (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "staging-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on staging environment",
+          "x-variant": "OpenID Connect"
+        },
+        "prod-oidc-provider": {
+          "type": "string",
+          "description": "Workload Identity Provider associated with GitLab to authenticate with OpenID Connect on production environment (only define to override default)",
+          "x-variant": "OpenID Connect"
+        },
+        "prod-oidc-account": {
+          "type": "string",
+          "description": "Service Account to which impersonate with OpenID Connect authentication on production environment",
+          "x-variant": "OpenID Connect"
+        },
+        "tbc-vault-image": {
+          "type": "string",
+          "description": "The Vault Secrets Provider image to use",
+          "default": "registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest",
+          "x-variant": "Vault"
+        },
+        "vault-oidc-aud": {
+          "type": "string",
+          "description": "The aud claim for the JWT",
+          "default": "$CI_SERVER_URL",
+          "x-variant": "Vault"
+        },
+        "vault-base-url": {
+          "type": "string",
+          "description": "The Vault server base API url",
+          "x-variant": "Vault"
+        },
+        "vault-role-id": {
+          "type": "string",
+          "description": "The AppRole RoleID",
+          "x-variant": "Vault"
+        },
+        "vault-secret-id": {
+          "type": "string",
+          "description": "The AppRole SecretID",
+          "x-variant": "Vault"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "GCP_",
+    "kind": "hosting",
+    "is_component": true,
+    "features": [
+      "Review",
+      "Integration",
+      "Staging",
+      "Production"
+    ],
+    "variants": [
+      "OpenID Connect",
+      "Vault"
+    ],
+    "variable_count": 41
+  }
+}

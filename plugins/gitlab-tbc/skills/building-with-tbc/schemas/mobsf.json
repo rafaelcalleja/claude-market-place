@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MobSF Template",
+  "description": "to-be-continuous/mobsf",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for MobSF template",
+      "properties": {
+        "client-image": {
+          "type": "string",
+          "description": "The Docker image used to send requests to the MobSF server",
+          "default": "docker.io/badouralix/curl-jq"
+        },
+        "server-url": {
+          "type": "string",
+          "description": "URL of MobSF server"
+        },
+        "api-key": {
+          "type": "string",
+          "description": "API key of the MobSF server"
+        },
+        "app-file": {
+          "type": "string",
+          "description": "Application package file (APK or IPA)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "MOBSF_",
+    "kind": "analyse",
+    "is_component": true,
+    "features": [],
+    "variants": [],
+    "variable_count": 4
+  }
+}

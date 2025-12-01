@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "pre-commit Template",
+  "description": "to-be-continuous/pre-commit",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for pre-commit template",
+      "properties": {
+        "pre-commit-image": {
+          "type": "string",
+          "description": "The Docker image used to run pre-commit :informationsource: You may build your own pre-configured image to speed-up things and prevent the tool and plugins from being pip-installed (see documentation)",
+          "default": "docker.io/library/python:3-alpine"
+        },
+        "pre-commit-args": {
+          "type": "string",
+          "description": "Additionnal arguments for the pre-commit run command",
+          "x-feature": "pre-commit run"
+        },
+        "pre-commit-skip": {
+          "type": "string",
+          "description": "pre-commit SKIP environment variable that allows to disable some hooks (see https://pre-commit.com/#temporarily-disabling-hooks)",
+          "default": "no-commit-to-branch",
+          "x-feature": "pre-commit run"
+        },
+        "pre-commit-file": {
+          "type": "string",
+          "description": "pre-commit config file to use for the pre-commit run command",
+          "default": ".pre-commit-ci.yaml",
+          "x-feature": "pre-commit run"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "PRE-COMMIT_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "pre-commit run"
+    ],
+    "variants": [],
+    "variable_count": 4
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sphinx Template",
+  "description": "to-be-continuous/sphinx",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Sphinx template",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image used to run Sphinx",
+          "default": "ghcr.io/sphinx-doc/sphinx:latest"
+        },
+        "build-args": {
+          "type": "string",
+          "description": "sphinx-build options) to be used",
+          "default": "-M html"
+        },
+        "project-dir": {
+          "type": "string",
+          "description": "Sphinx project root directory",
+          "default": "."
+        },
+        "source-dir": {
+          "type": "string",
+          "description": "Sphinx source directory (relative to $SPHINXPROJECTDIR) containing the Sphinx conf.py file",
+          "default": "source",
+          "x-advanced": true
+        },
+        "build-dir": {
+          "type": "string",
+          "description": "Sphinx build output directory (relative to $SPHINXPROJECTDIR)",
+          "default": "build",
+          "x-advanced": true
+        },
+        "requirements-file": {
+          "type": "string",
+          "description": "Requirements file (relative to $SPHINXPROJECTDIR). If the file is not found in the repository, requirements are read from the SPHINXREQUIREMENTS variable",
+          "default": "requirements.txt",
+          "x-advanced": true
+        },
+        "requirements": {
+          "type": "string",
+          "description": "Space separated requirements (ignored if a requirement file is found)",
+          "x-advanced": true
+        },
+        "prebuild-script": {
+          "type": "string",
+          "description": "Pre-build hook script (relative to $SPHINXPROJECTDIR)",
+          "default": "sphinx-pre-build.sh",
+          "x-advanced": true
+        },
+        "pip-opts": {
+          "type": "string",
+          "description": "pip extra options",
+          "x-advanced": true
+        },
+        "lychee-image": {
+          "type": "string",
+          "description": "The Docker image used to run lychee",
+          "default": "docker.io/lycheeverse/lychee:latest",
+          "x-feature": "lychee"
+        },
+        "lychee-args": {
+          "type": "string",
+          "description": "lychee arguments to execute",
+          "default": "--exclude-loopback $SPHINX_SOURCE_DIR/**/*.rst",
+          "x-feature": "lychee"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "SPHINX_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "lychee"
+    ],
+    "variants": [
+      "GitLab Pages"
+    ],
+    "variable_count": 11
+  }
+}

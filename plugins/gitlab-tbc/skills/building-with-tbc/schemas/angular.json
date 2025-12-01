@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Angular Template",
+  "description": "to-be-continuous/angular",
+  "type": "object",
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "description": "Valid inputs for Angular template",
+      "properties": {
+        "cli-image": {
+          "type": "string",
+          "description": "The Docker image used to run Angular-CLI (ng) - set the version required by your project",
+          "default": "docker.io/trion/ng-cli-karma:latest"
+        },
+        "npm-config-registry": {
+          "type": "string",
+          "description": "NPM registry",
+          "x-advanced": true
+        },
+        "npm-config-scoped-registries": {
+          "type": "string",
+          "description": "Space separated list of NPM scoped registries (formatted as @somescope:https://some.npm.registry/some/repo @anotherscope:https://another.npm.registry/another/repo)",
+          "x-advanced": true
+        },
+        "workspace-dir": {
+          "type": "string",
+          "description": "Angular workspace directory",
+          "default": ".",
+          "x-advanced": true
+        },
+        "install-extra-opts": {
+          "type": "string",
+          "description": "Extra options to install project dependencies (with npm ci)",
+          "x-advanced": true
+        },
+        "build-args": {
+          "type": "string",
+          "description": "Angular ng build arguments",
+          "default": "build",
+          "x-advanced": true
+        },
+        "test-args": {
+          "type": "string",
+          "description": "Angular ng test arguments",
+          "default": "test --code-coverage --reporters progress,junit --watch=false --no-progress",
+          "x-advanced": true
+        },
+        "lint-args": {
+          "type": "string",
+          "description": "Angular ng lint arguments",
+          "default": "lint",
+          "x-feature": "Angular lint"
+        },
+        "publish-args": {
+          "type": "string",
+          "description": "npm publish arguments",
+          "x-feature": "Publish"
+        },
+        "publish-projects": {
+          "type": "string",
+          "description": "Space separated list of projects to publish. If no project is specified, all workspace projects are published.",
+          "x-feature": "Publish"
+        },
+        "npm-publish-registry": {
+          "type": "string",
+          "description": "npm registry to publish to. If none is specified, uses GitLab project npm packages registry",
+          "x-feature": "Publish"
+        },
+        "npm-publish-token": {
+          "type": "string",
+          "description": "NPM publication registry authentication token",
+          "x-feature": "Publish"
+        },
+        "e2e-args": {
+          "type": "string",
+          "description": "ng e2e arguments",
+          "default": "e2e",
+          "x-feature": "e2e-test"
+        },
+        "outdated-args": {
+          "type": "string",
+          "description": "npm outdated arguments",
+          "default": "--long",
+          "x-feature": "ng-outdated"
+        },
+        "outdated-allow-failure": {
+          "type": "boolean",
+          "description": "Allow the job to fail and therefore not block the pipeline",
+          "default": "true",
+          "x-feature": "ng-outdated"
+        },
+        "audit-args": {
+          "type": "string",
+          "description": "npm audit arguments",
+          "default": "--audit-level=low",
+          "x-feature": "ng-audit"
+        },
+        "sbom-version": {
+          "type": "string",
+          "description": "Version of the @cyclonedx/cyclonedx-npm used for SBOM analysis",
+          "x-feature": "Software Bill of Materials"
+        },
+        "sbom-opts": {
+          "type": "string",
+          "description": "Options for @cyclonedx/cyclonedx-npm used for SBOM analysis",
+          "default": "--omit dev",
+          "x-feature": "Software Bill of Materials"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "_meta": {
+    "prefix": "NG_",
+    "kind": "build",
+    "is_component": true,
+    "features": [
+      "Angular lint",
+      "Publish",
+      "e2e-test",
+      "ng-outdated",
+      "ng-audit",
+      "Software Bill of Materials"
+    ],
+    "variants": [],
+    "variable_count": 18
+  }
+}
