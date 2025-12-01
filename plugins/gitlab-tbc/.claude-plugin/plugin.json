@@ -1,6 +1,6 @@
 {
   "name": "gitlab-tbc",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Interactive guide for building GitLab CI/CD pipelines with to-be-continuous templates (conversational, step-by-step, real examples) and creating compatible components",
   "author": {
     "name": "GitLab TBC Contributors"
