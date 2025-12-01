@@ -1,0 +1,230 @@
+# ========================================
+# GitLab CI/CD Configuration
+# Generated with To-Be-Continuous (TBC)
+# ========================================
+#
+# Configuration: Semantic Release + SQL Files to S3
+# Mode: component | Version: @7.5 (minor) | Detail: basic
+
+# ========================================
+# TBC Components
+# ========================================
+
+include:
+  # Semantic Release for automated versioning
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/gitlab-ci-semrel@3.11
+    inputs:
+      changelog-enabled: true
+      changelog-file: "CHANGELOG.md"
+      auto-release-enabled: true
+      branches-ref: "/^(main|master)$/"
+
+# ========================================
+# Custom Job: Deploy SQL to S3
+# ========================================
+
+# Deploy modified SQL files to S3 on merge requests
+# Uses AWS OIDC for secure authentication (no static credentials needed)
+
+deploy-sql-to-s3:
+  stage: deploy
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
+
+  # Run on merge requests only
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: false
+
+  # AWS OIDC authentication
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+
+  variables:
+    AWS_REGION: "${AWS_DEFAULT_REGION}"
+    SQL_FOLDER: "sql"
+
+  before_script:
+    # Install git for diff operations
+    - yum install -y git jq
+
+    # Assume AWS role via OIDC
+    - |
+      echo "🔐 Authenticating with AWS via OIDC..."
+      STS_RESPONSE=$(aws sts assume-role-with-web-identity \
+        --role-arn "${AWS_ROLE_ARN}" \
+        --role-session-name "gitlab-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "${STS_RESPONSE}" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "${STS_RESPONSE}" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "${STS_RESPONSE}" | jq -r '.Credentials.SessionToken')
+
+      echo "✓ AWS authentication successful"
+
+  script:
+    - |
+      echo "🔍 Finding modified SQL files in merge request..."
+
+      # Get target branch
+      TARGET_BRANCH="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-main}"
+
+      # Fetch target branch
+      git fetch origin "${TARGET_BRANCH}"
+
+      # Find modified/created SQL files
+      CHANGED_FILES=$(git diff --name-only --diff-filter=AM \
+        "origin/${TARGET_BRANCH}...HEAD" -- "${SQL_FOLDER}/"*.sql || true)
+
+      if [ -z "${CHANGED_FILES}" ]; then
+        echo "ℹ️  No SQL files modified or created in this merge request"
+        echo "📁 Checked folder: ${SQL_FOLDER}/"
+        exit 0
+      fi
+
+      echo "📁 Found modified/created SQL files:"
+      echo "${CHANGED_FILES}" | sed 's/^/  - /'
+
+      # Upload each file to S3
+      UPLOAD_COUNT=0
+      for file in ${CHANGED_FILES}; do
+        if [ -f "${file}" ]; then
+          filename=$(basename "${file}")
+
+          echo "⬆️  Uploading ${filename} to S3..."
+
+          aws s3 cp "${file}" "s3://${S3_BUCKET_NAME}/${filename}" \
+            --region "${AWS_REGION}" \
+            --metadata \
+              "project=${CI_PROJECT_NAME},mr=${CI_MERGE_REQUEST_IID},commit=${CI_COMMIT_SHORT_SHA},branch=${CI_COMMIT_REF_NAME}"
+
+          echo "   ✓ Successfully uploaded ${filename}"
+          UPLOAD_COUNT=$((UPLOAD_COUNT + 1))
+        else
+          echo "⚠️  File ${file} not found, skipping"
+        fi
+      done
+
+      echo ""
+      echo "✅ Deployment completed: ${UPLOAD_COUNT} file(s) uploaded to s3://${S3_BUCKET_NAME}/"
+
+  artifacts:
+    expire_in: 1 week
+    when: always
+
+# ========================================
+# Configuration Instructions
+# ========================================
+#
+# 📋 Required CI/CD Variables (GitLab Settings → CI/CD → Variables):
+#
+# Secret Variables:
+# -----------------
+# - GITLAB_TOKEN          GitLab personal/project access token
+#                         Scopes: api, read_repository, write_repository
+#
+# - AWS_ROLE_ARN          AWS IAM role ARN for OIDC authentication
+#                         Example: arn:aws:iam::123456789012:role/GitLabOIDC
+#
+# - AWS_DEFAULT_REGION    AWS region for S3 bucket
+#                         Example: us-east-1, eu-west-1
+#
+# - S3_BUCKET_NAME        S3 bucket name for SQL files
+#                         Example: my-project-sql-files
+#
+# ========================================
+# AWS OIDC Setup Instructions
+# ========================================
+#
+# 1. Create OIDC Identity Provider in AWS IAM:
+#    - Provider URL: https://gitlab.com
+#    - Audience: https://gitlab.com
+#    - Thumbprint: (AWS auto-fills this)
+#
+# 2. Create IAM Role with Trust Policy:
+#
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Principal": {
+#            "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/gitlab.com"
+#          },
+#          "Action": "sts:AssumeRoleWithWebIdentity",
+#          "Condition": {
+#            "StringEquals": {
+#              "gitlab.com:aud": "https://gitlab.com"
+#            },
+#            "StringLike": {
+#              "gitlab.com:sub": "project_path:YOUR_GROUP/YOUR_PROJECT:*"
+#            }
+#          }
+#        }
+#      ]
+#    }
+#
+# 3. Attach S3 Write Policy to Role:
+#
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Action": [
+#            "s3:PutObject",
+#            "s3:PutObjectAcl"
+#          ],
+#          "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+#        },
+#        {
+#          "Effect": "Allow",
+#          "Action": [
+#            "s3:ListBucket"
+#          ],
+#          "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME"
+#        }
+#      ]
+#    }
+#
+# 4. Configure role ARN in GitLab CI/CD variables
+#
+# ========================================
+# How It Works
+# ========================================
+#
+# Semantic Release:
+# - Automatically analyzes commit messages (conventional commits)
+# - Determines next version (major, minor, patch)
+# - Creates Git tag and release
+# - Generates CHANGELOG.md
+#
+# SQL Deployment:
+# - Runs on merge requests (manual trigger for safety)
+# - Detects SQL files modified/created in sql/ folder
+# - Uses git diff to compare with target branch
+# - Authenticates with AWS using OIDC (no static credentials!)
+# - Uploads only changed files to S3 bucket
+# - Adds metadata: project, MR number, commit SHA
+#
+# ========================================
+# Next Steps
+# ========================================
+#
+# 1. Copy this configuration to .gitlab-ci.yml in your project root
+# 2. Configure the required CI/CD variables in GitLab
+# 3. Set up AWS OIDC provider and IAM role
+# 4. Create sql/ folder in your repository
+# 5. Use conventional commits (feat:, fix:, docs:, etc.)
+# 6. Create merge request with SQL file changes
+# 7. Manually trigger deploy-sql-to-s3 job in pipeline
+#
+# For more information:
+# - TBC Documentation: https://to-be-continuous.gitlab.io
+# - Semantic Release: https://semantic-release.gitbook.io
+# - AWS OIDC: https://docs.gitlab.com/ee/ci/cloud_services/aws/

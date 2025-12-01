@@ -1,246 +1,139 @@
 ---
 name: building-with-tbc
-description: This skill should be used when building GitLab CI/CD pipelines with
-  the To-Be-Continuous framework. Load this skill to access accurate template
-  specifications, variables, schemas, and configuration patterns. Required by
-  TBC commands to generate valid configurations without hallucinations.
+description: This skill should be used when the user asks to "generate gitlab-ci.yml",
+  "create GitLab CI pipeline", "configure GitLab CI/CD", "use To-Be-Continuous templates",
+  "setup TBC templates", "create CI/CD for Python/Node/Go/Java project", "configure
+  Docker build in GitLab", "setup Kubernetes deployment in GitLab", "add SonarQube
+  to GitLab CI", "configure Terraform with GitLab", or mentions "TBC", "To-Be-Continuous",
+  "Kicker".
 version: 1.0.0
 ---
 
 # Building with To-Be-Continuous (TBC)
 
-This skill provides the knowledge base for generating GitLab CI/CD configurations using the To-Be-Continuous framework.
+Knowledge base for generating GitLab CI/CD configurations using the To-Be-Continuous framework.
+
+## CRITICAL: Framework-First Principle
+
+**NEVER assume a solution. ALWAYS evaluate the framework first.**
+
+Before taking any action, follow this priority hierarchy:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 SOLUTION PRIORITY HIERARCHY                 │
+├─────────────────────────────────────────────────────────────┤
+│ 1. TBC template exists and covers use case completely       │
+│    → Use TBC component directly                             │
+├─────────────────────────────────────────────────────────────┤
+│ 2. TBC template exists, variant covers use case             │
+│    → Use TBC component + existing variant                   │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Different TBC template's variant fits better             │
+│    → Use alternative component + create variant             │
+├─────────────────────────────────────────────────────────────┤
+│ 4. TBC template needs extension                             │
+│    → Use TBC component + custom script                      │
+├─────────────────────────────────────────────────────────────┤
+│ 5. No TBC template fits                                     │
+│    → Custom job (MUST document why TBC doesn't fit)         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Mandatory Process:**
+1. Identify user's core need (action + target + triggers)
+2. Read `references/component-decision.md` and follow the decision flowchart
+3. Search templates in `references/templates-catalog.md`
+4. Read `schemas/_meta.json` + `schemas/{template}.json` for exact capabilities
+5. Check `references/variantes.md` for variants
+6. Perform Deep Research if partial match (see `references/component-decision.md`)
+7. Only after exhausting framework options, consider custom solutions
+
+**The user may request something and be incorrect about the approach.** This skill disciplines correct framework usage.
 
 ## Overview
 
-To-Be-Continuous (TBC) is a framework of 62 modular templates organized into 8 categories for building GitLab CI/CD pipelines. Templates are reusable components that handle specific aspects of CI/CD workflows.
+To-Be-Continuous (TBC) is a framework of 62 modular templates organized into 8 categories for building GitLab CI/CD pipelines.
 
 ### Template Categories
 
-| Category | Count | Selection | Description |
-|----------|-------|-----------|-------------|
-| Build | 15 | Single | Programming language/framework |
-| Code Analysis | 7 | Multiple | Security, linting, SAST |
-| Packaging | 3 | Single | Container/package builds |
-| Infrastructure | 1 | Single | Terraform IaC |
-| Deployment | 11 | Single | Cloud/K8s deployment |
-| Acceptance | 10 | Multiple | E2E/API testing |
-| Other | 3 | Multiple | Misc utilities |
+| Category | Count | Selection |
+|----------|-------|-----------|
+| Build | 15 | Single |
+| Code Analysis | 7 | Multiple |
+| Packaging | 3 | Single |
+| Infrastructure | 1 | Single |
+| Deployment | 11 | Single |
+| Acceptance | 10 | Multiple |
+| Other | 3 | Multiple |
 
 **Selection Rules:**
 - Build, Packaging, Infrastructure, Deployment: SELECT ONE or NONE
 - Code Analysis, Acceptance, Other: SELECT MULTIPLE (including none)
 
-## Configuration Format
+## Configuration Modes
 
-### Component Mode (Recommended - GitLab 16.0+)
-
-```yaml
-include:
-  - component: $CI_SERVER_FQDN/to-be-continuous/python/python@7
-    inputs:
-      image: "python:3.12-slim"
-      build-system: "poetry"
-      pytest-enabled: true
-```
-
-### Project Mode (Self-hosted GitLab)
-
-```yaml
-include:
-  - project: "to-be-continuous/python"
-    ref: "7.5"
-    file: "templates/gitlab-ci-python.yml"
-
-variables:
-  PYTHON_IMAGE: "python:3.12-slim"
-  PYTHON_BUILD_SYSTEM: "poetry"
-  PYTEST_ENABLED: "true"
-```
-
-### Remote Mode (External GitLab)
-
-```yaml
-include:
-  - remote: "https://gitlab.com/to-be-continuous/python/-/raw/7.5/templates/gitlab-ci-python.yml"
-
-variables:
-  PYTHON_IMAGE: "python:3.12-slim"
-```
-
-## Input Name Transformation
-
-For component mode, transform variable names:
-
-1. **Strip prefix**: `PYTHON_IMAGE` → `IMAGE`
-2. **Lowercase**: `IMAGE` → `image`
-3. **Hyphens for underscores**: `BUILD_SYSTEM` → `build-system`
-
-**Examples:**
-- `DOCKER_IMAGE` → `image`
-- `NODE_VERSION` → `version`
-- `PYTHON_BUILD_SYSTEM` → `build-system`
-- `SONAR_ENABLED` → `enabled`
-
-## Template Configuration
-
-### Variables
-
-Each template has variables with these properties:
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | string | Variable name (e.g., `PYTHON_IMAGE`) |
-| `default` | any | Default value if not specified |
-| `type` | enum | `text`, `url`, `boolean`, `enum`, `number` |
-| `mandatory` | boolean | Required to use template |
-| `secret` | boolean | Store in CI/CD settings, not in file |
-| `advanced` | boolean | Only show in advanced mode |
-
-### Features
-
-Templates have toggleable features (enabled/disabled by default):
-
-```yaml
-# Feature enabled by default - disable with:
-inputs:
-  lint-disabled: true
-
-# Feature disabled by default - enable with:
-inputs:
-  publish-enabled: true
-```
-
-### Variants
-
-Templates may have variants for additional functionality:
-
-| Variant | Templates | Purpose |
-|---------|-----------|---------|
-| **Vault** | Most | HashiCorp Vault secrets integration |
-| **OIDC** | AWS, Azure, GCP | OpenID Connect authentication |
-| **Cloud-specific** | Various | Cloud provider authentication |
+| Mode | GitLab Version | Syntax |
+|------|----------------|--------|
+| component | 16.0+ (recommended) | `$CI_SERVER_FQDN/path/template@version` |
+| project | Self-hosted | `project: "path"` + `ref` + `file` |
+| remote | External | HTTPS URL to template |
 
 ## Version Modes
 
-| Mode | Syntax | Updates | Use Case |
-|------|--------|---------|----------|
-| `major` | `@7` | Auto major | Latest features (less stable) |
-| `minor` | `@7.5` | Auto patch | Recommended balance |
-| `full` | `@7.5.2` | None | Maximum stability |
+| Mode | Syntax | Updates |
+|------|--------|---------|
+| major | `@7` | Auto major (less stable) |
+| minor | `@7.5` | Auto patch (recommended) |
+| full | `@7.5.2` | None (most stable) |
 
-## Validation
+## Generating Configurations
 
-### Using Schemas
+When generating a TBC configuration, read and follow `references/create-component.md`.
 
-All 50 templates have JSON schemas in `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/schemas/`.
+## Evaluating Component Fit
 
-**Available schemas:**
-- Build: `python.json`, `node.json`, `go.json`, `maven.json`, `gradle.json`, etc.
-- Analysis: `sonar.json`, `gitleaks.json`, `defectdojo.json`, etc.
-- Packaging: `docker.json`, `cnb.json`, `source-to-image.json`
-- Deployment: `kubernetes.json`, `helm.json`, `aws.json`, `azure.json`, etc.
-
-### Validation Script
-
-Use `validate-inputs.py` to validate configurations:
-
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/scripts/validate-inputs.py /path/to/.gitlab-ci.yml
-```
-
-**CRITICAL RULE**: ALWAYS invoke the `tbc-validator` agent before presenting generated configurations to users. Never show unvalidated output.
+Before generating, determine if TBC components fit the use case. Read `references/component-decision.md` for the decision process with flowcharts.
 
 ## Reference Files
 
-Detailed information is available in the references directory:
+| Need | Reference |
+|------|-----------|
+| Decide if component fits | `references/component-decision.md` |
+| Complete template catalog | `references/templates-catalog.md` |
+| Build templates (15) | `references/build-templates.md` |
+| Deployment templates (11) | `references/deployment-templates.md` |
+| Analysis templates (7) | `references/analysis-templates.md` |
+| Variants (Vault, OIDC) | `references/variantes.md` |
+| Common presets | `references/presets.md` |
+| Best practices | `references/best-practices.md` |
+| Configuration formats | `references/configuration-formats.md` |
 
-- **templates-catalog.md**: Complete catalog of all 62 templates
-- **build-templates.md**: Build category templates (15)
-- **deployment-templates.md**: Deployment category templates (11)
-- **analysis-templates.md**: Code analysis templates (7)
-- **variantes.md**: Variants (Vault, OIDC, cloud-specific)
-- **presets.md**: Common configuration presets
-- **best-practices.md**: TBC usage best practices
+## Schemas
+
+All templates have JSON schemas in `schemas/`. Read schema to get valid inputs, components, and versions:
+
+```
+schemas/{template-name}.json
+```
 
 ## Example Configurations
 
-Example configurations are in `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/examples/`:
+Working examples in `examples/`:
+- `python-docker-k8s.yml`
+- `node-sonar-docker.yml`
+- `terraform-aws.yml`
+- `java-maven-cf.yml`
 
-- Python with Docker and Kubernetes
-- Node.js with SonarQube
-- Go with Helm
-- Java with Maven and AWS
+## Validation
 
-## Workflow: Kicker Wizard
-
-The traditional TBC workflow is an 8-step wizard:
-
-1. **Configure Global Options**: Mode (component/project/remote), version mode, advanced settings
-2. **Build**: Select language template
-3. **Code Analysis**: Select analysis tools (multiple)
-4. **Packaging**: Select packaging method
-5. **Infrastructure**: Select Terraform or none
-6. **Deployment**: Select deployment target
-7. **Acceptance Tests**: Select test frameworks (multiple)
-8. **Generate**: Create `.gitlab-ci.yml` with all selections
+Use SlashCommand tool with `tbc:validate`.
 
 ## Key Principles
 
-1. **Read schemas first**: Templates have specific variables - don't hallucinate
-2. **Transform names correctly**: Component mode requires lowercase with hyphens
-3. **Validate before presenting**: Use tbc-validator agent
-4. **Respect selection rules**: Single vs multiple per category
-5. **Include secret variables comments**: Document CI/CD variables needed
-6. **Use $CI_SERVER_FQDN**: For component mode in generic configurations
-
-## Common Patterns
-
-### Python + Docker + Kubernetes
-
-```yaml
-include:
-  - component: $CI_SERVER_FQDN/to-be-continuous/python/python@7
-    inputs:
-      image: "python:3.12-slim"
-      build-system: "poetry"
-
-  - component: $CI_SERVER_FQDN/to-be-continuous/docker/docker@7
-    inputs:
-      image-name: "myapp"
-
-  - component: $CI_SERVER_FQDN/to-be-continuous/kubernetes/kubernetes@7
-    inputs:
-      namespace: "production"
-
-# secret variables
-# DOCKER_REGISTRY_USER: Docker registry username
-# DOCKER_REGISTRY_PASSWORD: Docker registry password
-# KUBE_CONFIG: Kubernetes config file (base64)
-```
-
-### Node.js + SonarQube
-
-```yaml
-include:
-  - component: $CI_SERVER_FQDN/to-be-continuous/node/node@7
-    inputs:
-      version: "20"
-      package-manager: "npm"
-
-  - component: $CI_SERVER_FQDN/to-be-continuous/sonar/sonar@7
-    inputs:
-      enabled: true
-
-# secret variables
-# SONAR_TOKEN: SonarQube authentication token
-```
-
-## Path References
-
-All paths should use `${CLAUDE_PLUGIN_ROOT}` for portability:
-
-- Schemas: `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/schemas/`
-- Scripts: `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/scripts/`
-- Examples: `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/examples/`
-- References: `${CLAUDE_PLUGIN_ROOT}/skills/building-with-tbc/references/`
+1. Read schemas first - templates have specific variables, don't hallucinate
+2. Transform names for component mode - lowercase with hyphens
+3. Validate before presenting - use `tbc:validate`
+4. Respect selection rules - single vs multiple per category
+5. Document secret variables - they go in GitLab CI/CD settings
+6. Use `$CI_SERVER_FQDN` for component mode

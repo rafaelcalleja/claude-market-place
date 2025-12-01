@@ -335,7 +335,6 @@ Working configurations in `examples/`:
 5. Configure variables (focus on mandatory and image versions)
 6. Enable relevant features and variants
 7. Generate the configuration
-8. Validate with `python3 scripts/validate-inputs.py .gitlab-ci.yml`
 
 ### For Existing Projects
 
@@ -344,7 +343,6 @@ Working configurations in `examples/`:
 3. Read `schemas/{template}.json` to get valid inputs, components, and versions
 4. Suggest equivalent TBC templates
 5. Provide migration guidance
-6. Validate with `python3 scripts/validate-inputs.py .gitlab-ci.yml`
 
 ### Best Practices
 
