@@ -17,39 +17,24 @@ Knowledge base for generating GitLab CI/CD configurations using the To-Be-Contin
 
 **NEVER assume a solution. ALWAYS evaluate the framework first.**
 
-Before taking any action, follow this priority hierarchy:
+Before generating any configuration, **invoke the `component-research` skill** using the Skill tool:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 SOLUTION PRIORITY HIERARCHY                 │
-├─────────────────────────────────────────────────────────────┤
-│ 1. TBC template exists and covers use case completely       │
-│    → Use TBC component directly                             │
-├─────────────────────────────────────────────────────────────┤
-│ 2. TBC template exists, variant covers use case             │
-│    → Use TBC component + existing variant                   │
-├─────────────────────────────────────────────────────────────┤
-│ 3. Different TBC template's variant fits better             │
-│    → Use alternative component + create variant             │
-├─────────────────────────────────────────────────────────────┤
-│ 4. TBC template needs extension                             │
-│    → Use TBC component + custom script                      │
-├─────────────────────────────────────────────────────────────┤
-│ 5. No TBC template fits                                     │
-│    → Custom job (MUST document why TBC doesn't fit)         │
-└─────────────────────────────────────────────────────────────┘
+Skill: component-research
 ```
 
-**Mandatory Process:**
-1. Identify user's core need (action + target + triggers)
-2. Read `references/component-decision.md` and follow the decision flowchart
-3. Search templates in `references/templates-catalog.md`
-4. Read `schemas/_meta.json` + `schemas/{template}.json` for exact capabilities
-5. Check `references/variantes.md` for variants
-6. Perform Deep Research if partial match (see `references/component-decision.md`)
-7. Only after exhausting framework options, consider custom solutions
+This triggers the Deep Research process to determine:
+- Which TBC components fit the use case
+- Whether variants are needed
+- If custom steps are truly required (rare)
 
-**The user may request something and be incorrect about the approach.** This skill disciplines correct framework usage.
+**Mandatory Workflow:**
+1. **Invoke `component-research` skill** (Skill tool) to evaluate fit
+2. Wait for decision output with Priority 1-6 recommendation
+3. Only proceed to generate configuration after decision is documented
+4. If Priority 6 (custom step), document WHY TBC doesn't fit
+
+**The user may request something and be incorrect about the approach.** The `component-research` skill disciplines correct framework usage before any generation happens.
 
 ## Overview
 
@@ -93,13 +78,13 @@ When generating a TBC configuration, read and follow `references/create-componen
 
 ## Evaluating Component Fit
 
-Before generating, determine if TBC components fit the use case. Read `references/component-decision.md` for the decision process with flowcharts.
+Before generating, **invoke the `component-research` skill** using the Skill tool. That skill executes the complete decision process with flowcharts and Deep Research protocol.
 
 ## Reference Files
 
 | Need | Reference |
 |------|-----------|
-| Decide if component fits | `references/component-decision.md` |
+| Decide if component fits | Invoke `component-research` skill (Skill tool) |
 | Complete template catalog | `references/templates-catalog.md` |
 | Build templates (15) | `references/build-templates.md` |
 | Deployment templates (11) | `references/deployment-templates.md` |
