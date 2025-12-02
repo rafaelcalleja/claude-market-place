@@ -12,6 +12,10 @@ version: 1.0.0
 
 Process for determining if a To-Be-Continuous (TBC) component fits a use case or requires customization.
 
+## Flow 
+
+Research → Evaluate → AskUserQuestion → User selects → Proceed
+
 ## Purpose
 
 This skill provides a systematic research process to evaluate TBC framework capabilities against user requirements. Use this BEFORE generating any configuration to ensure the correct solution path.
@@ -44,7 +48,10 @@ This skill provides a systematic research process to evaluate TBC framework capa
 User Request
     │
     ▼
-Identify Core Need (action + target + triggers)
+╔═══════════════════════════════════════════╗
+║  IDENTIFY CORE NEED (MANDATORY FIRST)     ║
+║  Invoke identify-core-need skill          ║
+╚═══════════════════════════════════════════╝
     │
     ▼
 ╔═══════════════════════════════════════════╗
@@ -56,17 +63,28 @@ Identify Core Need (action + target + triggers)
 Evaluate Priority 1-6 with evidence
     │
     ▼
-Document decision path
+╔═══════════════════════════════════════════╗
+║  ASK USER FOR CLARIFICATION               ║
+║  Present options using AskUserQuestion    ║
+╚═══════════════════════════════════════════╝
+    │
+    ▼
+Proceed based on user selection
 ```
 
 ## Quick Decision Steps
 
 ### Step 1: Identify Core Need
 
-Extract the fundamental requirement:
-- **Action**: build, deploy, test, scan, package
-- **Target**: language, platform, service
-- **Triggers**: branch, tag, manual
+**Invoke the `identify-core-need` skill before proceeding.**
+
+This skill handles:
+- Clarifying ambiguous requests (AskUserQuestion)
+- Applying Behavioral Principles (no artificial distinctions)
+- Extracting Core Need (action + target + triggers)
+- Documenting Validation Log
+
+**Only proceed to Step 2 when Core Need is clearly defined with Validation Log complete.**
 
 ### Step 2: Search Template Catalog
 
@@ -100,22 +118,49 @@ When template partially covers the need, execute **Deep Research Phase**:
 
 See `references/decision-process.md` for complete Deep Research protocol.
 
-### Step 5: Make Decision
+### Step 5: Present Options to User
 
-Apply Priority 1-6 hierarchy based on evidence gathered:
+**CRITICAL: Do NOT decide autonomously. Present findings and ask user to choose.**
 
-| If... | Then... |
-|-------|---------|
-| Template covers 100% | Priority 1: Use TBC direct |
-| Template + variant covers | Priority 2: Use TBC + variant |
-| Other template's variant fits | Priority 3: Apply/create variant |
-| Can create new component | Priority 4: Create component |
-| Component + variant needed | Priority 5: Create both |
-| ALL above fail (documented) | Priority 6: Custom step |
+After gathering evidence, use `AskUserQuestion` tool to present viable options:
+
+```
+AskUserQuestion:
+  header: "TBC Approach"
+  question: "Based on research, which approach for {use case}?"
+  options:
+    - label: "{Template} direct"
+      description: "Covers {X}% of requirements. {brief evidence}"
+    - label: "{Template} + variant"
+      description: "Adds {capability}. {brief evidence}"
+    - label: "Custom step"
+      description: "TBC doesn't cover {gap}. Requires manual job."
+```
+
+**Guidelines for AskUserQuestion:**
+- Maximum 4 options (tool limit)
+- Each option must include evidence from research
+- Describe trade-offs clearly in descriptions
+- Order options by Priority (1-6) - best option first
+- User can always select "Other" for alternatives
+
+**Example Question:**
+
+```
+header: "TBC Approach"
+question: "Which approach for Docker image build with Trivy scan?"
+options:
+  - label: "docker template"
+    description: "Builds and pushes images. Trivy scan via TBC_DOCKER_SCAN_IMAGE=true"
+  - label: "docker + custom scan"
+    description: "Use docker template but add separate Trivy job for more control"
+  - label: "Custom Dockerfile job"
+    description: "Full control but loses TBC caching and best practices"
+```
 
 ## Output Format
 
-Always document the decision path taken:
+After user selects an option, document the decision path:
 
 ```
 ## Decision Path
@@ -132,7 +177,13 @@ Templates Checked: {list}
 Match Analysis: {findings}
     │
     ▼
-Decision: Priority {N} - {solution}
+Options Presented: {options shown to user}
+    │
+    ▼
+User Selection: {user's choice}
+    │
+    ▼
+Proceeding with: Priority {N} - {solution}
 
 Evidence:
 - {source-1}: {finding}
@@ -143,16 +194,14 @@ Evidence:
 
 | Need | Reference |
 |------|-----------|
-| Complete decision flowchart | `references/decision-process.md` |
-| Deep Research protocol | `references/decision-process.md` (Phase 0) |
-| Cross-reference analysis | `references/decision-process.md` (Phase 0.5) |
+| Deep Research protocol | `references/decision-process.md` |
 
 ## Integration with building-with-tbc
 
-After completing component research:
-1. Document decision in output format above
-2. If TBC component selected → use `building-with-tbc` skill to generate config
-3. If custom step required → document WHY TBC doesn't fit before proceeding
+After user selects an option via AskUserQuestion:
+1. Document decision path with user's selection
+2. If TBC component selected → invoke `building-with-tbc` skill to generate config
+3. If custom step selected → document WHY TBC doesn't fit before proceeding
 
 ## Common Scenarios
 
