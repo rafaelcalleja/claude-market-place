@@ -115,7 +115,8 @@
         "./makefile-assistant",
         "./codex-cli",
         "./fabric-ai",
-        "./gemini-cli"
+        "./gemini-cli",
+        "./workflow-weaver"
       ]
     },
     {
@@ -226,6 +227,25 @@
       ],
       "license": "MIT",
       "homepage": "https://to-be-continuous.gitlab.io/doc"
+    },
+    {
+      "name": "skill-extractor",
+      "description": "Extract reusable skills from Claude Code conversations using Fabric AI patterns. Transforms conversation history into well-structured SKILL.md files.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Claude Market Place"
+      },
+      "source": "./plugins/skill-extractor",
+      "category": "productivity",
+      "keywords": [
+        "skill",
+        "extraction",
+        "fabric",
+        "conversation",
+        "workflow",
+        "automation"
+      ],
+      "license": "MIT"
     }
   ]
 }
