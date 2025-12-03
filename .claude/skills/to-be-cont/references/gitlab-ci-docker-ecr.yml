@@ -1,0 +1,71 @@
+# =====================================================================================================================
+# === AWS Auth template variant
+# =====================================================================================================================
+spec:
+  inputs:
+    aws-region:
+      description: Default region (where the ECR registry is located)
+      default: ''
+    aws-snapshot-region:
+      description: Region of the ECR registry for the snapshot image _(only define if
+        different from default)_
+      default: ''
+    aws-release-region:
+      description: Region of the ECR registry for the release image _(only define if
+        different from default)_
+      default: ''
+    aws-oidc-aud:
+      description: The `aud` claim for the JWT token _(only required for [OIDC authentication](https://docs.gitlab.com/ee/ci/cloud_services/aws/))_
+      default: $CI_SERVER_URL
+    aws-oidc-role-arn:
+      description: Default IAM Role ARN associated with GitLab _(only required for [OIDC
+        authentication](https://docs.gitlab.com/ee/ci/cloud_services/aws/))_
+      default: ''
+    aws-snapshot-oidc-role-arn:
+      description: IAM Role ARN associated with GitLab for the snapshot image _(only
+        required for [OIDC authentication](https://docs.gitlab.com/ee/ci/cloud_services/aws/)
+        and if different from default)_
+      default: ''
+    aws-release-oidc-role-arn:
+      description: IAM Role ARN associated with GitLab for the release image _(only
+        required for [OIDC authentication](https://docs.gitlab.com/ee/ci/cloud_services/aws/)
+        and if different from default)_
+      default: ''
+---
+variables:
+  TBC_AWS_PROVIDER_IMAGE: registry.gitlab.com/to-be-continuous/tools/aws-auth-provider:latest
+  AWS_OIDC_AUD: $[[ inputs.aws-oidc-aud ]]
+  AWS_REGION: $[[ inputs.aws-region ]]
+  AWS_SNAPSHOT_REGION: $[[ inputs.aws-snapshot-region ]]
+  AWS_RELEASE_REGION: $[[ inputs.aws-release-region ]]
+  AWS_OIDC_ROLE_ARN: $[[ inputs.aws-oidc-role-arn ]]
+  AWS_SNAPSHOT_OIDC_ROLE_ARN: $[[ inputs.aws-snapshot-oidc-role-arn ]]
+  AWS_RELEASE_OIDC_ROLE_ARN: $[[ inputs.aws-release-oidc-role-arn ]]
+
+.docker-base:
+  services:
+    - name: "$TBC_TRACKING_IMAGE"
+      command: ["--service", "docker", "6.0.0"]
+    - name: "$TBC_AWS_PROVIDER_IMAGE"
+      alias: "aws-auth-provider"
+  id_tokens:
+    # required for OIDC auth
+    AWS_JWT:
+      aud: "$AWS_OIDC_AUD"
+  variables:
+    # DOCKER_REGISTRY_SNAPSHOT_USER: "@url@http://aws-auth-provider/ecr/auth/username?env_ctx=SNAPSHOT"
+    # DOCKER_REGISTRY_RELEASE_USER: "@url@http://aws-auth-provider/ecr/auth/username?env_ctx=RELEASE"
+    DOCKER_REGISTRY_SNAPSHOT_USER: "AWS" # GetAuthorizationToken API always generate token for user 'AWS'
+    DOCKER_REGISTRY_RELEASE_USER: "AWS" # GetAuthorizationToken API always generate token for user 'AWS'
+    DOCKER_REGISTRY_SNAPSHOT_PASSWORD: "@url@http://aws-auth-provider/ecr/auth/password?env_ctx=SNAPSHOT"
+    DOCKER_REGISTRY_RELEASE_PASSWORD: "@url@http://aws-auth-provider/ecr/auth/password?env_ctx=RELEASE"
+    #  secrets have to be explicitly declared in the YAML to be exported to the service
+    AWS_JWT: "$AWS_JWT"
+    # can't use AWS_ACCESS_KEY_ID as it is read by boto3
+    AWS_DEFAULT_ACCESS_KEY_ID: "$AWS_ACCESS_KEY_ID"
+    # can't use AWS_SECRET_ACCESS_KEY as it is read by boto3
+    AWS_DEFAULT_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
+    AWS_SNAPSHOT_ACCESS_KEY_ID: "$AWS_SNAPSHOT_ACCESS_KEY_ID"
+    AWS_SNAPSHOT_SECRET_ACCESS_KEY: "$AWS_SNAPSHOT_SECRET_ACCESS_KEY"
+    AWS_RELEASE_ACCESS_KEY_ID: "$AWS_RELEASE_ACCESS_KEY_ID"
+    AWS_RELEASE_SECRET_ACCESS_KEY: "$AWS_RELEASE_SECRET_ACCESS_KEY"

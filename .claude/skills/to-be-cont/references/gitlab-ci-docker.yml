@@ -1,0 +1,1108 @@
+# =========================================================================================
+# Copyright (C) 2021 Orange & contributors
+#
+# This program is free software; you can redistribute it and/or modify it under the terms
+# of the GNU Lesser General Public License as published by the Free Software Foundation;
+# either version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with this
+# program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+# Floor, Boston, MA  02110-1301, USA.
+# =========================================================================================
+spec:
+  inputs:
+    build-tool:
+      description: The build tool to use for building container image
+      options:
+      - kaniko
+      - buildah
+      - dind
+      default: kaniko
+    kaniko-image:
+      description: |-
+        The image used to run kaniko
+
+        _for kaniko build only_
+      default: gcr.io/kaniko-project/executor:debug
+    buildah-image:
+      description: |-
+        The image used to run buildah
+
+        _for buildah build only_
+      default: quay.io/buildah/stable:latest
+    image:
+      description: |-
+        The image used to run the docker client
+
+        _for Docker-in-Docker(dind) build only_
+      default: registry.hub.docker.com/library/docker:latest
+    dind-image:
+      description: |-
+        The image used to run the Docker daemon
+
+        _for Docker-in-Docker(dind) build only_
+      default: registry.hub.docker.com/library/docker:dind
+    skopeo-image:
+      description: The image used to publish docker image with Skopeo
+      default: quay.io/skopeo/stable:latest
+    file:
+      description: The path to your `Dockerfile`
+      default: Dockerfile
+    context-path:
+      description: The Docker [context path](https://docs.docker.com/engine/reference/commandline/build/#build-with-path) (working directory) - _only set if you want a context path different from the Dockerfile location_
+      default: ''
+    config-file:
+      description: Path to the [Docker configuration file](https://docs.docker.com/engine/reference/commandline/cli/#sample-configuration-file) (JSON)
+      default: .docker/config.json
+    snapshot-image:
+      description: Docker snapshot image
+      default: $CI_REGISTRY_IMAGE/snapshot:$CI_COMMIT_REF_SLUG
+    release-image:
+      description: Docker release image
+      default: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    release-extra-tags-pattern:
+      description: |-
+        Defines the image tag pattern that `$DOCKER_RELEASE_IMAGE` should match to push extra tags (supports capturing groups)
+
+        Defaults to [SemVer](https://semver.org/) pattern.
+      default: ^v?(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<patch>[0-9]+)(?P<suffix>(?P<prerelease>-[0-9A-Za-z-\.]+)?(?P<build>\+[0-9A-Za-z-\.]+)?)$
+    release-extra-tags:
+      description: |-
+        Defines extra tags to publish the _release_ image
+
+        Supports capturing group references from `$DOCKER_RELEASE_EXTRA_TAGS_PATTERN` (ex: `latest \g<major>.\g<minor> \g<major>`)
+      default: ''
+    build-args:
+      description: Additional docker/kaniko/buildah build arguments
+      default: ''
+    push-args:
+      description: Additional docker/buildah `push` arguments (executed right after `build`)
+      default: ''
+    build-cache-disabled:
+      description: Disable the build cache
+      type: boolean
+      default: false
+    metadata:
+      description: Additional metadata to set as labels
+      default: >-
+        --label "org.opencontainers.image.url=${CI_PROJECT_URL}"
+        --label "org.opencontainers.image.source=${CI_PROJECT_URL}"
+        --label "org.opencontainers.image.title=${CI_PROJECT_PATH}"
+        --label "org.opencontainers.image.ref.name=${CI_COMMIT_REF_NAME}"
+        --label "org.opencontainers.image.revision=${CI_COMMIT_SHA}"
+        --label "org.opencontainers.image.created=${CI_JOB_STARTED_AT}"
+    publish-args:
+      description: Additional [`skopeo copy` arguments](https://github.com/containers/skopeo/blob/master/docs/skopeo-copy.1.md#options)
+      default: ''
+    prod-publish-strategy:
+      description: Defines the publish to production strategy.
+      options:
+      - none
+      - manual
+      - auto
+      default: manual
+    semrel-release-disabled:
+      description: Disable integration with the [semantic release template](https://gitlab.com/to-be-continuous/semantic-release/)
+      type: boolean
+      default: false
+    registry-mirror:
+      description: |-
+        URL of a Docker registry mirror to use instead of default `https://index.docker.io`
+
+        _Used by `kaniko` and `dind` builds only_
+      default: ''
+    container-registries-config-file:
+      description: |-
+        The [registries.conf](https://www.redhat.com/sysadmin/manage-container-registries) configuration to be used
+
+        _Used by the `buildah` build only_
+      default: ''
+    kaniko-snapshot-image-cache:
+      description: |-
+        Snapshot image repository that will be used to store cached layers (leave empty to use default: snapshot image repository + `/cache`)
+
+        _Used by the `kaniko` build only_
+      default: ''
+    hadolint-disabled:
+      description: Disable Hadolint
+      type: boolean
+      default: false
+    hadolint-image:
+      description: The docker image to lint your Dockerfile with Hadolint
+      default: registry.hub.docker.com/hadolint/hadolint:latest-alpine
+    hadolint-args:
+      description: Additional `hadolint` arguments
+      default: ''
+    healthcheck-disabled:
+      description: Disable Health Check
+      type: boolean
+      default: false
+    healthcheck-timeout:
+      description: When testing an image, how long (in seconds) wait for the HealthCheck status
+      type: number
+      default: 60
+    healthcheck-options:
+      description: Docker options for health check such as port mapping, environment...
+      default: ''
+    healthcheck-container-args:
+      description: Arguments sent to the running container for health check
+      default: ''
+    trivy-disabled:
+      description: Disable Trivy
+      type: boolean
+      default: false
+    trivy-image:
+      description: The docker image used to scan images with Trivy
+      default: registry.hub.docker.com/aquasec/trivy:latest
+    trivy-args:
+      description: Additional [`trivy image` options](https://aquasecurity.github.io/trivy/latest/docs/references/configuration/cli/trivy_image/#options)
+      default: --ignore-unfixed --pkg-types os --exit-on-eol 1 --detection-priority comprehensive
+    sbom-disabled:
+      description: Disable Software Bill of Materials
+      type: boolean
+      default: false
+    sbom-image:
+      default: registry.hub.docker.com/anchore/syft:debug
+    sbom-opts:
+      description: Options for syft used for SBOM analysis
+      default: --override-default-catalogers rpm-db-cataloger,alpm-db-cataloger,apk-db-cataloger,dpkg-db-cataloger,portage-cataloger
+---
+# default workflow rules: Merge Request pipelines
+workflow:
+  rules:
+    # prevent MR pipeline originating from production or integration branch(es)
+    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ $PROD_REF || $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ $INTEG_REF'
+      when: never
+    # on non-prod, non-integration branches: prefer MR pipeline over branch pipeline
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_COMMIT_REF_NAME !~ $PROD_REF && $CI_COMMIT_REF_NAME !~ $INTEG_REF'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*tag(,[^],]*)*\]/" && $CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*branch(,[^],]*)*\]/" && $CI_COMMIT_BRANCH'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*mr(,[^],]*)*\]/" && $CI_MERGE_REQUEST_ID'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*default(,[^],]*)*\]/" && $CI_COMMIT_REF_NAME =~ $CI_DEFAULT_BRANCH'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*prod(,[^],]*)*\]/" && $CI_COMMIT_REF_NAME =~ $PROD_REF'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*integ(,[^],]*)*\]/" && $CI_COMMIT_REF_NAME =~ $INTEG_REF'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ "/\[(ci skip|skip ci) on ([^],]*,)*dev(,[^],]*)*\]/" && $CI_COMMIT_REF_NAME !~ $PROD_REF && $CI_COMMIT_REF_NAME !~ $INTEG_REF'
+      when: never
+    - when: always
+
+
+# test job prototype: implement adaptive pipeline rules
+.test-policy:
+  rules:
+    # on tag: auto & failing
+    - if: $CI_COMMIT_TAG
+    # on ADAPTIVE_PIPELINE_DISABLED: auto & failing
+    - if: '$ADAPTIVE_PIPELINE_DISABLED == "true"'
+    # on production or integration branch(es): auto & failing
+    - if: '$CI_COMMIT_REF_NAME =~ $PROD_REF || $CI_COMMIT_REF_NAME =~ $INTEG_REF'
+    # early stage (dev branch, no MR): manual & non-failing
+    - if: '$CI_MERGE_REQUEST_ID == null && $CI_OPEN_MERGE_REQUESTS == null'
+      when: manual
+      allow_failure: true
+    # Draft MR: auto & non-failing
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^Draft:.*/'
+      allow_failure: true
+    # else (Ready MR): auto & failing
+    - when: on_success
+
+variables:
+  # variabilized tracking image
+  TBC_TRACKING_IMAGE: registry.gitlab.com/to-be-continuous/tools/tracking:master
+  DOCKER_HADOLINT_IMAGE: $[[ inputs.hadolint-image ]]
+  DOCKER_IMAGE: $[[ inputs.image ]]
+  DOCKER_DIND_IMAGE: $[[ inputs.dind-image ]]
+  DOCKER_KANIKO_IMAGE: $[[ inputs.kaniko-image ]]
+  DOCKER_SKOPEO_IMAGE: $[[ inputs.skopeo-image ]]
+  DOCKER_BUILDAH_IMAGE: $[[ inputs.buildah-image ]]
+
+  DOCKER_FILE: $[[ inputs.file ]]
+  DOCKER_CONFIG_FILE: $[[ inputs.config-file ]]
+
+  # When testing a Docker Health (test stage), how long (in seconds) wait for the HealthCheck status (https://docs.docker.com/engine/reference/builder/#healthcheck)
+  DOCKER_HEALTHCHECK_TIMEOUT: $[[ inputs.healthcheck-timeout ]]
+
+  # Default Docker config uses the internal GitLab registry
+  DOCKER_SNAPSHOT_IMAGE: $[[ inputs.snapshot-image ]]
+  DOCKER_RELEASE_IMAGE: $[[ inputs.release-image ]]
+
+  DOCKER_TRIVY_IMAGE: $[[ inputs.trivy-image ]]
+  DOCKER_TRIVY_ARGS: $[[ inputs.trivy-args ]]
+  DOCKER_TRIVY_DISABLED: $[[ inputs.trivy-disabled ]]
+
+  # SBOM genenration image and arguments
+  DOCKER_SBOM_IMAGE: $[[ inputs.sbom-image ]]
+  DOCKER_SBOM_OPTS: $[[ inputs.sbom-opts ]]
+
+  # default: one-click publish
+  DOCKER_PROD_PUBLISH_STRATEGY: $[[ inputs.prod-publish-strategy ]]
+  DOCKER_RELEASE_EXTRA_TAGS_PATTERN: $[[ inputs.release-extra-tags-pattern ]]
+
+  # default production ref name (pattern)
+  PROD_REF: '/^(master|main)$/'
+  # default integration ref name (pattern)
+  INTEG_REF: '/^develop$/'
+
+  # don't use CI_PROJECT_TITLE, kaniko doesn't support space in argument right now (https://github.com/GoogleContainerTools/kaniko/issues/1231)
+  DOCKER_METADATA: $[[ inputs.metadata ]]
+
+  # default to kaniko, possible options : kaniko|buildah|dind
+  DOCKER_BUILD_TOOL: $[[ inputs.build-tool ]]
+
+  DOCKER_CONTEXT_PATH: $[[ inputs.context-path ]]
+  DOCKER_RELEASE_EXTRA_TAGS: $[[ inputs.release-extra-tags ]]
+  DOCKER_BUILD_ARGS: $[[ inputs.build-args ]]
+  DOCKER_BUILD_CACHE_DISABLED: $[[ inputs.build-cache-disabled ]]
+  DOCKER_PUBLISH_ARGS: $[[ inputs.publish-args ]]
+  DOCKER_SEMREL_RELEASE_DISABLED: $[[ inputs.semrel-release-disabled ]]
+  DOCKER_REGISTRY_MIRROR: $[[ inputs.registry-mirror ]]
+  CONTAINER_REGISTRIES_CONFIG_FILE: $[[ inputs.container-registries-config-file ]]
+  KANIKO_SNAPSHOT_IMAGE_CACHE: $[[ inputs.kaniko-snapshot-image-cache ]]
+  DOCKER_PUSH_ARGS: $[[ inputs.push-args ]]
+  DOCKER_HADOLINT_DISABLED: $[[ inputs.hadolint-disabled ]]
+  DOCKER_HADOLINT_ARGS: $[[ inputs.hadolint-args ]]
+  DOCKER_HEALTHCHECK_DISABLED: $[[ inputs.healthcheck-disabled ]]
+  DOCKER_HEALTHCHECK_OPTIONS: $[[ inputs.healthcheck-options ]]
+  DOCKER_HEALTHCHECK_CONTAINER_ARGS: $[[ inputs.healthcheck-container-args ]]
+  DOCKER_SBOM_DISABLED: $[[ inputs.sbom-disabled ]]
+
+# ==================================================
+# Stages definition
+# ==================================================
+
+stages:
+  - build
+  - test
+  - package-build
+  - package-test
+  - infra
+  - deploy
+  - acceptance
+  - publish
+  - infra-prod
+  - production
+
+# ==================================================
+# Base Jobs definition
+# ==================================================
+
+.docker-scripts: &docker-scripts |
+  # BEGSCRIPT
+  set -e
+
+  function log_info() {
+      echo -e "[\\e[1;94mINFO\\e[0m] $*"
+  }
+
+  function log_warn() {
+      echo -e "[\\e[1;93mWARN\\e[0m] $*"
+  }
+
+  function log_error() {
+      echo -e "[\\e[1;91mERROR\\e[0m] $*"
+  }
+
+  function fail() {
+    log_error "$*"
+    exit 1
+  }
+
+  function install_custom_ca_certs() {
+    certs="${CUSTOM_CA_CERTS:-$DEFAULT_CA_CERTS}"
+    if [[ -z "$certs" ]]
+    then
+      return
+    fi
+    # import in system for regular linux (Ubuntu, Debian) image
+    if [[ -f /etc/ssl/certs/ca-certificates.crt ]]
+    then
+      echo "$certs" | tr -d '\r' >> /etc/ssl/certs/ca-certificates.crt
+      log_info "Custom CA certificates imported in \\e[33;1m/etc/ssl/certs/ca-certificates.crt\\e[0m"
+    # import in system for regular linux (Fedora, RHEL) image (e.g. Skopeo image)
+    elif [[ -f /etc/ssl/certs/ca-bundle.crt ]]
+    then
+      echo "$certs" | tr -d '\r' >> /etc/ssl/certs/ca-bundle.crt
+      log_info "Custom CA certificates imported in \\e[33;1m/etc/ssl/certs/ca-bundle.crt\\e[0m"
+    # kaniko image : specific directory for ca certificates, no standard import tool
+    elif [[ -d /kaniko/ssl/certs ]]
+    then
+      echo "$certs" | tr -d '\r' >> /kaniko/ssl/certs/ca-certificates.crt
+      log_info "Custom CA certificates configured in \\e[33;1m/kaniko/ssl/certs/ca-certificates.crt\\e[0m"
+    fi
+  }
+
+  function unscope_variables() {
+    _scoped_vars=$(env | awk -F '=' "/^scoped__[a-zA-Z0-9_]+=/ {print \$1}" | sort)
+    if [[ -z "$_scoped_vars" ]]; then return; fi
+    log_info "Processing scoped variables..."
+    for _scoped_var in $_scoped_vars
+    do
+      _fields=${_scoped_var//__/:}
+      _condition=$(echo "$_fields" | cut -d: -f3)
+      case "$_condition" in
+      if) _not="";;
+      ifnot) _not=1;;
+      *)
+        log_warn "... unrecognized condition \\e[1;91m$_condition\\e[0m in \\e[33;1m${_scoped_var}\\e[0m"
+        continue
+      ;;
+      esac
+      _target_var=$(echo "$_fields" | cut -d: -f2)
+      _cond_var=$(echo "$_fields" | cut -d: -f4)
+      _cond_val=$(eval echo "\$${_cond_var}")
+      _test_op=$(echo "$_fields" | cut -d: -f5)
+      case "$_test_op" in
+      defined)
+        if [[ -z "$_not" ]] && [[ -z "$_cond_val" ]]; then continue;
+        elif [[ "$_not" ]] && [[ "$_cond_val" ]]; then continue;
+        fi
+        ;;
+      equals|startswith|endswith|contains|in|equals_ic|startswith_ic|endswith_ic|contains_ic|in_ic)
+        # comparison operator
+        # sluggify actual value
+        _cond_val=$(echo "$_cond_val" | tr '[:punct:]' '_')
+        # retrieve comparison value
+        _cmp_val_prefix="scoped__${_target_var}__${_condition}__${_cond_var}__${_test_op}__"
+        _cmp_val=${_scoped_var#"$_cmp_val_prefix"}
+        # manage 'ignore case'
+        if [[ "$_test_op" == *_ic ]]
+        then
+          # lowercase everything
+          _cond_val=$(echo "$_cond_val" | tr '[:upper:]' '[:lower:]')
+          _cmp_val=$(echo "$_cmp_val" | tr '[:upper:]' '[:lower:]')
+        fi
+        case "$_test_op" in
+        equals*)
+          if [[ -z "$_not" ]] && [[ "$_cond_val" != "$_cmp_val" ]]; then continue;
+          elif [[ "$_not" ]] && [[ "$_cond_val" == "$_cmp_val" ]]; then continue;
+          fi
+          ;;
+        startswith*)
+          if [[ -z "$_not" ]] && [[ "$_cond_val" != "$_cmp_val"* ]]; then continue;
+          elif [[ "$_not" ]] && [[ "$_cond_val" == "$_cmp_val"* ]]; then continue;
+          fi
+          ;;
+        endswith*)
+          if [[ -z "$_not" ]] && [[ "$_cond_val" != *"$_cmp_val" ]]; then continue;
+          elif [[ "$_not" ]] && [[ "$_cond_val" == *"$_cmp_val" ]]; then continue;
+          fi
+          ;;
+        contains*)
+          if [[ -z "$_not" ]] && [[ "$_cond_val" != *"$_cmp_val"* ]]; then continue;
+          elif [[ "$_not" ]] && [[ "$_cond_val" == *"$_cmp_val"* ]]; then continue;
+          fi
+          ;;
+        in*)
+          if [[ -z "$_not" ]] && [[ "__${_cmp_val}__" != *"__${_cond_val}__"* ]]; then continue;
+          elif [[ "$_not" ]] && [[ "__${_cmp_val}__" == *"__${_cond_val}__"* ]]; then continue;
+          fi
+          ;;
+        esac
+        ;;
+      *)
+        log_warn "... unrecognized test operator \\e[1;91m${_test_op}\\e[0m in \\e[33;1m${_scoped_var}\\e[0m"
+        continue
+        ;;
+      esac
+      # matches
+      _val=$(eval echo "\$${_target_var}")
+      log_info "... apply \\e[32m${_target_var}\\e[0m from \\e[32m\$${_scoped_var}\\e[0m${_val:+ (\\e[33;1moverwrite\\e[0m)}"
+      _val=$(eval echo "\$${_scoped_var}")
+      export "${_target_var}"="${_val}"
+    done
+    log_info "... done"
+  }
+
+  # evaluate and export a secret
+  # - $1: secret variable name
+  function eval_secret() {
+    name=$1
+    value=$(eval echo "\$${name}")
+    # create the /tmp directory (it is required by the mktemp command)
+    mkdir -p /tmp
+    case "$value" in
+    @b64@*)
+      decoded=$(mktemp)
+      errors=$(mktemp)
+      if echo "$value" | cut -c6- | base64 -d > "${decoded}" 2> "${errors}"
+      then
+        # shellcheck disable=SC2086
+        export ${name}="$(cat ${decoded})"
+        log_info "Successfully decoded base64 secret \\e[33;1m${name}\\e[0m"
+      else
+        fail "Failed decoding base64 secret \\e[33;1m${name}\\e[0m:\\n$(sed 's/^/... /g' "${errors}")"
+      fi
+      ;;
+    @hex@*)
+      decoded=$(mktemp)
+      errors=$(mktemp)
+      if echo "$value" | cut -c6- | sed 's/\([0-9A-F]\{2\}\)/\\\\x\1/gI' | xargs printf > "${decoded}" 2> "${errors}"
+      then
+        # shellcheck disable=SC2086
+        export ${name}="$(cat ${decoded})"
+        log_info "Successfully decoded hexadecimal secret \\e[33;1m${name}\\e[0m"
+      else
+        fail "Failed decoding hexadecimal secret \\e[33;1m${name}\\e[0m:\\n$(sed 's/^/... /g' "${errors}")"
+      fi
+      ;;
+    @url@*)
+      url=$(echo "$value" | cut -c6-)
+      if command -v curl > /dev/null
+      then
+        decoded=$(mktemp)
+        errors=$(mktemp)
+        if curl -s -S -f --connect-timeout 5 -o "${decoded}" "$url" 2> "${errors}"
+        then
+          # shellcheck disable=SC2086
+          export ${name}="$(cat ${decoded})"
+          log_info "Successfully curl'd secret \\e[33;1m${name}\\e[0m"
+        else
+          log_warn "Failed getting secret \\e[33;1m${name}\\e[0m:\\n$(sed 's/^/... /g' "${errors}")"
+        fi
+      elif command -v wget > /dev/null
+      then
+        decoded=$(mktemp)
+        errors=$(mktemp)
+        if wget -T 5 -O "${decoded}" "$url" 2> "${errors}"
+        then
+          # shellcheck disable=SC2086
+          export ${name}="$(cat ${decoded})"
+          log_info "Successfully wget'd secret \\e[33;1m${name}\\e[0m"
+        else
+          log_warn "Failed getting secret \\e[33;1m${name}\\e[0m:\\n$(sed 's/^/... /g' "${errors}")"
+        fi
+      else
+        log_warn "Couldn't get secret \\e[33;1m${name}\\e[0m: no http client found"
+      fi
+      ;;
+    esac
+  }
+
+  function eval_all_secrets() {
+    encoded_vars=$(env | grep -v '^scoped__' | awk -F '=' '/^[a-zA-Z0-9_]*=@(b64|hex|url)@/ {print $1}')
+    for var in $encoded_vars
+    do
+      eval_secret "$var"
+    done
+  }
+
+  # simple JSON merge (used in Skopeo job only)
+  function merge_json() {
+    python3 -c "import json,sys
+  def merge(a,b):
+    for key in b:
+      if key in a and isinstance(a[key],dict) and isinstance(b[key],dict): a[key]=merge(a[key],b[key])
+      else: a[key]=b[key]
+    return a
+  def mergef(*files):
+    res={}
+    for f in files:
+      with open(f,'r') as rd: res=merge(res,json.load(rd))
+    return res
+  print(json.dumps(mergef(*sys.argv[1:])))" "$@"
+  }
+
+  function wait_for_docker_daemon() {
+    log_info "Wait for Docker daemon..."
+    # shellcheck disable=SC2034
+    for i in $(seq 1 30); do
+      if ! docker info &> /dev/null; then
+        log_info "... not responding: wait"
+        sleep 2
+      else
+        log_info "... ready: continue"
+        return
+      fi
+    done
+    fail "... timeout reached: halt"
+  }
+
+  function awkenvsubst() {
+    # performs variables escaping: '&' for gsub + JSON chars ('\' and '"')
+    awk '{while(match($0,"[$%]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH-3);val=ENVIRON[var];gsub(/["\\&]/,"\\\\&",val);gsub("[$%]{"var"}",val)}}1'
+  }
+
+  function configure_registries_auth() {
+    docker_snapshot_authent_token=$(echo -n "${DOCKER_REGISTRY_SNAPSHOT_USER:-${DOCKER_REGISTRY_USER:-$CI_REGISTRY_USER}}:${DOCKER_REGISTRY_SNAPSHOT_PASSWORD:-${DOCKER_REGISTRY_PASSWORD:-$CI_REGISTRY_PASSWORD}}" | base64 | tr -d '\n')
+    docker_snapshot_registry_host=$(echo "$DOCKER_SNAPSHOT_IMAGE" | cut -d/ -f1)
+    export docker_snapshot_authent_token
+    export docker_snapshot_registry_host
+
+    docker_release_authent_token=$(echo -n "${DOCKER_REGISTRY_RELEASE_USER:-${DOCKER_REGISTRY_USER:-$CI_REGISTRY_USER}}:${DOCKER_REGISTRY_RELEASE_PASSWORD:-${DOCKER_REGISTRY_PASSWORD:-$CI_REGISTRY_PASSWORD}}" | base64 | tr -d '\n')
+    docker_release_registry_host=$(echo "$DOCKER_RELEASE_IMAGE" | cut -d/ -f1)
+    export docker_release_authent_token
+    export docker_release_registry_host
+
+    if [[ -n "$DOCKER_REGISTRY_MIRROR" && -n "$DOCKER_REGISTRY_MIRROR_USER" ]]
+    then
+      docker_mirror_authent_token=$(echo -n "$DOCKER_REGISTRY_MIRROR_USER:$DOCKER_REGISTRY_MIRROR_PASSWORD" | base64 | tr -d '\n')
+      # shellcheck disable=SC2001
+      docker_mirror_registry_host=$(echo "$DOCKER_REGISTRY_MIRROR" | sed "s|^https*://||" | cut -d/ -f1)
+      export docker_mirror_authent_token
+      export docker_mirror_registry_host
+
+      docker_mirror_config_json="\"$docker_mirror_registry_host\":{\"auth\":\"$docker_mirror_authent_token\"},"
+    fi
+
+    docker_snapshot_config_json=$(echo -n "{\"auths\":{$docker_mirror_config_json\"$docker_snapshot_registry_host\":{\"auth\":\"$docker_snapshot_authent_token\"}},\"HttpHeaders\":{\"User-Agent\":\"$USER_AGENT\"}}")
+    docker_release_config_json=$(echo -n "{\"auths\":{$docker_mirror_config_json\"$docker_release_registry_host\":{\"auth\":\"$docker_release_authent_token\"}},\"HttpHeaders\":{\"User-Agent\":\"$USER_AGENT\"}}")
+
+    # Create the configuration file for Docker and Kaniko
+    BUILDTOOL_HOME=${BUILDTOOL_HOME:-$HOME}
+    mkdir -p "$BUILDTOOL_HOME/.docker"
+    if [ -f "${DOCKER_CONFIG_FILE}" ]
+    then
+      awkenvsubst < "${DOCKER_CONFIG_FILE}" > "$BUILDTOOL_HOME/.docker/config.json"
+    else
+      echo "${docker_snapshot_config_json}" > "$BUILDTOOL_HOME/.docker/config.json"
+    fi
+
+    # Create the configuration files for Skopeo
+    if command -v skopeo > /dev/null
+    then
+      mkdir -p "$BUILDTOOL_HOME/skopeo/.docker"
+      # use same auth config as the build tool for the source image
+      cp -f "$BUILDTOOL_HOME/.docker/config.json" "$BUILDTOOL_HOME/skopeo/.docker/src-config.json"
+      # use a merged auth config for the destination image
+      echo "${docker_release_config_json}" > "$BUILDTOOL_HOME/skopeo/.docker/release-only.json"
+      merge_json "$BUILDTOOL_HOME/skopeo/.docker/src-config.json" "$BUILDTOOL_HOME/skopeo/.docker/release-only.json" > "$BUILDTOOL_HOME/skopeo/.docker/dest-config.json"
+    fi
+
+    log_info "Docker authentication configured for \\e[33;1m${docker_snapshot_registry_host}\\e[0m"
+  }
+
+  # autodetects whether there is an hadolint config file
+  function autoconfig_hadolint() {
+    # If present, import hadolint config found inside the git repository
+    _cfg=$(ls -1 "hadolint.yaml" 2>/dev/null || ls -1 ".hadolint.yaml" 2>/dev/null || echo "")
+    if [[ -f "$_cfg" ]]
+    then
+      log_info "Using custom Hadolint config (\\e[33;1m${_cfg}\\e[0m)"
+      export hadolint_config_opts="--config $_cfg"
+    else
+      log_info "No Hadolint config found: use default"
+    fi
+  }
+
+  function create_kaniko_cache_dir() {
+    # create cache directory if needed
+    mkdir -p "${CI_PROJECT_DIR}/.cache"
+  }
+
+  function init_workspace() {
+    install_custom_ca_certs
+    unscope_variables
+    eval_all_secrets
+    configure_registries_auth
+  }
+
+  # evaluate the context path
+  function docker_context_path() {
+    if [[ "$DOCKER_CONTEXT_PATH" ]]
+    then
+      # $DOCKER_CONTEXT_PATH is explicit: use it
+      echo "$DOCKER_CONTEXT_PATH"
+    else
+      # $DOCKER_CONTEXT_PATH unset or empty: assume it's relative to the Dockerfile
+      dirname "$DOCKER_FILE"
+    fi
+  }
+
+  function run_build_kaniko() {
+    docker_image=$1
+    if [ "$DOCKER_BUILD_CACHE_DISABLED" != "true" ]; then
+      kaniko_snapshot_image_cache="${KANIKO_SNAPSHOT_IMAGE_CACHE:-${DOCKER_SNAPSHOT_IMAGE%:*}/cache}"
+      kaniko_cache_args="--cache --cache-dir=${CI_PROJECT_DIR}/.cache --cache-repo=${kaniko_snapshot_image_cache}"
+      log_info "Build cache enabled; CLI options: ${kaniko_cache_args}"
+    fi
+    shift
+    if [[ -n "$DOCKER_REGISTRY_MIRROR" ]]
+    then
+      # shellcheck disable=SC2001,SC2086
+      kaniko_registry_mirror_option="--registry-mirror $(echo ${DOCKER_REGISTRY_MIRROR} | sed "s|^https*://||")"
+    fi
+    log_info "Build & deploy image $docker_image"
+    log_info "Kaniko command: echo $DOCKER_METADATA $DOCKER_BUILD_ARGS $* | xargs /kaniko/executor ${TRACE+--verbosity debug} --context $(docker_context_path) --dockerfile $DOCKER_FILE --destination $docker_image ${kaniko_cache_args} $kaniko_registry_mirror_option"
+    # shellcheck disable=SC2086
+    echo $DOCKER_METADATA $DOCKER_BUILD_ARGS "$@" | xargs /kaniko/executor ${TRACE+--verbosity debug} --context "$(docker_context_path)" --dockerfile "$DOCKER_FILE" --destination "$docker_image" ${kaniko_cache_args} $kaniko_registry_mirror_option
+  }
+
+  # Used by containers tools like buildah, skopeo.
+  function configure_containers_registries() {
+    if [[ -n "$CONTAINER_REGISTRIES_CONFIG_FILE" ]]
+    then
+      BUILDTOOL_HOME=${BUILDTOOL_HOME:-$HOME}
+      mkdir -p "$BUILDTOOL_HOME/.config/containers"
+      echo "${CONTAINER_REGISTRIES_CONFIG_FILE}" > "$BUILDTOOL_HOME/.config/containers/registries.conf"
+      log_info "Configured $BUILDTOOL_HOME/.config/containers/registries.conf"
+    fi
+  }
+
+  function publish_extra_tags() {
+    if [[ -z "$DOCKER_RELEASE_EXTRA_TAGS" ]]
+    then
+      return
+    fi
+    # check if tag matches pattern
+    # shellcheck disable=SC2154
+    matches=$(python3 -c "import re;print('match' if re.match(r'$DOCKER_RELEASE_EXTRA_TAGS_PATTERN', '$docker_tag') else '')")
+    if [[ "$matches" ]]
+    then
+      # apply extra tags substitution
+      extra_tags=$(python3 -c "import re;print(re.sub(r'$DOCKER_RELEASE_EXTRA_TAGS_PATTERN', r'$DOCKER_RELEASE_EXTRA_TAGS', '$docker_tag'))")
+      log_info "Pushing extra tags (evaluated from original tag \\e[33;1m${docker_tag}\\e[0m)..."
+      for extra_tag in $extra_tags
+      do
+        log_info "... pushing extra tag: \\e[33;1m${extra_tag}\\e[0m..."
+        # shellcheck disable=SC2086,SC2154
+        skopeo copy --src-authfile "$BUILDTOOL_HOME/skopeo/.docker/dest-config.json" --dest-authfile "$BUILDTOOL_HOME/skopeo/.docker/dest-config.json" ${DOCKER_PUBLISH_ARGS} "docker://$DOCKER_RELEASE_IMAGE" "docker://$docker_repository:$extra_tag"
+      done
+    else
+      log_info "Extra tags configured, but the released tag (\\e[33;1m${docker_tag}\\e[0m) doesn't match \$DOCKER_RELEASE_EXTRA_TAGS_PATTERN..."
+    fi
+  }
+
+  init_workspace
+
+  # ENDSCRIPT
+
+.docker-base:
+  services:
+    - name: "$TBC_TRACKING_IMAGE"
+      command: ["--service", "docker", "6.0.0"]
+  before_script:
+    - !reference [.docker-scripts]
+
+.docker-kaniko-base:
+  extends: .docker-base
+  image:
+    name: "$DOCKER_KANIKO_IMAGE"
+    entrypoint: [""]
+  variables:
+    BUILDTOOL_HOME: "/kaniko"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-docker"
+    paths:
+      - .cache
+  before_script:
+  - !reference [.docker-scripts]
+  - create_kaniko_cache_dir
+  - |
+    log_info "Kaniko version:"
+    /kaniko/executor version
+
+
+.docker-dind-base:
+  extends: .docker-base
+  image: $DOCKER_IMAGE
+  variables:
+    # disable TLS between Docker client and Docker daemon : https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-disabled
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    # make visible DEFAULT_CA_CERTS and CUSTOM_CA_CERTS variables to the service (we MUST use different variable names)
+    _DEFAULT_CA_CERTS: "${DEFAULT_CA_CERTS}"
+    _CUSTOM_CA_CERTS: "${CUSTOM_CA_CERTS}"
+    _TRACE: "${TRACE}"
+  services:
+    - name: "$TBC_TRACKING_IMAGE"
+      command: ["--service", "docker", "6.0.0"]
+    - name: $DOCKER_DIND_IMAGE
+      alias: docker
+      command:
+        - /bin/sh
+        - -c
+        - |
+          if [[ -n "${_CUSTOM_CA_CERTS:-$_DEFAULT_CA_CERTS}" ]]; then echo "${_CUSTOM_CA_CERTS:-$_DEFAULT_CA_CERTS}" | tr -d '\r' >> /etc/ssl/certs/ca-certificates.crt; fi || exit
+          if [[ -n "${_TRACE}" ]]; then echo "Here is the list of all CAs that are trusted by the Docker daemon:"; cat /etc/ssl/certs/ca-certificates.crt; fi
+          if [[ -n "${DOCKER_REGISTRY_MIRROR}" ]]; then dockerd-entrypoint.sh --registry-mirror ${DOCKER_REGISTRY_MIRROR}; else dockerd-entrypoint.sh; fi || exit
+  before_script:
+    - !reference [.docker-scripts]
+    - if ! wait_for_docker_daemon; then fail "Docker-in-Docker is not enabled on this runner. Either use a Docker-in-Docker capable runner, or disable this job by setting \$DOCKER_BUILD_TOOL to a different value"; fi
+    - |
+      log_info "Docker version:"
+      docker version
+
+# ==================================================
+# Stage: build
+# ==================================================
+
+docker-hadolint:
+  image:
+    name: "$DOCKER_HADOLINT_IMAGE"
+    entrypoint: [""]
+  extends: .docker-base
+  stage: build
+  dependencies: []
+  script:
+    - autoconfig_hadolint
+    - |
+      log_info "Hadolint version:"
+      hadolint -v
+    - mkdir -p -m 777 reports
+    - log_info "Scanning ${DOCKER_FILE}..."
+    - dockerfile_hash=$(echo "$DOCKER_FILE" | md5sum | cut -d" " -f1)
+    # Output in Code Climate format (GitLab integration)
+    - hadolint --no-fail -f gitlab_codeclimate $DOCKER_HADOLINT_ARGS $hadolint_config_opts "$DOCKER_FILE" > "reports/docker-hadolint-${dockerfile_hash}.codeclimate.json"
+    # Output in JSON format
+    - |
+      if [[ "$DEFECTDOJO_HADOLINT_REPORTS" ]]
+      then
+        hadolint --no-fail -f json $DOCKER_HADOLINT_ARGS $hadolint_config_opts "$DOCKER_FILE" > "reports/docker-hadolint-${dockerfile_hash}.native.json"
+      fi
+    # last run with console output (with failure)
+    - hadolint $DOCKER_HADOLINT_ARGS $hadolint_config_opts "$DOCKER_FILE"
+  artifacts:
+    name: "$CI_JOB_NAME artifacts from $CI_PROJECT_NAME on $CI_COMMIT_REF_SLUG"
+    expire_in: 1 day
+    access: developer
+    when: always
+    reports:
+      codequality:
+        - "reports/docker-hadolint-*.codeclimate.json"
+    paths:
+      - "reports/docker-hadolint-*"
+  rules:
+    # exclude if DOCKER_HADOLINT_DISABLED set
+    - if: '$DOCKER_HADOLINT_DISABLED == "true"'
+      when: never
+    - !reference [.test-policy, rules]
+
+# ==================================================
+# Stage: package-build
+# ==================================================
+docker-kaniko-build:
+  extends: .docker-kaniko-base
+  stage: package-build
+  script:
+    - run_build_kaniko "$DOCKER_SNAPSHOT_IMAGE" --digest-file .img-digest.txt --build-arg http_proxy="$http_proxy" --build-arg https_proxy="$https_proxy" --build-arg no_proxy="$no_proxy"
+    # push docker_image in dotenv file
+    - docker_digest=$(cat .img-digest.txt)
+    - docker_repository=${DOCKER_SNAPSHOT_IMAGE%:*}
+    - docker_tag=${DOCKER_SNAPSHOT_IMAGE##*:}
+    - |
+      {
+        echo "docker_image=$DOCKER_SNAPSHOT_IMAGE"
+        echo "docker_image_digest=$docker_repository@$docker_digest"
+        echo "docker_repository=$docker_repository"
+        echo "docker_tag=$docker_tag"
+        echo "docker_digest=$docker_digest"
+      } > docker.env
+  artifacts:
+    reports:
+      dotenv:
+        - docker.env
+  rules:
+    - if: '$DOCKER_BUILD_TOOL == "kaniko"'
+
+docker-dind-build:
+  extends: .docker-dind-base
+  stage: package-build
+  script:
+    - docker pull $DOCKER_SNAPSHOT_IMAGE || true
+    - |
+      if [ "$DOCKER_BUILD_CACHE_DISABLED" != "true" ]; then
+        dind_cache_args="--cache-from $DOCKER_SNAPSHOT_IMAGE"
+        log_info "Build cache enabled; CLI options: ${dind_cache_args}"
+      fi
+    # Build using cache if exist
+    - echo $DOCKER_METADATA $DOCKER_BUILD_ARGS "$(docker_context_path)" | xargs docker build --file "$DOCKER_FILE" ${dind_cache_args} --tag $DOCKER_SNAPSHOT_IMAGE --build-arg http_proxy="$http_proxy" --build-arg https_proxy="$https_proxy" --build-arg no_proxy="$no_proxy"
+    - docker push $DOCKER_PUSH_ARGS $DOCKER_SNAPSHOT_IMAGE
+    # Display the size of each layer
+    - docker history $DOCKER_SNAPSHOT_IMAGE
+    # Display the total size of the image
+    - docker images --digests $DOCKER_SNAPSHOT_IMAGE
+    # create dotenv file
+    - image_with_digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$DOCKER_SNAPSHOT_IMAGE")
+    - docker_digest=${image_with_digest##*@}
+    - docker_repository=${DOCKER_SNAPSHOT_IMAGE%:*}
+    - docker_tag=${DOCKER_SNAPSHOT_IMAGE##*:}
+    - |
+      {
+        echo "docker_image=$DOCKER_SNAPSHOT_IMAGE"
+        echo "docker_image_digest=$docker_repository@$docker_digest"
+        echo "docker_repository=$docker_repository"
+        echo "docker_tag=$docker_tag"
+        echo "docker_digest=$docker_digest"
+      } > docker.env
+  artifacts:
+    reports:
+      dotenv:
+        - docker.env
+  rules:
+    - if: '$DOCKER_BUILD_TOOL == "dind"'
+
+docker-buildah-build:
+  extends: .docker-base
+  stage: package-build
+  image: "$DOCKER_BUILDAH_IMAGE"
+  script:
+    - configure_containers_registries
+    # Add build cache related parameters.
+    - |
+      if [ "$DOCKER_BUILD_CACHE_DISABLED" != "true" ]; then
+          buildah_build_cache="${DOCKER_SNAPSHOT_IMAGE%:*}/cache"
+          buildah_cache_args="--layers --cache-from $buildah_build_cache --cache-to $buildah_build_cache"
+          log_info "Build cache enabled; CLI options: ${buildah_cache_args}"
+      fi
+    - |
+      log_info "Buildah version:"
+      buildah version
+    # build and push image
+    - echo $DOCKER_METADATA $DOCKER_BUILD_ARGS "$(docker_context_path)" | xargs buildah build --file "$DOCKER_FILE" --tag $DOCKER_SNAPSHOT_IMAGE $buildah_cache_args --build-arg http_proxy="$http_proxy" --build-arg https_proxy="$https_proxy" --build-arg no_proxy="$no_proxy"
+    - buildah push --digestfile .img-digest.txt $DOCKER_PUSH_ARGS "$DOCKER_SNAPSHOT_IMAGE"
+    # display digest of the resulting image
+    - cat .img-digest.txt
+    # create dotenv file
+    - docker_digest=$(cat .img-digest.txt)
+    - docker_repository=${DOCKER_SNAPSHOT_IMAGE%:*}
+    - docker_tag=${DOCKER_SNAPSHOT_IMAGE##*:}
+    - |
+      {
+        echo "docker_image=$DOCKER_SNAPSHOT_IMAGE"
+        echo "docker_image_digest=$docker_repository@$docker_digest"
+        echo "docker_repository=$docker_repository"
+        echo "docker_tag=$docker_tag"
+        echo "docker_digest=$docker_digest"
+      } > docker.env
+  artifacts:
+    reports:
+      dotenv:
+        - docker.env
+  rules:
+    - if: '$DOCKER_BUILD_TOOL == "buildah"'
+
+# ==================================================
+# Stage: package-test
+# ==================================================
+
+# Tests should be run as a health_check. If so, you don't need to edit this job
+docker-healthcheck:
+  extends: .docker-dind-base
+  variables:
+    GIT_STRATEGY: none
+  stage: package-test
+  script:
+  - log_info "Healthchecking ${DOCKER_SNAPSHOT_IMAGE}..."
+  - |
+    # Test by internal health_check (Recommended way, more info https://docs.docker.com/engine/reference/builder/#healthcheck)
+    # This looks complicated but you normally don't have to touch this...
+    function unexpected_error() {
+      log_error "Unexpected error"
+      if [ -n "$container_id" ]
+      then
+        docker logs $container_id
+      fi
+      exit 1
+    }
+    docker pull $DOCKER_SNAPSHOT_IMAGE
+    timestamp_from=$(( $(date +%s) - 1 ))
+    container_id=$(docker run -d $DOCKER_HEALTHCHECK_OPTIONS $DOCKER_SNAPSHOT_IMAGE $DOCKER_HEALTHCHECK_CONTAINER_ARGS)
+    log_info "container_id=$container_id"
+    waiting_time=0
+    healthcheck_result="timeout"
+    while [ $waiting_time -lt $DOCKER_HEALTHCHECK_TIMEOUT -a "$healthcheck_result" != "healthy" -a "$healthcheck_result" != "dead"  ]
+    do
+      waiting_time=$(( $waiting_time + 5))
+      timestamp_to=$(( $timestamp_from + $waiting_time ))
+      log_info "Testing events between $timestamp_from and $timestamp_to ..."
+      full_result=$(docker events --filter container=$container_id --format="{{.Status}}" --since $timestamp_from --until $timestamp_to) || unexpected_error
+      if echo "$full_result" | grep ': healthy$' >/dev/null
+      then
+        healthcheck_result="healthy"
+      elif echo "$full_result" | grep ': unhealthy$' >/dev/null
+      then
+        log_warn "\\e[93mContainer is unhealthy\\e[0m"
+        healthcheck_result="unhealthy"
+      elif echo "$full_result" | grep '^die$' >/dev/null
+      then
+        log_error "Container died"
+        healthcheck_result="dead"
+      else
+        healthcheck_result="timeout"
+      fi
+    done
+    log_info "Container logs:"
+    docker logs $container_id
+    log_info "Docker inspect:"
+    docker inspect $container_id
+    if [ "$healthcheck_result" == "healthy" ]
+    then
+      log_info "Container is healthy"
+    else
+      log_error "HealthCheck test error, reason: $healthcheck_result"
+      echo -e "Full logs:\n$full_result"
+      exit 1
+    fi
+  rules:
+    - if: '$DOCKER_HEALTHCHECK_DISABLED == "true"'
+      when: never
+    - if: '$DOCKER_BUILD_TOOL != "dind"'
+      when: never
+    - !reference [.test-policy, rules]
+
+# Security audit with trivy
+docker-trivy:
+  extends: .docker-base
+  image:
+    name: $DOCKER_TRIVY_IMAGE
+    entrypoint: [""]
+  stage: package-test
+  variables:
+    TRIVY_CACHE_DIR: ".trivycache/"
+  script:
+  - log_info "Scanning vulnerabilities from ${DOCKER_SNAPSHOT_IMAGE}..."
+  - |
+    log_info "Trivy version:"
+    trivy version
+  - |
+    # cache cleanup is needed when scanning images with the same tags, it does not remove the database
+    trivy clean --scan-cache || trivy image --clear-cache
+  - |
+    export TRIVY_USERNAME=${DOCKER_REGISTRY_SNAPSHOT_USER:-${DOCKER_REGISTRY_USER:-$CI_REGISTRY_USER}}
+    export TRIVY_PASSWORD=${DOCKER_REGISTRY_SNAPSHOT_PASSWORD:-${DOCKER_REGISTRY_PASSWORD:-$CI_REGISTRY_PASSWORD}}
+    basename=$(echo "${DOCKER_SNAPSHOT_IMAGE}" | sed 's|[/:]|_|g')
+    mkdir -p ./reports
+    if [[ -z "$TRIVY_SERVER" ]]; then
+      log_warn "\\e[93mYou are using Trivy in standalone mode. To get faster scans, consider setting the TRIVY_SERVER variable to the address of a Trivy server. More info here: https://aquasecurity.github.io/trivy/latest/docs/references/modes/client-server/\\e[0m"
+    fi
+    # Generate the native JSON report that can later be converted to other formats
+    trivy image --no-progress ${DOCKER_TRIVY_ARGS} --exit-code 1 --format json --output reports/docker-trivy-${basename}.native.json $DOCKER_SNAPSHOT_IMAGE || exit_code=$?
+
+    # Generate a report in the GitLab format
+    trivy convert --format template --template "@/contrib/gitlab.tpl" --output reports/docker-trivy-${basename}.gitlab.json reports/docker-trivy-${basename}.native.json
+
+    # console output
+    trivy convert --format table reports/docker-trivy-${basename}.native.json
+    
+    exit $exit_code
+  artifacts:
+    name: "$CI_JOB_NAME artifacts from $CI_PROJECT_NAME on $CI_COMMIT_REF_SLUG"
+    expire_in: 1 day
+    access: developer
+    when: always
+    paths:
+    - "reports/docker-trivy-*"
+    reports:
+      container_scanning: "reports/docker-trivy-*.gitlab.json"
+  cache:
+    paths:
+      - .trivycache/
+  rules:
+    - if: '$DOCKER_TRIVY_DISABLED == "true"'
+      when: never
+    - !reference [.test-policy, rules]
+
+docker-sbom:
+  extends: .docker-base
+  stage: package-test
+  image:
+    name: $DOCKER_SBOM_IMAGE
+    entrypoint: [""]
+  script:
+    - log_info "Extracting SBOM from ${DOCKER_SNAPSHOT_IMAGE}..."
+    - |
+      log_info "Syft version:"
+      /syft version
+    - mkdir -p -m 777 reports
+    - basename=$(echo "${DOCKER_SNAPSHOT_IMAGE}" | sed 's|[/:]|_|g')
+    - /syft scan ${TRACE+-vv} $DOCKER_SNAPSHOT_IMAGE $DOCKER_SBOM_OPTS -o cyclonedx-json=reports/docker-sbom-${basename}.cyclonedx.json
+    - chmod a+r reports/docker-sbom-${basename}.cyclonedx.json
+  artifacts:
+    name: "SBOM for docker from $CI_PROJECT_NAME on $CI_COMMIT_REF_SLUG"
+    expire_in: 1 week
+    when: always
+    paths:
+      - "reports/docker-sbom-*.cyclonedx.json"
+    reports:
+      cyclonedx:
+        - "reports/docker-sbom-*.cyclonedx.json"
+  rules:
+    # exclude if disabled
+    - if: '$DOCKER_SBOM_DISABLED == "true"'
+      when: never
+    - !reference [.test-policy, rules]
+
+# ==================================================
+# Stage: publish
+# ==================================================
+# When semantic release is integrated, this stage run on main pipeline
+# When semantic release is not integrated, this stage only run when you put a new tag to the git repository (a good tag format would be x.x.x ex: 1.0.2, see https://semver.org/)
+# In both cases, it will push the release tagged image to the chosen Registry
+docker-publish:
+  extends: .docker-base
+  image:
+    name: "$DOCKER_SKOPEO_IMAGE"
+    entrypoint: [""]
+  stage: publish
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - |
+      if [[ "${SEMREL_INFO_ON}" && "${DOCKER_SEMREL_RELEASE_DISABLED}" != "true" ]]
+      then
+        if [[ -z "${SEMREL_INFO_NEXT_VERSION}" ]]
+        then
+          log_warn "[semantic-release] no new version to release: skip"
+          exit 0
+        else
+          DOCKER_RELEASE_IMAGE="${DOCKER_RELEASE_IMAGE%:*}:$SEMREL_INFO_NEXT_VERSION"
+          log_info "[semantic-release] new Image tag is set: $DOCKER_RELEASE_IMAGE"
+        fi
+      fi
+
+      if [[ "$DOCKER_SNAPSHOT_IMAGE" == "$DOCKER_RELEASE_IMAGE" ]]
+      then
+        log_warn "\\e[93mYou should consider distinguishing snapshot and release images as they do not differ. Skipping publish phase as image has already been created by previous job.\\e[0m"
+        exit 0
+      fi
+    - |
+      log_info "Skopeo version:"
+      skopeo -v
+    - BUILDTOOL_HOME=${BUILDTOOL_HOME:-$HOME}
+    # 1: push main image
+    - log_info "Copying ${DOCKER_SNAPSHOT_IMAGE} to ${DOCKER_RELEASE_IMAGE}..."
+    - skopeo copy --src-authfile "$BUILDTOOL_HOME/skopeo/.docker/src-config.json" --dest-authfile "$BUILDTOOL_HOME/skopeo/.docker/dest-config.json" ${DOCKER_PUBLISH_ARGS} "docker://$DOCKER_SNAPSHOT_IMAGE" "docker://$DOCKER_RELEASE_IMAGE"
+    - |
+      log_info "Well done your image is pushed and can be pulled with: docker pull $DOCKER_RELEASE_IMAGE"
+    # 2: extract info and generate output dotenv
+    - docker_digest=$(skopeo inspect --authfile "$BUILDTOOL_HOME/skopeo/.docker/dest-config.json" --format='{{ .Digest }}' "docker://$DOCKER_RELEASE_IMAGE")
+    - docker_repository=${DOCKER_RELEASE_IMAGE%:*}
+    - docker_tag=${DOCKER_RELEASE_IMAGE##*:}
+    - |
+      {
+        echo "docker_image=$DOCKER_RELEASE_IMAGE"
+        echo "docker_image_digest=$docker_repository@$docker_digest"
+        echo "docker_repository=$docker_repository"
+        echo "docker_tag=$docker_tag"
+        echo "docker_digest=$docker_digest"
+      } > docker.env
+    - publish_extra_tags
+  artifacts:
+    reports:
+      dotenv:
+        - docker.env
+  rules:
+    # on tag: if semrel info not enabled or semrel integration disabled
+    - if: '$CI_COMMIT_TAG && ($SEMREL_INFO_ON == null || $SEMREL_INFO_ON == "" || $DOCKER_SEMREL_RELEASE_DISABLED == "true")'
+    # exclude non-production branches
+    - if: '$CI_COMMIT_REF_NAME !~ $PROD_REF'
+      when: never
+    # exclude if snapshot is same as release image and semrel info not enabled or semrel integration disabled
+    - if: '$DOCKER_SNAPSHOT_IMAGE == $DOCKER_RELEASE_IMAGE && ($SEMREL_INFO_ON == null || $SEMREL_INFO_ON == "" || $DOCKER_SEMREL_RELEASE_DISABLED == "true")'
+      when: never
+    # support former variable (prevent breaking change)
+    - if: '$PUBLISH_ON_PROD == "false"'
+      when: never
+    - if: '$DOCKER_PROD_PUBLISH_STRATEGY == "manual"'
+      when: manual
+    - if: '$DOCKER_PROD_PUBLISH_STRATEGY == "auto"'

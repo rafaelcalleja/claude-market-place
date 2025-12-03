@@ -1,0 +1,126 @@
+{
+  "skill_name": "to-be-cont",
+  "started_at": "2025-12-02T00:00:00Z",
+  "status": "recording",
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "glob",
+      "action": "Find Docker template files",
+      "details": {
+        "glob_pattern": "docs/to-be-continuous-knowledge/templates/docker/*.yml"
+      },
+      "description": "Locate Docker YAML template files for GitLab CI/CD pipelines with support for Kaniko, Buildah, and DIND build tools",
+      "timestamp": "2025-12-02T00:00:00Z"
+    },
+    {
+      "step_id": 2,
+      "type": "read",
+      "action": "Read Docker template files",
+      "details": {
+        "files": [
+          "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker.yml",
+          "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-vault.yml",
+          "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-gcp.yml",
+          "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-ecr.yml"
+        ]
+      },
+      "description": "Review GitLab CI/CD Docker templates including base configurations, build tools (kaniko/buildah/dind), security scanning (trivy), SBOM generation, and cloud provider authentication (AWS/GCP/Vault)",
+      "timestamp": "2025-12-02T00:00:00Z"
+    },
+    {
+      "step_id": 3,
+      "type": "read",
+      "action": "Read to-be-continuous documentation files",
+      "details": {
+        "files": [
+          "docs/to-be-continuous-knowledge/templates/intro.md",
+          "docs/to-be-continuous-knowledge/templates/usage.md",
+          "docs/to-be-continuous-knowledge/templates/understand.md",
+          "docs/to-be-continuous-knowledge/templates/advanced-cd.md",
+          "docs/to-be-continuous-knowledge/templates/community.md",
+          "docs/to-be-continuous-knowledge/templates/faq.md"
+        ]
+      },
+      "description": "Review comprehensive to-be-continuous documentation covering introduction, usage patterns, architecture philosophy, advanced continuous delivery, community resources, and FAQs about GitLab CI/CD templates",
+      "timestamp": "2025-12-02T00:00:00Z"
+    }
+  ],
+  "references": [
+    {
+      "name": "gitlab-ci-docker.yml",
+      "source": "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker.yml",
+      "type": "local",
+      "description": "Base GitLab CI/CD Docker template with support for Kaniko, Buildah, and DIND build tools, including stages for hadolint, trivy scanning, and SBOM generation",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "gitlab-ci-docker-vault.yml",
+      "source": "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-vault.yml",
+      "type": "local",
+      "description": "Vault authentication variant for GitLab CI/CD Docker template using OIDC JWT tokens for secret management",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "gitlab-ci-docker-gcp.yml",
+      "source": "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-gcp.yml",
+      "type": "local",
+      "description": "GCP authentication variant with OIDC for Workload Identity Provider integration and service account impersonation",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "gitlab-ci-docker-ecr.yml",
+      "source": "docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-ecr.yml",
+      "type": "local",
+      "description": "AWS ECR authentication variant with OIDC for IAM role assumption and ECR registry access",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "intro.md",
+      "source": "docs/to-be-continuous-knowledge/templates/intro.md",
+      "type": "local",
+      "description": "Introduction to to-be-continuous framework with key features overview including modularity, security, git workflows, documentation, and implemented GitLab features",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "usage.md",
+      "source": "docs/to-be-continuous-knowledge/templates/usage.md",
+      "type": "local",
+      "description": "Comprehensive usage guide covering template inclusion methods, configuration approaches, debugging, Docker image version strategies, secrets management, and advanced override techniques",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "understand.md",
+      "source": "docs/to-be-continuous-knowledge/templates/understand.md",
+      "type": "local",
+      "description": "Architecture and philosophy documentation covering template types, generic pipeline stages, publish & release strategies, deployment environments, git branching models, and development workflows",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "advanced-cd.md",
+      "source": "docs/to-be-continuous-knowledge/templates/advanced-cd.md",
+      "type": "local",
+      "description": "Advanced continuous delivery considerations including review apps, pull-based deployment and GitOps strategies, and deployment code organization patterns",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "community.md",
+      "source": "docs/to-be-continuous-knowledge/templates/community.md",
+      "type": "local",
+      "description": "Community resources including Discord channel, Stack Overflow support, contribution guidelines, GitLab code repository, and public presentations",
+      "saved_at": "2025-12-02T00:00:00Z"
+    },
+    {
+      "name": "faq.md",
+      "source": "docs/to-be-continuous-knowledge/templates/faq.md",
+      "type": "local",
+      "description": "Frequently asked questions covering license (LGPL 3.0), development history at Orange, self-managed GitLab support, Auto DevOps comparison, template overrides, and tracking mechanisms",
+      "saved_at": "2025-12-02T00:00:00Z"
+    }
+  ],
+  "metadata": {
+    "total_actions": 2,
+    "included_steps": 3,
+    "references_count": 10
+  }
+}
