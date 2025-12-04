@@ -1,0 +1,251 @@
+# GitLab CI/CD Configuration
+# Features:
+#   - Semantic Release for automated versioning
+#   - AWS OIDC authentication (no hardcoded credentials)
+#   - Selective SQL file sync to S3 (only modified files)
+#
+# Workflow:
+#   1. On merge to main: semantic-release creates version tag
+#   2. After tagging: sync modified SQL files to S3 using OIDC role assumption
+
+stages:
+  - publish
+  - deploy
+
+include:
+  # Semantic Release template - automated versioning and changelog
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release/semantic-release@7
+    inputs:
+      image: "docker.io/library/node:lts-slim"
+      # GitLab token required for creating tags and releases
+      # Must have api, read_repository, write_repository scopes
+      gitlab-token: "$SEMREL_GITLAB_TOKEN"
+      # Generate CHANGELOG.md
+      changelog-enabled: true
+      changelog-file: "CHANGELOG.md"
+      # Auto-release when merging to main/master
+      auto-release-enabled: true
+      branches-ref: "/^(master|main)$/"
+      # Use conventional commits (default: angular)
+      commit-spec: "angular"
+      # Tag format (double $$ to avoid GitLab variable expansion)
+      tag-format: "v$${version}"
+
+  # AWS OIDC authentication - secure role assumption without credentials
+  - component: $CI_SERVER_FQDN/to-be-continuous/aws/aws-oidc@5
+    inputs:
+      # Audience for JWT (defaults to GitLab server URL)
+      oidc-aud: "$CI_SERVER_URL"
+
+# ================================================================================
+# Custom Job: Deploy SQL Files to S3
+# ================================================================================
+# This job runs after semantic-release on main branch only
+# Uses OIDC to assume IAM role and sync modified SQL files
+
+deploy:sql:
+  stage: deploy
+  image: docker.io/amazon/aws-cli:latest
+
+  variables:
+    # S3 configuration - override in GitLab CI/CD variables
+    S3_BUCKET: "${S3_BUCKET}"              # Required: your-bucket-name
+    AWS_REGION: "${AWS_REGION:-us-east-1}" # Optional: defaults to us-east-1
+    S3_PREFIX: "sql"                       # S3 prefix/folder for SQL files
+    SQL_DIR: "sql"                         # Local directory containing SQL files
+
+  before_script:
+    # Install git for detecting file changes
+    - yum install -y git
+
+    # AWS OIDC authentication is handled by aws-oidc component
+    # It sets up AWS credentials using the role specified in AWS_OIDC_ROLE_ARN
+
+    # Verify AWS credentials
+    - aws sts get-caller-identity
+
+    # Make sync script executable
+    - chmod +x ./scripts/sync-modified-sql-to-s3.sh
+
+  script:
+    # Run sync script - only uploads modified SQL files
+    - ./scripts/sync-modified-sql-to-s3.sh
+
+  rules:
+    # Only run on main/master branch (after merge)
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+      when: on_success
+    # Never run on other branches
+    - when: never
+
+  # Dependencies: wait for semantic-release to complete
+  needs:
+    - job: "release"
+      optional: true
+
+  # Retry on transient AWS failures
+  retry:
+    max: 2
+    when:
+      - api_failure
+      - runner_system_failure
+
+  # Keep logs for 1 week
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - .git/  # Preserve git history for diff
+    when: always
+
+# ================================================================================
+# Secret Variables (define in GitLab CI/CD Settings)
+# ================================================================================
+# Required Variables:
+#
+#   SEMREL_GITLAB_TOKEN:
+#     Description: GitLab project or personal access token
+#     Scopes: api, read_repository, write_repository
+#     Create at: Project Settings > Access Tokens
+#
+#   AWS_OIDC_ROLE_ARN:
+#     Description: IAM Role ARN for OIDC authentication
+#     Format: arn:aws:iam::123456789012:role/GitLabOIDCRole
+#     Permissions required:
+#       - s3:PutObject on target bucket
+#       - s3:GetObject on target bucket (optional, for verification)
+#
+#   S3_BUCKET:
+#     Description: S3 bucket name for SQL files
+#     Example: my-company-sql-deployments
+#
+# Optional Variables:
+#
+#   AWS_REGION:
+#     Description: AWS region for S3 bucket
+#     Default: us-east-1
+#     Example: eu-west-1
+#
+#   AWS_PROD_OIDC_ROLE_ARN:
+#     Description: Override OIDC role for production environment
+#     Use if production requires different IAM role
+#
+# ================================================================================
+# AWS OIDC Setup Instructions
+# ================================================================================
+#
+# 1. Create OIDC Identity Provider in AWS IAM:
+#    - Provider URL: https://gitlab.com (or your GitLab instance URL)
+#    - Audience: https://gitlab.com (or your GitLab instance URL)
+#
+# 2. Create IAM Role with Trust Policy:
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Principal": {
+#            "Federated": "arn:aws:iam::123456789012:oidc-provider/gitlab.com"
+#          },
+#          "Action": "sts:AssumeRoleWithWebIdentity",
+#          "Condition": {
+#            "StringEquals": {
+#              "gitlab.com:aud": "https://gitlab.com"
+#            },
+#            "StringLike": {
+#              "gitlab.com:sub": "project_path:your-group/your-project:ref_type:branch:ref:main"
+#            }
+#          }
+#        }
+#      ]
+#    }
+#
+# 3. Attach S3 Permissions Policy to Role:
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Action": [
+#            "s3:PutObject",
+#            "s3:GetObject"
+#          ],
+#          "Resource": "arn:aws:s3:::your-bucket-name/sql/*"
+#        }
+#      ]
+#    }
+#
+# 4. Add AWS_OIDC_ROLE_ARN to GitLab CI/CD Variables:
+#    Value: arn:aws:iam::123456789012:role/GitLabOIDCRole
+#
+# ================================================================================
+# Project Structure
+# ================================================================================
+#
+# your-project/
+# ├── .gitlab-ci.yml              # This file
+# ├── scripts/
+# │   └── sync-modified-sql-to-s3.sh  # SQL sync script
+# └── sql/
+#     ├── migrations/
+#     │   ├── 001_create_tables.sql
+#     │   └── 002_add_indexes.sql
+#     └── stored_procedures/
+#         └── calculate_totals.sql
+#
+# ================================================================================
+# How It Works
+# ================================================================================
+#
+# 1. Developer creates MR with SQL changes in sql/ directory
+# 2. MR is reviewed and merged to main branch
+# 3. Semantic Release job runs:
+#    - Analyzes commits since last tag
+#    - Determines version bump (major/minor/patch)
+#    - Creates git tag (e.g., v1.2.3)
+#    - Updates CHANGELOG.md
+#    - Creates GitLab release
+# 4. Deploy SQL job runs:
+#    - Assumes AWS IAM role via OIDC
+#    - Runs sync-modified-sql-to-s3.sh
+#    - Script uses git diff to find modified SQL files since last tag
+#    - Only modified files are uploaded to S3
+#    - Files preserve directory structure: sql/migrations/001.sql -> s3://bucket/sql/migrations/001.sql
+#
+# ================================================================================
+# Commit Message Format (Conventional Commits)
+# ================================================================================
+#
+# Semantic Release uses commit messages to determine version bumps:
+#
+#   feat: add new stored procedure for revenue calculation
+#     → Minor version bump (1.0.0 → 1.1.0)
+#
+#   fix: correct date calculation in monthly_report.sql
+#     → Patch version bump (1.1.0 → 1.1.1)
+#
+#   feat!: restructure database schema
+#   BREAKING CHANGE: requires migration of existing data
+#     → Major version bump (1.1.1 → 2.0.0)
+#
+# Common prefixes: feat, fix, docs, style, refactor, test, chore
+#
+# ================================================================================
+# Testing the Configuration
+# ================================================================================
+#
+# 1. Test semantic-release locally:
+#    docker run --rm -v $(pwd):/app -w /app node:lts-slim \
+#      npx semantic-release --dry-run
+#
+# 2. Test SQL sync script locally:
+#    export S3_BUCKET=my-test-bucket
+#    export AWS_REGION=us-east-1
+#    export AWS_PROFILE=my-profile  # or configure OIDC
+#    ./scripts/sync-modified-sql-to-s3.sh
+#
+# 3. Verify OIDC authentication:
+#    - Check CloudTrail for AssumeRoleWithWebIdentity events
+#    - Verify role session is created with correct tags
+#    - Check S3 bucket access logs for PutObject operations
+#
+# ================================================================================

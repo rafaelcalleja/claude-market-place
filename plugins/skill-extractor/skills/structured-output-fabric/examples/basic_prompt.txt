@@ -1,0 +1,6 @@
+Analyze these user messages from a conversation and return JSON with:
+- topic: one-line description of the main topic
+- tags: array of relevant keywords
+- summary: brief summary of user's goals
+
+Return ONLY JSON, no explanations.

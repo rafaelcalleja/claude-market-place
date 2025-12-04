@@ -1,0 +1,267 @@
+# Test Parameterization Specification
+# Defines data providers for parameterized pytest tests
+
+data_providers:
+  git_url_formats:
+    description: "Various Git URL formats to test URL detection and cloning"
+    parameters:
+      - url: "https://github.com/user/repo"
+        protocol: "https"
+        expected_valid: true
+      - url: "https://github.com/user/repo.git"
+        protocol: "https"
+        expected_valid: true
+      - url: "git@github.com:user/repo.git"
+        protocol: "ssh"
+        expected_valid: true
+      - url: "http://github.com/user/repo"
+        protocol: "http"
+        expected_valid: true
+      - url: "/local/path/to/plugin"
+        protocol: "file"
+        expected_valid: false
+      - url: "../relative/path"
+        protocol: "file"
+        expected_valid: false
+
+  registry_states:
+    description: "Different registry.json states for testing operations"
+    parameters:
+      - state: "empty"
+        content:
+          version: "1.0"
+          plugins: []
+        expected_plugin_count: 0
+      - state: "single_plugin"
+        content:
+          version: "1.0"
+          plugins:
+            - name: "test-plugin"
+              source: "/tmp/test"
+              commands: []
+              agents: []
+              skills: []
+              hooks: []
+              mcps: []
+        expected_plugin_count: 1
+      - state: "multiple_plugins"
+        content:
+          version: "1.0"
+          plugins:
+            - name: "plugin1"
+              source: "/tmp/plugin1"
+              commands: ["cmd1.md"]
+              agents: []
+              skills: []
+              hooks: []
+              mcps: []
+            - name: "plugin2"
+              source: "/tmp/plugin2"
+              commands: []
+              agents: ["agent1.md"]
+              skills: []
+              hooks: []
+              mcps: []
+        expected_plugin_count: 2
+
+  plugin_json_scenarios:
+    description: "Various plugin.json configurations"
+    parameters:
+      - scenario: "no_plugin_json"
+        file_exists: false
+        fallback_behavior: "use_directory_name"
+      - scenario: "minimal_plugin_json"
+        file_exists: true
+        content:
+          name: "minimal-plugin"
+        expected_name: "minimal-plugin"
+      - scenario: "complete_plugin_json"
+        file_exists: true
+        content:
+          name: "complete-plugin"
+          version: "1.0.0"
+          author: "Test Author"
+          commands: ["custom/commands/"]
+          agents: "./custom-agents/"
+        expected_name: "complete-plugin"
+        custom_paths: true
+      - scenario: "malformed_json"
+        file_exists: true
+        content: "{ invalid json syntax"
+        fallback_behavior: "use_directory_name"
+        warning_expected: true
+
+  component_discovery_cases:
+    description: "Test cases for component discovery functions"
+    parameters:
+      - component_type: "commands"
+        plugin_structure:
+          has_plugin_json: false
+          files: ["commands/cmd1.md", "commands/cmd2.md"]
+        expected_count: 2
+        expected_paths: ["commands/cmd1.md", "commands/cmd2.md"]
+      - component_type: "commands"
+        plugin_structure:
+          has_plugin_json: true
+          plugin_json:
+            commands: ["custom/path/cmd1.md"]
+          files: ["custom/path/cmd1.md"]
+        expected_count: 1
+        expected_paths: ["custom/path/cmd1.md"]
+      - component_type: "agents"
+        plugin_structure:
+          has_plugin_json: false
+          files: ["agents/agent1.md", "agents/agent2.md", "agents/agent3.md"]
+        expected_count: 3
+      - component_type: "skills"
+        plugin_structure:
+          has_plugin_json: false
+          directories: ["skills/skill1/", "skills/skill2/"]
+          files: ["skills/skill1/SKILL.md", "skills/skill2/SKILL.md"]
+        expected_count: 2
+        expected_paths: ["skills/skill1", "skills/skill2"]
+      - component_type: "hooks"
+        plugin_structure:
+          has_plugin_json: false
+          hooks_file: "hooks/hooks.json"
+          hooks_content:
+            hooks:
+              SessionStart:
+                - matcher: ""
+                  hooks:
+                    - type: "command"
+                      command: "echo start"
+        expected_count: 1
+      - component_type: "mcps"
+        plugin_structure:
+          has_plugin_json: false
+          mcp_file: ".mcp.json"
+          mcp_content:
+            mcpServers:
+              server1:
+                command: "npx"
+                args: ["server1"]
+              server2:
+                command: "uvx"
+                args: ["server2"]
+        expected_count: 2
+
+  error_handling_cases:
+    description: "Error scenarios with expected handling behavior"
+    parameters:
+      - error_type: "network_timeout"
+        operation: "git_clone"
+        mock_exception: "subprocess.TimeoutExpired"
+        expected_message_pattern: "Failed to clone"
+        should_exit: true
+      - error_type: "permission_denied"
+        operation: "file_read"
+        mock_exception: "PermissionError"
+        expected_message_pattern: "permission denied"
+        should_exit: false
+      - error_type: "not_found"
+        operation: "file_read"
+        mock_exception: "FileNotFoundError"
+        expected_message_pattern: "not found"
+        should_exit: false
+      - error_type: "json_decode_error"
+        operation: "json_parse"
+        mock_exception: "json.JSONDecodeError"
+        expected_message_pattern: "Invalid JSON"
+        fallback_behavior: "create_new"
+      - error_type: "disk_full"
+        operation: "file_write"
+        mock_exception: "OSError"
+        mock_errno: 28  # ENOSPC
+        expected_message_pattern: "No space left"
+        should_exit: true
+      - error_type: "git_auth_required"
+        operation: "git_clone"
+        mock_exception: "subprocess.CalledProcessError"
+        mock_returncode: 128
+        expected_message_pattern: "authentication"
+        should_exit: true
+
+  cli_command_variations:
+    description: "Different invocations of CLI commands"
+    parameters:
+      - command: "add-plugin"
+        args: ["../plugins/test-plugin"]
+        input_type: "local_path"
+        should_succeed: true
+      - command: "add-plugin"
+        args: ["https://github.com/user/plugin.git"]
+        input_type: "remote_url"
+        should_succeed: true
+        mock_git: true
+      - command: "add-plugin"
+        args: ["/nonexistent/path"]
+        input_type: "invalid_path"
+        should_succeed: false
+        expected_error: "not found"
+      - command: "add-marketplace"
+        args: ["../marketplaces/test-marketplace"]
+        input_type: "local_path"
+        should_succeed: true
+      - command: "add-marketplace"
+        args: ["https://github.com/user/marketplace"]
+        input_type: "remote_url"
+        should_succeed: true
+        mock_git: true
+      - command: "select"
+        args: []
+        precondition: "empty_registry"
+        should_succeed: false
+        expected_error: "Registry is empty"
+      - command: "select"
+        args: []
+        precondition: "populated_registry"
+        should_succeed: true
+        requires_tui: true
+
+  edge_case_scenarios:
+    description: "Edge cases and boundary conditions"
+    parameters:
+      - scenario: "empty_plugin_directory"
+        setup:
+          create_dirs: ["commands/", "agents/", "skills/"]
+          create_files: []
+        expected_behavior:
+          indexable: true
+          component_count: 0
+      - scenario: "plugin_with_nested_subdirs"
+        setup:
+          create_files: ["commands/subdir/cmd.md", "commands/deep/nested/cmd.md"]
+        expected_behavior:
+          component_count: 0  # Only top-level *.md files
+      - scenario: "plugin_with_non_md_files"
+        setup:
+          create_files: ["commands/cmd.txt", "commands/cmd.py", "commands/cmd.md"]
+        expected_behavior:
+          component_count: 1  # Only .md files
+      - scenario: "concurrent_registry_access"
+        setup:
+          parallel_operations: 5
+        expected_behavior:
+          all_succeed: true
+          no_race_conditions: true
+      - scenario: "very_large_plugin"
+        setup:
+          command_count: 1000
+          agent_count: 500
+        expected_behavior:
+          indexable: true
+          performance_threshold_ms: 5000
+      - scenario: "unicode_file_names"
+        setup:
+          create_files: ["commands/命令.md", "commands/コマンド.md"]
+        expected_behavior:
+          indexable: true
+          component_count: 2
+      - scenario: "symlink_to_external_directory"
+        setup:
+          symlink_source: "/tmp/external/commands"
+          symlink_target: "commands"
+        expected_behavior:
+          follows_symlink: true
+          indexable: true

@@ -1,0 +1,32 @@
+# =====================================================================================================================
+# === Vault template variant
+# =====================================================================================================================
+spec:
+  inputs:
+    vault-base-url:
+      description: The Vault server base API url
+      default: ''
+    vault-oidc-aud:
+      description: The `aud` claim for the JWT
+      default: $CI_SERVER_URL
+---
+variables:
+  # variabilized vault-secrets-provider image
+  TBC_VAULT_IMAGE: registry.gitlab.com/to-be-continuous/tools/vault-secrets-provider:latest
+  VAULT_BASE_URL: $[[ inputs.vault-base-url ]]
+  # variables have to be explicitly declared in the YAML to be exported to the service
+  VAULT_ROLE_ID: "$VAULT_ROLE_ID"
+  VAULT_SECRET_ID: "$VAULT_SECRET_ID"
+  VAULT_OIDC_AUD: $[[ inputs.vault-oidc-aud ]]
+
+.docker-base:
+  services:
+    - name: "$TBC_TRACKING_IMAGE"
+      command: ["--service", "docker", "6.0.0"]
+    - name: "$TBC_VAULT_IMAGE"
+      alias: "vault-secrets-provider"
+  variables:
+    VAULT_JWT_TOKEN: "$VAULT_JWT_TOKEN"
+  id_tokens:
+    VAULT_JWT_TOKEN:
+      aud: "$VAULT_OIDC_AUD"

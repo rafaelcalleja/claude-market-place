@@ -1,0 +1,386 @@
+{
+  "session_id": "8115e46a-bdc9-4410-aca5-f8ca04077902",
+  "start_timestamp": "2025-12-02T14:00:53Z",
+  "end_timestamp": "2025-12-02T14:19:29Z",
+  "project_path": "/home/rcalleja/projects/claude-market-place",
+  "interactions": [
+    {
+      "interaction_id": "a992d372-0891-4fe1-8881-f501e86a23c8",
+      "timestamp": "2025-12-02T14:01:36Z",
+      "type": "user_message",
+      "content": "/session-recorder:session-recorder\n",
+      "metadata": {
+        "hook": "UserPromptSubmit"
+      }
+    },
+    {
+      "interaction_id": "8f03cbbd-09c8-4bca-938d-08187cb98af0",
+      "timestamp": "2025-12-02T14:02:16Z",
+      "type": "user_message",
+      "content": "read @docs/to-be-continuous-knowledge/*.md y @docs/to-be-continuous-knowledge/templates/docker/*.yml\n",
+      "metadata": {
+        "hook": "UserPromptSubmit"
+      }
+    },
+    {
+      "interaction_id": "ac4d81f1-9eda-4c7a-85c1-c9c6cb0e1f8b",
+      "timestamp": "2025-12-02T14:02:23Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Glob",
+        "arguments": {
+          "pattern": "docs/to-be-continuous-knowledge/templates/docker/*.yml"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "2a214b9e-c837-4297-a17a-2ce4d93edc7d",
+      "timestamp": "2025-12-02T14:02:23Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Glob",
+        "result": "null\n",
+        "tool_call_id": "ac4d81f1-9eda-4c7a-85c1-c9c6cb0e1f8b"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "17dc3d88-7826-4be3-b573-c78966165770",
+      "timestamp": "2025-12-02T14:02:23Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Glob",
+        "arguments": {
+          "pattern": "docs/to-be-continuous-knowledge/*.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "5b70c88c-eb30-4274-ad39-5c158aa79d50",
+      "timestamp": "2025-12-02T14:02:23Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Glob",
+        "result": "null\n",
+        "tool_call_id": "17dc3d88-7826-4be3-b573-c78966165770"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "df104840-6265-4c64-955e-d088ec52ac5b",
+      "timestamp": "2025-12-02T14:02:28Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Glob",
+        "arguments": {
+          "pattern": "docs/to-be-continuous-knowledge/**/*.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "729c836e-95a1-48e0-935f-81987b06e5eb",
+      "timestamp": "2025-12-02T14:02:28Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Glob",
+        "result": "null\n",
+        "tool_call_id": "df104840-6265-4c64-955e-d088ec52ac5b"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "69c62478-f6be-4ec1-b886-f82013258e60",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-vault.yml"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "0d5f3086-9df4-4d07-b8bf-9aecd6ec570d",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "69c62478-f6be-4ec1-b886-f82013258e60"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "8d34a124-7136-4c8b-81cf-d0d511b0f7f4",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker.yml"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "acbe22d8-4211-4af4-946b-edf91ee100b7",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "8d34a124-7136-4c8b-81cf-d0d511b0f7f4"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "0b0b8d61-c227-42db-aad3-35a9dbd65e7e",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-gcp.yml"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "d6baf317-c0db-4be7-a409-b05afe38ff93",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "0b0b8d61-c227-42db-aad3-35a9dbd65e7e"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "320aec95-5324-4522-bbc1-b387d61eedd1",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/intro.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "54fc1749-c7f8-4e45-a7a1-05cdf71766a7",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "320aec95-5324-4522-bbc1-b387d61eedd1"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "0dc1bfe2-7691-4197-9f18-2310eec89269",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/advanced-cd.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "b74a933f-9855-488d-a0ef-f5bfb4dca936",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "0dc1bfe2-7691-4197-9f18-2310eec89269"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "15db5864-b97b-468e-b136-cd0972cb060f",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/docker/gitlab-ci-docker-ecr.yml"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "19ae68cb-664a-4d3d-a8c2-19a015cadc34",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "15db5864-b97b-468e-b136-cd0972cb060f"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "cd510d6d-04a1-44e5-a2e9-0c67fac4e507",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/faq.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "fca2f07f-ac6c-4a88-865e-1dc88ade76a5",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "cd510d6d-04a1-44e5-a2e9-0c67fac4e507"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "6cd2b06d-ccdc-4609-b79b-f2135e5c464c",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/community.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "93f19b95-c312-4118-b4fe-37d0edb18426",
+      "timestamp": "2025-12-02T14:02:42Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "6cd2b06d-ccdc-4609-b79b-f2135e5c464c"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "07c2024e-3b16-4942-b9ee-9a888d4571d1",
+      "timestamp": "2025-12-02T14:02:43Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/understand.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "0deca07d-ea1d-4e66-ad08-939c69d8ce33",
+      "timestamp": "2025-12-02T14:02:43Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "07c2024e-3b16-4942-b9ee-9a888d4571d1"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "bde9bfb4-2a36-43c3-954e-fe739b77d176",
+      "timestamp": "2025-12-02T14:02:43Z",
+      "type": "tool_call",
+      "content": {
+        "tool": "Read",
+        "arguments": {
+          "file_path": "/home/rcalleja/projects/claude-market-place/docs/to-be-continuous-knowledge/templates/usage.md"
+        }
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "da47aa09-62d2-4b7c-92e3-89db9d5dde14",
+      "timestamp": "2025-12-02T14:02:43Z",
+      "type": "tool_result",
+      "content": {
+        "tool": "Read",
+        "result": "null\n",
+        "tool_call_id": "bde9bfb4-2a36-43c3-954e-fe739b77d176"
+      },
+      "metadata": {
+        "hook": "PostToolUse"
+      }
+    },
+    {
+      "interaction_id": "7ef1add5-6cd4-41b8-a382-70ed5b123e30",
+      "timestamp": "2025-12-02T14:04:08Z",
+      "type": "user_message",
+      "content": "como compilo 3 dockerfiles distintos usando kaniko \n",
+      "metadata": {
+        "hook": "UserPromptSubmit"
+      }
+    }
+  ]
+}

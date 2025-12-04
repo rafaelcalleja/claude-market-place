@@ -1,0 +1,22 @@
+You are analyzing [DESCRIBE INPUT DATA HERE].
+
+Given the input below, [DESCRIBE ANALYSIS TASK].
+
+Generate a JSON object with the following structure:
+
+{
+  "field1": "<description of field1>",
+  "field2": "<description of field2>",
+  "field3": ["<array of items>"],
+  "field4": {
+    "nested": "<nested object description>"
+  }
+}
+
+Requirements:
+- field1: [Specific requirements, constraints, format]
+- field2: [Specific requirements, constraints, format]
+- field3: [Specific requirements, constraints, format]
+- field4: [Specific requirements, constraints, format]
+
+Return ONLY the JSON object. No explanations, no markdown formatting, just the raw JSON.

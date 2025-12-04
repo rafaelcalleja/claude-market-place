@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/validate-bash.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "/path/to/log-bash.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/validate-write.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/format.sh"
+          },
+          {
+            "type": "command",
+            "command": "/path/to/lint.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

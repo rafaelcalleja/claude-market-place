@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Hooks Configuration",
+  "type": "object",
+  "properties": {
+    "hooks": {
+      "type": "object",
+      "properties": {
+        "PreToolUse": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "PermissionRequest": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "PostToolUse": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "Notification": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "UserPromptSubmit": {
+          "$ref": "#/definitions/hookEventWithoutMatcher"
+        },
+        "Stop": {
+          "$ref": "#/definitions/hookEventWithoutMatcher"
+        },
+        "SubagentStop": {
+          "$ref": "#/definitions/hookEventWithoutMatcher"
+        },
+        "PreCompact": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "SessionStart": {
+          "$ref": "#/definitions/hookEventWithMatcher"
+        },
+        "SessionEnd": {
+          "$ref": "#/definitions/hookEventWithoutMatcher"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "hookEventWithMatcher": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "matcher": {
+            "type": "string",
+            "description": "Pattern to match tool names, case-sensitive. Supports regex, '*' for all, or empty string"
+          },
+          "hooks": {
+            "$ref": "#/definitions/hookArray"
+          }
+        },
+        "required": ["hooks"],
+        "additionalProperties": false
+      }
+    },
+    "hookEventWithoutMatcher": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hooks": {
+            "$ref": "#/definitions/hookArray"
+          }
+        },
+        "required": ["hooks"],
+        "additionalProperties": false
+      }
+    },
+    "hookArray": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/commandHook"
+          },
+          {
+            "$ref": "#/definitions/promptHook"
+          }
+        ]
+      }
+    },
+    "commandHook": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "command"
+        },
+        "command": {
+          "type": "string",
+          "description": "The bash command to execute"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Timeout in seconds",
+          "minimum": 0
+        }
+      },
+      "required": ["type", "command"],
+      "additionalProperties": false
+    },
+    "promptHook": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "prompt"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The prompt to send to the LLM for evaluation"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Timeout in seconds (default: 30)",
+          "minimum": 0,
+          "default": 30
+        }
+      },
+      "required": ["type", "prompt"],
+      "additionalProperties": false
+    }
+  }
+}

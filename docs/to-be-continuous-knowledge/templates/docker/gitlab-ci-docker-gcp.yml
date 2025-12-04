@@ -1,0 +1,59 @@
+# =====================================================================================================================
+# === GCP Auth template variant
+# =====================================================================================================================
+spec:
+  inputs:
+    gcp-oidc-aud:
+      description: The `aud` claim for the JWT token _(only required for [OIDC authentication](https://docs.gitlab.com/ee/ci/cloud_services/aws/))_
+      default: $CI_SERVER_URL
+    gcp-oidc-account:
+      description: Default Service Account to which impersonate with OpenID Connect
+        authentication
+      default: ''
+    gcp-oidc-provider:
+      description: Default Workload Identity Provider associated with GitLab to [authenticate
+        with OpenID Connect](https://docs.gitlab.com/ee/ci/cloud_services/google_cloud/)
+      default: ''
+    gcp-snapshot-oidc-account:
+      description: Service Account to use to push the snapshot image _(only define if
+        different from default)_
+      default: ''
+    gcp-snapshot-oidc-provider:
+      description: Workload Identity Provider to push the snapshot image _(only define
+        if different from default)_
+      default: ''
+    gcp-release-oidc-account:
+      description: Service Account to use to push the release image _(only define if
+        different from default)_
+      default: ''
+    gcp-release-oidc-provider:
+      description: Workload Identity Provider to push the release image _(only define
+        if different from default)_
+      default: ''
+---
+variables:
+  TBC_GCP_PROVIDER_IMAGE: registry.gitlab.com/to-be-continuous/tools/gcp-auth-provider:latest
+  GCP_OIDC_AUD: $[[ inputs.gcp-oidc-aud ]]
+  GCP_OIDC_ACCOUNT: $[[ inputs.gcp-oidc-account ]]
+  GCP_OIDC_PROVIDER: $[[ inputs.gcp-oidc-provider ]]
+  GCP_SNAPSHOT_OIDC_ACCOUNT: $[[ inputs.gcp-snapshot-oidc-account ]]
+  GCP_SNAPSHOT_OIDC_PROVIDER: $[[ inputs.gcp-snapshot-oidc-provider ]]
+  GCP_RELEASE_OIDC_ACCOUNT: $[[ inputs.gcp-release-oidc-account ]]
+  GCP_RELEASE_OIDC_PROVIDER: $[[ inputs.gcp-release-oidc-provider ]]
+  
+.docker-base:
+  services:
+    - name: "$TBC_TRACKING_IMAGE"
+      command: ["--service", "docker", "6.0.0"]
+    - name: "$TBC_GCP_PROVIDER_IMAGE"
+      alias: "gcp-auth-provider"
+  variables:
+    #  have to be explicitly declared in the YAML to be exported to the service
+    GCP_JWT: $GCP_JWT
+    DOCKER_REGISTRY_SNAPSHOT_USER: oauth2accesstoken
+    DOCKER_REGISTRY_RELEASE_USER: oauth2accesstoken
+    DOCKER_REGISTRY_SNAPSHOT_PASSWORD: '@url@http://gcp-auth-provider/token?envType=snapshot'
+    DOCKER_REGISTRY_RELEASE_PASSWORD: '@url@http://gcp-auth-provider/token?envType=release'
+  id_tokens:
+    GCP_JWT:
+      aud: "$GCP_OIDC_AUD"

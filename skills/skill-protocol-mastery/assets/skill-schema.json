@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude.ai/schemas/skill.json",
+  "title": "Claude Code Agent Skill Schema",
+  "description": "JSON Schema for validating Claude Code Agent Skills (SKILL.md files)",
+  "type": "object",
+  "required": ["name", "description", "content"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier for the skill using lowercase letters, numbers, and hyphens only",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 64,
+      "examples": [
+        "pdf-processing",
+        "code-reviewer",
+        "data-analysis"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what this Skill does and when to use it. This is critical for Claude to discover when to use your Skill. Should include both what the Skill does and when Claude should use it.",
+      "minLength": 1,
+      "maxLength": 1024,
+      "examples": [
+        "Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.",
+        "Analyze Excel spreadsheets, create pivot tables, and generate charts. Use when working with Excel files, spreadsheets, or analyzing tabular data in .xlsx format."
+      ]
+    },
+    "allowed-tools": {
+      "type": "array",
+      "description": "Optional list of specific tools Claude can use when this Skill is active. If omitted, Claude will ask for permission to use tools as normal. When specified, Claude can use only these tools without needing to ask for permission.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Read",
+          "Write",
+          "Edit",
+          "Bash",
+          "Glob",
+          "Grep",
+          "Task",
+          "WebFetch",
+          "WebSearch",
+          "TodoWrite",
+          "AskUserQuestion",
+          "Skill",
+          "SlashCommand",
+          "EnterPlanMode",
+          "ExitPlanMode",
+          "NotebookEdit",
+          "BashOutput",
+          "KillShell",
+          "ListMcpResourcesTool",
+          "ReadMcpResourceTool"
+        ]
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["Read", "Grep", "Glob"],
+        ["Read", "Write", "Edit", "Bash"],
+        ["Read", "WebFetch", "WebSearch"]
+      ]
+    },
+    "content": {
+      "type": "string",
+      "description": "The main Markdown content of the SKILL.md file. This contains the instructions, examples, and documentation for the Skill. Can reference other files in the skill directory using relative paths.",
+      "minLength": 1,
+      "examples": [
+        "# PDF Processing\n\n## Instructions\n\n1. Extract text using pdfplumber\n2. Validate extracted content\n\n## Examples\n\n```python\nimport pdfplumber\nwith pdfplumber.open('doc.pdf') as pdf:\n    text = pdf.pages[0].extract_text()\n```"
+      ]
+    },
+    "supportingFiles": {
+      "type": "array",
+      "description": "Optional list of supporting files that accompany the SKILL.md file. These files are referenced from the main skill content and loaded progressively when needed.",
+      "items": {
+        "type": "object",
+        "required": ["path", "description"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the supporting file from the skill directory",
+            "pattern": "^[^/].*$",
+            "examples": [
+              "reference.md",
+              "examples.md",
+              "scripts/helper.py",
+              "templates/template.txt"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of what this file contains",
+            "examples": [
+              "Advanced usage documentation",
+              "Code examples and templates",
+              "Helper script for data processing"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of supporting file",
+            "enum": ["documentation", "script", "template", "reference", "example", "other"],
+            "default": "other"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Optional package dependencies required by the skill. Claude will automatically install these when needed (or ask for permission).",
+      "properties": {
+        "python": {
+          "type": "array",
+          "description": "Python packages required (installed via pip)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["pypdf", "pdfplumber"],
+            ["pandas", "openpyxl"]
+          ]
+        },
+        "node": {
+          "type": "array",
+          "description": "Node.js packages required (installed via npm)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["pdf-lib", "@pdfme/generator"],
+            ["xlsx", "exceljs"]
+          ]
+        },
+        "system": {
+          "type": "array",
+          "description": "System-level dependencies (informational only)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["poppler-utils", "ghostscript"],
+            ["imagemagick", "tesseract"]
+          ]
+        }
+      }
+    },
+    "version": {
+      "type": "string",
+      "description": "Optional version of the skill. Used for documentation purposes in the content.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$",
+      "examples": [
+        "1.0.0",
+        "2.1.3",
+        "1.0.0-beta.1"
+      ]
+    },
+    "author": {
+      "type": "object",
+      "description": "Optional information about the skill author",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Author's name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Author's email address"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Author's website or profile URL"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional tags for categorizing the skill",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["pdf", "documents", "extraction"],
+        ["excel", "data-analysis", "spreadsheets"],
+        ["code-review", "quality", "security"]
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "description": "Scope of the skill - where it's available",
+      "enum": ["personal", "project", "plugin"],
+      "default": "personal"
+    },
+    "location": {
+      "type": "string",
+      "description": "File system location of the skill directory",
+      "examples": [
+        "~/.claude/skills/my-skill",
+        ".claude/skills/team-skill"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "name": "pdf-processing",
+      "description": "Extract text, fill forms, merge PDFs. Use when working with PDF files, forms, or document extraction. Requires pypdf and pdfplumber packages.",
+      "allowed-tools": ["Read", "Write", "Bash"],
+      "content": "# PDF Processing\n\n## Quick start\n\nExtract text:\n```python\nimport pdfplumber\nwith pdfplumber.open(\"doc.pdf\") as pdf:\n    text = pdf.pages[0].extract_text()\n```\n\nFor form filling, see [FORMS.md](FORMS.md).\n\n## Requirements\n\nPackages must be installed in your environment:\n```bash\npip install pypdf pdfplumber\n```",
+      "supportingFiles": [
+        {
+          "path": "FORMS.md",
+          "description": "Form filling documentation",
+          "type": "documentation"
+        },
+        {
+          "path": "REFERENCE.md",
+          "description": "API reference",
+          "type": "reference"
+        },
+        {
+          "path": "scripts/fill_form.py",
+          "description": "Form filling script",
+          "type": "script"
+        }
+      ],
+      "dependencies": {
+        "python": ["pypdf", "pdfplumber"]
+      },
+      "version": "1.0.0",
+      "tags": ["pdf", "documents", "extraction"]
+    },
+    {
+      "name": "code-reviewer",
+      "description": "Review code for best practices and potential issues. Use when reviewing code, checking PRs, or analyzing code quality.",
+      "allowed-tools": ["Read", "Grep", "Glob"],
+      "content": "# Code Reviewer\n\n## Review checklist\n\n1. Code organization and structure\n2. Error handling\n3. Performance considerations\n4. Security concerns\n5. Test coverage\n\n## Instructions\n\n1. Read the target files using Read tool\n2. Search for patterns using Grep\n3. Find related files using Glob\n4. Provide detailed feedback on code quality",
+      "version": "2.0.0",
+      "tags": ["code-review", "quality", "security"]
+    },
+    {
+      "name": "generating-commit-messages",
+      "description": "Generates clear commit messages from git diffs. Use when writing commit messages or reviewing staged changes.",
+      "content": "# Generating Commit Messages\n\n## Instructions\n\n1. Run `git diff --staged` to see changes\n2. I'll suggest a commit message with:\n   - Summary under 50 characters\n   - Detailed description\n   - Affected components\n\n## Best practices\n\n- Use present tense\n- Explain what and why, not how",
+      "tags": ["git", "commits", "version-control"]
+    }
+  ]
+}

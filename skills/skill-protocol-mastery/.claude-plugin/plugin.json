@@ -1,0 +1,15 @@
+{
+  "name": "skill-protocol-mastery",
+  "version": "1.0.0",
+  "description": "Extract reusable skills from Claude Code conversations using Fabric AI patterns. Transforms conversation history into well-structured SKILL.md files.",
+  "repository": "https://github.com/claude-market-place/skill-extractor",
+  "keywords": [
+    "skill",
+    "extraction",
+    "fabric",
+    "conversation",
+    "workflow",
+    "automation"
+  ],
+  "skills": ["./"]
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://code.claude.com/schemas/subagent.json",
+  "title": "Claude Code Subagent",
+  "description": "Schema for validating Claude Code subagent configuration files",
+  "type": "object",
+  "required": ["name", "description", "content"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier using lowercase letters and hyphens",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["code-reviewer", "test-runner", "debugger"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Natural language description of the subagent's purpose and when it should be invoked. Should include both what the subagent does and when to use it.",
+      "minLength": 10,
+      "maxLength": 2000,
+      "examples": [
+        "Expert code reviewer. Use proactively after code changes to review quality, security, and best practices.",
+        "Debugging specialist for errors, test failures, and unexpected behavior. Use proactively when encountering any issues."
+      ]
+    },
+    "tools": {
+      "description": "Comma-separated list of specific tools the subagent can use. If omitted, inherits all tools from the main thread including MCP tools.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Comma-separated list of tool names",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(,\\s*[A-Za-z_][A-Za-z0-9_]*)*$",
+          "examples": [
+            "Read, Grep, Glob, Bash",
+            "Read, Edit, Write",
+            "Task, Read, Bash"
+          ]
+        },
+        {
+          "type": "null",
+          "description": "Inherit all tools from main thread"
+        }
+      ]
+    },
+    "model": {
+      "description": "Model to use for this subagent. Can be a model alias or 'inherit' to use the main conversation's model.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["sonnet", "opus", "haiku", "inherit"],
+          "description": "Model alias or inherit option"
+        },
+        {
+          "type": "null",
+          "description": "Uses default subagent model (sonnet)"
+        }
+      ],
+      "default": null,
+      "examples": ["sonnet", "haiku", "inherit"]
+    },
+    "permissionMode": {
+      "type": "string",
+      "description": "Permission mode for the subagent. Controls how the subagent handles permission requests.",
+      "enum": ["default", "acceptEdits", "bypassPermissions", "plan", "ignore"],
+      "default": "default",
+      "examples": ["default", "bypassPermissions"]
+    },
+    "skills": {
+      "description": "Comma-separated list of skill names to auto-load when the subagent starts.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Comma-separated list of skill names",
+          "pattern": "^[a-z0-9-]+(,\\s*[a-z0-9-]+)*$",
+          "examples": [
+            "pdf-processing, data-analysis",
+            "code-review"
+          ]
+        },
+        {
+          "type": "null",
+          "description": "No skills auto-loaded"
+        }
+      ]
+    },
+    "content": {
+      "type": "string",
+      "description": "The subagent's system prompt in Markdown format. This defines the subagent's role, capabilities, and approach to solving problems.",
+      "minLength": 50,
+      "examples": [
+        "You are a senior code reviewer ensuring high standards of code quality and security.\n\nWhen invoked:\n1. Run git diff to see recent changes\n2. Focus on modified files\n3. Begin review immediately\n\nReview checklist:\n- Code is simple and readable\n- Functions and variables are well-named\n- No duplicated code\n- Proper error handling"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "name": "code-reviewer",
+      "description": "Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.",
+      "tools": "Read, Grep, Glob, Bash",
+      "model": "inherit",
+      "content": "You are a senior code reviewer ensuring high standards of code quality and security.\n\nWhen invoked:\n1. Run git diff to see recent changes\n2. Focus on modified files\n3. Begin review immediately\n\nReview checklist:\n- Code is simple and readable\n- Functions and variables are well-named\n- No duplicated code\n- Proper error handling\n- No exposed secrets or API keys\n- Input validation implemented\n- Good test coverage\n- Performance considerations addressed\n\nProvide feedback organized by priority:\n- Critical issues (must fix)\n- Warnings (should fix)\n- Suggestions (consider improving)\n\nInclude specific examples of how to fix issues."
+    },
+    {
+      "name": "debugger",
+      "description": "Debugging specialist for errors, test failures, and unexpected behavior. Use proactively when encountering any issues.",
+      "tools": "Read, Edit, Bash, Grep, Glob",
+      "model": "sonnet",
+      "permissionMode": "acceptEdits",
+      "content": "You are an expert debugger specializing in root cause analysis.\n\nWhen invoked:\n1. Capture error message and stack trace\n2. Identify reproduction steps\n3. Isolate the failure location\n4. Implement minimal fix\n5. Verify solution works\n\nDebugging process:\n- Analyze error messages and logs\n- Check recent code changes\n- Form and test hypotheses\n- Add strategic debug logging\n- Inspect variable states\n\nFor each issue, provide:\n- Root cause explanation\n- Evidence supporting the diagnosis\n- Specific code fix\n- Testing approach\n- Prevention recommendations\n\nFocus on fixing the underlying issue, not just symptoms."
+    },
+    {
+      "name": "test-runner",
+      "description": "Test automation expert. Use proactively to run tests and fix failures when code changes are made.",
+      "tools": "Bash, Read, Edit",
+      "model": "haiku",
+      "skills": "testing-best-practices",
+      "content": "You are a test automation expert. When you see code changes, proactively run the appropriate tests.\n\nIf tests fail:\n1. Analyze the failures\n2. Fix them while preserving the original test intent\n3. Ensure all tests pass\n\nAlways verify your fixes by running the tests again."
+    }
+  ],
+  "definitions": {
+    "toolNames": {
+      "type": "string",
+      "description": "Available tool names in Claude Code",
+      "enum": [
+        "Task",
+        "Bash",
+        "Glob",
+        "Grep",
+        "Read",
+        "Edit",
+        "Write",
+        "NotebookEdit",
+        "WebFetch",
+        "WebSearch",
+        "BashOutput",
+        "KillShell",
+        "AskUserQuestion",
+        "TodoWrite",
+        "Skill",
+        "SlashCommand",
+        "EnterPlanMode",
+        "ExitPlanMode",
+        "ListMcpResourcesTool",
+        "ReadMcpResourceTool"
+      ]
+    }
+  }
+}

@@ -1,0 +1,236 @@
+# Test Fixtures Specification
+# Defines plugin structures and test data for pytest fixtures
+
+fixtures:
+  plugin_structures:
+    minimal_plugin:
+      description: "Basic plugin with directory structure but no components"
+      has_plugin_json: false
+      components:
+        commands: []
+        agents: []
+        skills: []
+        hooks: []
+        mcps: []
+      expected_behavior:
+        indexable: true
+        component_count: 0
+        error: null
+
+    complete_plugin:
+      description: "Plugin with all component types present"
+      has_plugin_json: true
+      plugin_json_content:
+        name: "test-complete-plugin"
+        version: "1.0.0"
+        author: "Test Author"
+      components:
+        commands:
+          - "commands/cmd1.md"
+          - "commands/cmd2.md"
+        agents:
+          - "agents/agent1.md"
+          - "agents/agent2.md"
+        skills:
+          - "skills/skill1/"
+          - "skills/skill2/"
+        hooks:
+          - event: "SessionStart"
+            command: "echo 'Session started'"
+          - event: "Stop"
+            command: "echo 'Stopping'"
+        mcps:
+          - "server1"
+          - "server2"
+      expected_behavior:
+        indexable: true
+        component_count: 9
+        error: null
+
+    empty_plugin:
+      description: "Valid plugin.json but no actual components"
+      has_plugin_json: true
+      plugin_json_content:
+        name: "test-empty-plugin"
+      components:
+        commands: []
+        agents: []
+        skills: []
+        hooks: []
+        mcps: []
+      expected_behavior:
+        indexable: true
+        component_count: 0
+        error: null
+
+    malformed_plugin_json:
+      description: "Plugin with syntax error in plugin.json"
+      has_plugin_json: true
+      plugin_json_content: "{ invalid json syntax"
+      components:
+        commands: ["commands/cmd1.md"]
+      expected_behavior:
+        indexable: true
+        fallback_to_directory_name: true
+        component_count: 1
+        error: null
+        warning: "No plugin.json found, using directory name"
+
+    large_plugin:
+      description: "Plugin with many components for performance testing"
+      has_plugin_json: true
+      components:
+        commands: 100  # Generate 100 command files
+        agents: 50
+        skills: 25
+        hooks: 10
+        mcps: 5
+      expected_behavior:
+        indexable: true
+        component_count: 190
+        error: null
+        performance_threshold_ms: 1000
+
+    plugin_with_symlinks:
+      description: "Plugin directory containing symbolic links"
+      has_plugin_json: true
+      components:
+        commands:
+          - "commands/real_cmd.md"
+          - "commands/symlink_cmd.md"  # Symlink to real_cmd.md
+        agents: []
+        skills: []
+        hooks: []
+        mcps: []
+      symlinks:
+        - source: "commands/real_cmd.md"
+          target: "commands/symlink_cmd.md"
+      expected_behavior:
+        indexable: true
+        component_count: 2  # Both real and symlink should be indexed
+        error: null
+
+    plugin_with_special_chars:
+      description: "Plugin with special characters in file names"
+      has_plugin_json: true
+      components:
+        commands:
+          - "commands/cmd with spaces.md"
+          - "commands/cmd-with-unicode-文字.md"
+        agents: []
+        skills: []
+        hooks: []
+        mcps: []
+      expected_behavior:
+        indexable: true
+        component_count: 2
+        error: null
+
+  marketplace_structures:
+    valid_marketplace:
+      description: "Marketplace with multiple valid plugins"
+      has_marketplace_json: true
+      marketplace_json_content:
+        name: "test-marketplace"
+        owner: "test-owner"
+        plugins:
+          - name: "plugin1"
+            source: "../plugins/plugin1"
+          - name: "plugin2"
+            source: "../plugins/plugin2"
+      plugins:
+        - minimal_plugin
+        - complete_plugin
+      expected_behavior:
+        indexable: true
+        plugin_count: 2
+        errors: []
+
+    mixed_marketplace:
+      description: "Marketplace with both valid and invalid plugins"
+      has_marketplace_json: true
+      marketplace_json_content:
+        name: "test-mixed-marketplace"
+        plugins:
+          - name: "valid_plugin"
+            source: "../plugins/valid"
+          - name: "invalid_plugin"
+            source: "../plugins/nonexistent"
+      plugins:
+        - complete_plugin
+        - nonexistent_plugin  # Will fail
+      expected_behavior:
+        indexable: true
+        plugin_count: 1  # Only valid plugin indexed
+        errors:
+          - "Skipping failed plugin: ../plugins/nonexistent"
+
+    empty_marketplace:
+      description: "Valid marketplace.json but no plugins"
+      has_marketplace_json: true
+      marketplace_json_content:
+        name: "test-empty-marketplace"
+        plugins: []
+      plugins: []
+      expected_behavior:
+        indexable: true
+        plugin_count: 0
+        errors: []
+
+    malformed_marketplace_json:
+      description: "Marketplace with invalid JSON"
+      has_marketplace_json: true
+      marketplace_json_content: "{ invalid json"
+      plugins: []
+      expected_behavior:
+        indexable: false
+        plugin_count: 0
+        error: "Invalid JSON"
+
+  error_scenarios:
+    permission_denied:
+      description: "Plugin directory with no read permissions"
+      setup:
+        chmod: "000"
+      expected_error:
+        type: "PermissionError"
+        message_pattern: "permission denied"
+
+    missing_directory:
+      description: "Plugin path that does not exist"
+      setup:
+        exists: false
+      expected_error:
+        type: "FileNotFoundError"
+        message_pattern: "not found"
+
+    corrupted_registry:
+      description: "Existing registry.json with invalid JSON"
+      registry_content: "{ corrupted json"
+      expected_behavior:
+        create_new_registry: true
+        warning: "Invalid registry.json, creating new"
+
+    disk_full:
+      description: "Insufficient disk space for registry save"
+      setup:
+        mock_disk_full: true
+      expected_error:
+        type: "OSError"
+        message_pattern: "No space left on device"
+
+    git_clone_timeout:
+      description: "Git clone operation exceeds timeout"
+      setup:
+        mock_subprocess_timeout: true
+      expected_error:
+        type: "subprocess.TimeoutExpired"
+        message_pattern: "Failed to clone"
+
+    git_auth_required:
+      description: "Git clone requires authentication"
+      setup:
+        mock_subprocess_error: "authentication required"
+      expected_error:
+        type: "subprocess.CalledProcessError"
+        message_pattern: "authentication"

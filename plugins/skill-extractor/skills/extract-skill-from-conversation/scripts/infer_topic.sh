@@ -1,13 +1,15 @@
 #!/bin/bash
 # infer_topic.sh - Infer conversation topic from user intentions
-# Usage: infer_topic.sh /path/to/conversation.jsonl
+# Usage: infer_topic.sh /path/to/conversation.jsonl [model]
 
 set -euo pipefail
 
 CONVERSATION_FILE="${1:-}"
+FABRIC_MODEL="${2:-claude-3-5-haiku-latest}"
 
 if [[ -z "$CONVERSATION_FILE" ]]; then
-    echo "Usage: $0 /path/to/conversation.jsonl" >&2
+    echo "Usage: $0 /path/to/conversation.jsonl [model]" >&2
+    echo "  model: Fabric model to use (default: claude-3-5-haiku-latest)" >&2
     exit 1
 fi
 
@@ -71,13 +73,13 @@ echo "$USER_MESSAGES" > "$TEMP_USER_FILE"
 
 # Step 3: Analyze user intent with Fabric (if available)
 if [[ "$FABRIC_AVAILABLE" == "true" ]]; then
-    echo "[3/4] Analyzing user intent with Fabric..." >&2
+    echo "[3/4] Analyzing user intent with Fabric (model: $FABRIC_MODEL)..." >&2
 
     # Extract the core problem/objective from user messages
-    INFERRED_OBJECTIVE=$(cat "$TEMP_USER_FILE" | fabric -p extract_primary_problem 2>/dev/null | head -5 || echo "")
+    INFERRED_OBJECTIVE=$(cat "$TEMP_USER_FILE" | fabric -p extract_primary_problem -m "$FABRIC_MODEL" 2>/dev/null | head -5 || echo "")
 
     # Get a brief summary
-    INFERRED_SUMMARY=$(cat "$TEMP_USER_FILE" | fabric -p summarize 2>/dev/null | head -3 || echo "")
+    INFERRED_SUMMARY=$(cat "$TEMP_USER_FILE" | fabric -p summarize -m "$FABRIC_MODEL" 2>/dev/null | head -3 || echo "")
 
     if [[ -n "$INFERRED_OBJECTIVE" ]]; then
         echo "Inferred objective:" >&2
@@ -95,42 +97,70 @@ else
     INFERRED_SUMMARY=""
 fi
 
-# Step 4: Generate topic summary
+# Step 4: Gather file metadata
 echo "" >&2
-echo "[4/4] Generating topic summary..." >&2
+echo "[4/4] Gathering file metadata and generating summary..." >&2
+
+# Get file metadata
+FILE_PATH=$(readlink -f "$CONVERSATION_FILE")
+FILE_SIZE=$(stat -f%z "$CONVERSATION_FILE" 2>/dev/null || stat -c%s "$CONVERSATION_FILE" 2>/dev/null || echo "0")
+FILE_MTIME=$(stat -f%m "$CONVERSATION_FILE" 2>/dev/null || stat -c%Y "$CONVERSATION_FILE" 2>/dev/null || echo "0")
+FILE_DATE=$(date -d "@$FILE_MTIME" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || date -r "$FILE_MTIME" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo "unknown")
+SESSION_ID=$(basename "$FILE_PATH" .jsonl)
+PROJECT_PATH=$(dirname "$FILE_PATH")
+
 echo "" >&2
 
 # Output structured JSON
 jq -n \
+    --arg file_path "$FILE_PATH" \
+    --arg file_size "$FILE_SIZE" \
+    --arg file_date "$FILE_DATE" \
+    --arg file_mtime "$FILE_MTIME" \
+    --arg session_id "$SESSION_ID" \
+    --arg project_path "$PROJECT_PATH" \
     --arg primary_topic "$PRIMARY_TOPIC" \
     --arg user_count "$USER_COUNT" \
     --arg inferred_objective "$INFERRED_OBJECTIVE" \
     --arg inferred_summary "$INFERRED_SUMMARY" \
-    --arg first_user_msg "$(echo "$USER_MESSAGES" | head -1)" \
-    --arg last_user_msg "$(echo "$USER_MESSAGES" | tail -1)" \
+    --arg first_user_msg "$(echo "$USER_MESSAGES" | head -1 | cut -c1-200)" \
+    --arg last_user_msg "$(echo "$USER_MESSAGES" | tail -1 | cut -c1-200)" \
     '{
-        primary_topic: $primary_topic,
-        user_message_count: ($user_count | tonumber),
-        inferred_objective: $inferred_objective,
-        inferred_summary: $inferred_summary,
-        first_user_message: $first_user_msg,
-        last_user_message: $last_user_msg,
-        suggested_skill_name: (
-            if $primary_topic != "" then
-                ($primary_topic | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-|-$"; ""))
-            elif $inferred_objective != "" then
-                ($inferred_objective | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-|-$"; "") | .[0:50])
-            else
-                "extracted-skill"
-            end
-        ),
-        suggested_description: (
-            if $inferred_summary != "" then
-                $inferred_summary
-            elif $primary_topic != "" then
-                $primary_topic
-            else
-                "Skill extracted from conversation"
-            end
-        )
+        file: {
+            path: $file_path,
+            size_bytes: ($file_size | tonumber),
+            size_kb: (($file_size | tonumber) / 1024 | floor),
+            modified_date: $file_date,
+            modified_timestamp: ($file_mtime | tonumber),
+            session_id: $session_id,
+            project_path: $project_path
+        },
+        conversation: {
+            primary_topic: $primary_topic,
+            user_message_count: ($user_count | tonumber),
+            inferred_objective: $inferred_objective,
+            inferred_summary: $inferred_summary,
+            first_user_message: $first_user_msg,
+            last_user_message: $last_user_msg
+        },
+        suggested_skill: {
+            name: (
+                if $primary_topic != "" then
+                    ($primary_topic | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-|-$"; ""))
+                elif $inferred_objective != "" then
+                    ($inferred_objective | ascii_downcase | gsub("[^a-z0-9]+"; "-") | gsub("^-|-$"; "") | .[0:50])
+                else
+                    "extracted-skill"
+                end
+            ),
+            description: (
+                if $inferred_summary != "" then
+                    $inferred_summary
+                elif $primary_topic != "" then
+                    $primary_topic
+                else
+                    "Skill extracted from conversation"
+                end
+            )
+        }
     }'

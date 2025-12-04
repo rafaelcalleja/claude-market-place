@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude.ai/schemas/skill-frontmatter.json",
+  "title": "Claude Code Agent Skill Frontmatter Schema",
+  "description": "JSON Schema for validating the YAML frontmatter in SKILL.md files",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier for the skill using lowercase letters, numbers, and hyphens only. Maximum 64 characters.",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 64,
+      "examples": [
+        "pdf-processing",
+        "code-reviewer",
+        "data-analysis",
+        "generating-commit-messages"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what this Skill does and when to use it (max 1024 characters). CRITICAL: Must include both WHAT the skill does AND WHEN Claude should use it. This is how Claude discovers your skill.",
+      "minLength": 1,
+      "maxLength": 1024,
+      "examples": [
+        "Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.",
+        "Analyze Excel spreadsheets, create pivot tables, and generate charts. Use when working with Excel files, spreadsheets, or analyzing tabular data in .xlsx format.",
+        "Review code for best practices and potential issues. Use when reviewing code, checking PRs, or analyzing code quality.",
+        "Generates clear commit messages from git diffs. Use when writing commit messages or reviewing staged changes."
+      ]
+    },
+    "allowed-tools": {
+      "oneOf": [
+        {
+          "type": "array",
+          "description": "List of specific tools Claude can use when this Skill is active without needing permission",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Read",
+              "Write",
+              "Edit",
+              "Bash",
+              "Glob",
+              "Grep",
+              "Task",
+              "WebFetch",
+              "WebSearch",
+              "TodoWrite",
+              "AskUserQuestion",
+              "Skill",
+              "SlashCommand",
+              "EnterPlanMode",
+              "ExitPlanMode",
+              "NotebookEdit",
+              "BashOutput",
+              "KillShell",
+              "ListMcpResourcesTool",
+              "ReadMcpResourceTool"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        {
+          "type": "string",
+          "description": "Comma-separated list of tools (as used in actual SKILL.md files)",
+          "pattern": "^[A-Za-z]+(,\\s*[A-Za-z]+)*$",
+          "examples": [
+            "Read, Grep, Glob",
+            "Read, Write, Edit, Bash",
+            "Read, WebFetch, WebSearch"
+          ]
+        }
+      ],
+      "examples": [
+        ["Read", "Grep", "Glob"],
+        "Read, Grep, Glob",
+        ["Read", "Write", "Edit", "Bash"],
+        "Read, Write, Edit, Bash"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "name": "pdf-processing",
+      "description": "Extract text, fill forms, merge PDFs. Use when working with PDF files, forms, or document extraction. Requires pypdf and pdfplumber packages.",
+      "allowed-tools": "Read, Write, Bash"
+    },
+    {
+      "name": "code-reviewer",
+      "description": "Review code for best practices and potential issues. Use when reviewing code, checking PRs, or analyzing code quality.",
+      "allowed-tools": "Read, Grep, Glob"
+    },
+    {
+      "name": "safe-file-reader",
+      "description": "Read files without making changes. Use when you need read-only file access.",
+      "allowed-tools": "Read, Grep, Glob"
+    },
+    {
+      "name": "generating-commit-messages",
+      "description": "Generates clear commit messages from git diffs. Use when writing commit messages or reviewing staged changes."
+    }
+  ],
+  "definitions": {
+    "validationRules": {
+      "description": "Additional validation rules and best practices",
+      "type": "object",
+      "properties": {
+        "nameRules": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "lowercase letters, numbers, and hyphens only"
+            },
+            "maxLength": {
+              "const": 64
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                ["my-skill-name", "pdf-processing", "code-reviewer"]
+              ]
+            }
+          }
+        },
+        "descriptionRules": {
+          "type": "object",
+          "properties": {
+            "maxLength": {
+              "const": 1024
+            },
+            "mustInclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                ["what the skill does", "when to use it", "trigger keywords"]
+              ]
+            },
+            "bestPractices": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                [
+                  "Be specific about capabilities",
+                  "Include trigger words (e.g., 'PDF', 'Excel', 'code review')",
+                  "Mention file types or contexts where applicable",
+                  "Start with action verbs",
+                  "Include both features AND use cases"
+                ]
+              ]
+            }
+          }
+        },
+        "allowedToolsRules": {
+          "type": "object",
+          "properties": {
+            "purpose": {
+              "const": "Restrict tool access for security or scope control"
+            },
+            "behavior": {
+              "const": "When specified, Claude can use ONLY these tools without permission"
+            },
+            "whenToUse": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                [
+                  "Read-only Skills that shouldn't modify files",
+                  "Skills with limited scope (e.g., only data analysis)",
+                  "Security-sensitive workflows"
+                ]
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,266 @@
+# ============================================================
+# GitLab CI/CD Configuration
+# Generated with To-Be-Continuous Framework
+# ============================================================
+#
+# Pipeline Flow:
+# 1. Semantic Release: Genera nueva versión basada en commits convencionales
+# 2. S3 Sync: Copia archivos SQL modificados a S3 usando AWS OIDC
+#
+# ============================================================
+
+# Stages definition
+stages:
+  - publish          # Semantic release
+  - deploy           # S3 sync
+
+# ============================================================
+# Semantic Release Template
+# ============================================================
+# Genera versiones automáticamente basadas en commits convencionales
+# Documentación: https://to-be-continuous.gitlab.io/doc/semantic-release
+
+include:
+  # Semantic Release component
+  - component: $CI_SERVER_FQDN/to-be-continuous/semantic-release@7
+    inputs:
+      # Node.js image para ejecutar semantic-release
+      image: "docker.io/library/node:lts-slim"
+
+      # Auto-release: Se ejecuta automáticamente en main/master
+      auto-release-enabled: true
+
+      # Ramas que generan releases
+      branches-ref: "/^(master|main)$/"
+
+      # Genera CHANGELOG.md automáticamente
+      changelog-enabled: true
+      changelog-file: "CHANGELOG.md"
+      changelog-title: "# Changelog"
+
+      # Commit specification (angular style por defecto)
+      commit-spec: "angular"
+
+# Secret variables requeridas:
+# Define estas variables en GitLab Settings > CI/CD > Variables:
+#
+# SEMREL_GITLAB_TOKEN:
+#   - GitLab Personal Access Token o Project Access Token
+#   - Scopes requeridos: api, read_repository, write_repository
+#   - Para generar: Settings > Access Tokens
+
+# ============================================================
+# Custom Job: Sync SQL Files to S3
+# ============================================================
+# Sincroniza solo archivos SQL modificados vs main a S3
+# Usa AWS OIDC para autenticación (assume role)
+
+sync_sql_to_s3:
+  stage: deploy
+
+  # Imagen con AWS CLI v2
+  image: docker.io/amazon/aws-cli:latest
+
+  # Solo ejecutar después de semantic-release exitoso
+  needs:
+    - job: semantic-release
+      artifacts: false
+
+  # Solo en rama main/master después del release
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+  # Variables de configuración
+  variables:
+    # Región AWS
+    AWS_REGION: "${AWS_REGION:-us-east-1}"
+
+    # Bucket S3 destino (definir en CI/CD variables)
+    S3_BUCKET: "${S3_BUCKET}"
+
+    # Rama base para comparar cambios
+    BASE_BRANCH: "${CI_DEFAULT_BRANCH}"
+
+  # Configurar autenticación OIDC
+  id_tokens:
+    AWS_OIDC_TOKEN:
+      aud: "${OIDC_AUD:-$CI_SERVER_URL}"
+
+  before_script:
+    # Instalar git en el contenedor de AWS CLI
+    - yum install -y git
+
+    # Configurar AWS credentials usando OIDC
+    - |
+      echo "🔐 Autenticando con AWS usando OIDC..."
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+        $(aws sts assume-role-with-web-identity \
+          --role-arn ${AWS_OIDC_ROLE_ARN} \
+          --role-session-name "gitlab-${CI_PROJECT_ID}-${CI_PIPELINE_ID}" \
+          --web-identity-token ${AWS_OIDC_TOKEN} \
+          --duration-seconds 3600 \
+          --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+          --output text))
+
+    # Verificar autenticación
+    - |
+      echo "✅ Autenticación exitosa"
+      aws sts get-caller-identity
+
+  script:
+    # Detectar archivos SQL modificados vs main
+    - |
+      echo "🔍 Detectando archivos SQL modificados..."
+
+      # Fetch de la rama base para comparación
+      git fetch origin ${BASE_BRANCH}
+
+      # Obtener lista de archivos SQL modificados (recursivo)
+      MODIFIED_SQL_FILES=$(git diff --name-only origin/${BASE_BRANCH}...HEAD -- 'sql/**/*.sql')
+
+      if [ -z "$MODIFIED_SQL_FILES" ]; then
+        echo "ℹ️  No hay archivos SQL modificados. Saltando sync."
+        exit 0
+      fi
+
+      echo "📋 Archivos SQL modificados:"
+      echo "$MODIFIED_SQL_FILES"
+
+      # Contar archivos
+      FILE_COUNT=$(echo "$MODIFIED_SQL_FILES" | wc -l)
+      echo "📊 Total: $FILE_COUNT archivo(s)"
+
+    # Sincronizar archivos a S3
+    - |
+      echo "☁️  Sincronizando archivos a S3..."
+
+      # Copiar cada archivo modificado a S3 (sobrescribiendo)
+      echo "$MODIFIED_SQL_FILES" | while read -r file; do
+        if [ -f "$file" ]; then
+          echo "  ⬆️  Subiendo: $file"
+          aws s3 cp "$file" "s3://${S3_BUCKET}/${file}" \
+            --region ${AWS_REGION}
+        else
+          echo "  ⚠️  Archivo eliminado: $file (no se sube)"
+        fi
+      done
+
+      echo "✅ Sincronización completada"
+
+  # Permitir fallo manual del job
+  allow_failure: false
+
+# ============================================================
+# Variables de CI/CD Requeridas
+# ============================================================
+# Define estas variables en GitLab Settings > CI/CD > Variables:
+#
+# 1. SEMREL_GITLAB_TOKEN (type: variable, masked)
+#    - GitLab token con scopes: api, read_repository, write_repository
+#
+# 2. AWS_OIDC_ROLE_ARN (type: variable)
+#    - ARN del rol IAM con permisos para assume role desde GitLab
+#    - Ejemplo: arn:aws:iam::123456789012:role/GitLabOIDCRole
+#
+# 3. S3_BUCKET (type: variable)
+#    - Nombre del bucket S3 destino
+#    - Ejemplo: my-company-sql-files
+#
+# 4. AWS_REGION (type: variable, opcional)
+#    - Región AWS del bucket (default: us-east-1)
+#    - Ejemplo: us-west-2
+#
+# 5. OIDC_AUD (type: variable, opcional)
+#    - Audience claim para JWT (default: $CI_SERVER_URL)
+#
+# ============================================================
+# Configuración AWS OIDC
+# ============================================================
+#
+# Para configurar OIDC en AWS:
+#
+# 1. Crear Identity Provider en AWS IAM:
+#    - Provider Type: OpenID Connect
+#    - Provider URL: https://gitlab.com (o tu GitLab self-hosted)
+#    - Audience: $CI_SERVER_URL
+#
+# 2. Crear IAM Role con Trust Policy:
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Principal": {
+#            "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/gitlab.com"
+#          },
+#          "Action": "sts:AssumeRoleWithWebIdentity",
+#          "Condition": {
+#            "StringEquals": {
+#              "gitlab.com:aud": "$CI_SERVER_URL",
+#              "gitlab.com:sub": "project_path:YOUR_GROUP/YOUR_PROJECT:ref_type:branch:ref:main"
+#            }
+#          }
+#        }
+#      ]
+#    }
+#
+# 3. Añadir permisos S3 al rol:
+#    {
+#      "Version": "2012-10-17",
+#      "Statement": [
+#        {
+#          "Effect": "Allow",
+#          "Action": [
+#            "s3:PutObject",
+#            "s3:GetObject"
+#          ],
+#          "Resource": "arn:aws:s3:::YOUR_BUCKET/sql/*"
+#        }
+#      ]
+#    }
+#
+# Documentación:
+# - GitLab OIDC: https://docs.gitlab.com/ee/ci/cloud_services/aws/
+# - AWS IAM OIDC: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
+
+# ============================================================
+# Uso de Commits Convencionales
+# ============================================================
+#
+# Semantic Release analiza los mensajes de commit para determinar
+# el tipo de versión (major, minor, patch):
+#
+# PATCH (0.0.x):
+#   - fix: Corrección de bugs
+#   - perf: Mejoras de performance
+#   - Ejemplo: "fix: corregir query en usuario.sql"
+#
+# MINOR (0.x.0):
+#   - feat: Nueva funcionalidad
+#   - Ejemplo: "feat: añadir tabla productos"
+#
+# MAJOR (x.0.0):
+#   - BREAKING CHANGE: Cambio incompatible
+#   - Ejemplo: "feat!: migrar estructura completa de DB"
+#   - O en footer: "BREAKING CHANGE: eliminar columna legacy"
+#
+# SKIP RELEASE:
+#   - chore: Tareas de mantenimiento
+#   - docs: Documentación
+#   - style: Formato de código
+#   - refactor: Refactorización
+#   - test: Tests
+#
+# Formato completo:
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+#
+# Ejemplos:
+# - "feat(sql): añadir stored procedure para reportes"
+# - "fix(migrations): corregir constraint en tabla orders"
+# - "perf(queries): optimizar índices en búsquedas"
+#
+# ============================================================

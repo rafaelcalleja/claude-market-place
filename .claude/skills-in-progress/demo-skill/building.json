@@ -1,0 +1,20 @@
+{
+  "skill_name": "demo-skill",
+  "started_at": "2025-12-02T00:00:00Z",
+  "status": "recording",
+  "steps": [],
+  "references": [
+    {
+      "name": "marketplace-config.json",
+      "source": "/home/rcalleja/projects/claude-market-place/.claude-plugin/marketplace.json",
+      "type": "local",
+      "description": "Marketplace configuration containing all plugin definitions and metadata",
+      "saved_at": "2025-12-02T00:05:00Z"
+    }
+  ],
+  "metadata": {
+    "total_actions": 1,
+    "included_steps": 0,
+    "references_count": 1
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if Claude should stop: $ARGUMENTS\n\nCheck if all tasks complete.\n\nRespond: {\"decision\": \"approve\" or \"block\", \"reason\": \"explanation\"}",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if subagent completed its task. Context: $ARGUMENTS\n\nReturn JSON with decision."
+          }
+        ]
+      }
+    ]
+  }
+}

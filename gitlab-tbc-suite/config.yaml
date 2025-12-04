@@ -1,0 +1,25 @@
+# GitLab TBC Suite - Evaluation Configuration
+
+# Plugin to evaluate
+plugin:
+  path: /home/rcalleja/projects/claude-market-place/plugins/gitlab-tbc
+
+# Executor configuration
+executor:
+  max_turns: 20
+  permission_mode: acceptEdits
+  timeout_seconds: 120
+
+# Judge configuration
+judge:
+  model: sonnet  # or haiku for cheaper evaluations
+
+# Thresholds (configurable)
+thresholds:
+  passing: 70
+  excellent: 90
+
+# Paths (relative to project root)
+paths:
+  evaluations: evaluations
+  results: results

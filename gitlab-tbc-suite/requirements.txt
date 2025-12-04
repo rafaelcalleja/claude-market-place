@@ -1,0 +1,9 @@
+# Claude Agent SDK (uses Claude Code CLI auth, no API key needed)
+claude-agent-sdk
+
+# Testing
+pytest
+pytest-asyncio
+
+# YAML parsing
+pyyaml
