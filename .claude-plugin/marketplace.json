@@ -105,7 +105,7 @@
     {
       "name": "example-skills",
       "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, webapp testing, makefile automation, Codex CLI, Fabric AI patterns, Gemini CLI, workflow orchestration, skill protocol mastery, subagent development, hooks mastery, and subagent configuration",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "source": "./skills/",
       "strict": false,
       "skills": [

@@ -305,11 +305,9 @@ if any(p in file_path for p in sensitive):
 
 ## Additional Resources
 
-For detailed protocol specifications and advanced patterns, see:
+For detailed protocol specifications:
 - **`references/protocol-specification.md`** - Complete protocol documentation
 - **`references/event-reference.md`** - Detailed event specifications
-- **`references/json-output-patterns.md`** - Advanced JSON response patterns
-- **`references/security-guide.md`** - Security best practices and common vulnerabilities
 
 For working examples:
 - **`examples/pretooluse-validator/`** - Bash command validation
