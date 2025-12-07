@@ -296,7 +296,7 @@
     {
       "name": "fabric-skill",
       "description": "Native Fabric pattern execution for Claude Code. 227 AI patterns applied directly with full model power and conversation context - no CLI spawning needed.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "rcalleja"
       },
