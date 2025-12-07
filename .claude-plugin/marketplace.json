@@ -104,8 +104,8 @@
     },
     {
       "name": "example-skills",
-      "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, visual design, algorithmic art, internal communications, web testing, artifact building, Slack GIFs, and theme styling",
-      "version": "1.0.7",
+      "description": "Collection of example skills demonstrating various capabilities including skill creation, MCP building, webapp testing, makefile automation, Codex CLI, Fabric AI patterns, Gemini CLI, workflow orchestration, skill protocol mastery, subagent development, hooks mastery, and subagent configuration",
+      "version": "1.2.0",
       "source": "./skills/",
       "strict": false,
       "skills": [
@@ -117,7 +117,10 @@
         "./fabric-ai",
         "./gemini-cli",
         "./workflow-weaver",
-        "./skill-protocol-mastery"
+        "./skill-protocol-mastery",
+        "./claude-subagent-development-skill",
+        "./hooks-mastery",
+        "./subagent-configuration"
       ]
     },
     {
@@ -211,7 +214,7 @@
     {
       "name": "gitlab-tbc",
       "description": "Interactive guide for building GitLab CI/CD pipelines with to-be-continuous templates (conversational, step-by-step, real examples) and creating compatible components",
-      "version": "0.7.1",
+      "version": "0.8.0",
       "author": {
         "name": "GitLab TBC Contributors"
       },
@@ -247,6 +250,48 @@
         "automation"
       ],
       "license": "MIT"
+    },
+    {
+      "name": "session-recorder",
+      "description": "Records all Claude Code session interactions using a hybrid approach: automated hooks capture user messages and tool calls, while Claude self-reports summaries of completed work. Creates structured JSON logs for session analysis, debugging, and workflow auditing.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Claude Code Marketplace",
+        "email": "marketplace@example.com"
+      },
+      "source": "./plugins/session-recorder",
+      "category": "productivity",
+      "keywords": [
+        "session",
+        "recording",
+        "logging",
+        "audit",
+        "debugging",
+        "workflow",
+        "hooks"
+      ],
+      "license": "MIT"
+    },
+    {
+      "name": "skill-activator",
+      "description": "Increase Claude Code skill activation rates from 20% to 84% using forced evaluation hooks. Based on research by Scott Spence with 200+ test prompts.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Based on research by Scott Spence",
+        "url": "https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably"
+      },
+      "source": "./plugins/skill-activator",
+      "category": "productivity",
+      "keywords": [
+        "skills",
+        "hooks",
+        "activation",
+        "reliability",
+        "forced-eval",
+        "UserPromptSubmit"
+      ],
+      "license": "MIT",
+      "homepage": "https://github.com/spences10/svelte-claude-skills"
     }
   ]
 }
