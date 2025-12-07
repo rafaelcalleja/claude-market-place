@@ -313,6 +313,27 @@
         "native-execution"
       ],
       "license": "MIT"
+    },
+    {
+      "name": "prompt-improver",
+      "description": "Intelligent prompt optimization using skill-based architecture. Enriches vague prompts with research-based clarifying questions before Claude Code executes them.",
+      "version": "0.4.0",
+      "author": {
+        "name": "severity1",
+        "url": "https://github.com/severity1"
+      },
+      "source": "./plugins/prompt-improver",
+      "category": "productivity",
+      "keywords": [
+        "prompt",
+        "hooks",
+        "UserPromptSubmit",
+        "clarification",
+        "optimization",
+        "skills"
+      ],
+      "license": "MIT",
+      "homepage": "https://github.com/severity1/claude-code-prompt-improver"
     }
   ]
 }
