@@ -379,6 +379,27 @@
       ],
       "license": "MIT",
       "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure"
+    },
+    {
+      "name": "createskill-skill",
+      "description": "Skill creation framework with workflows for creating, validating, updating, and canonicalizing Claude Code skills. Enforces TitleCase naming conventions and canonical structure.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Daniel Miessler",
+        "url": "https://danielmiessler.com"
+      },
+      "source": "./plugins/createskill-skill",
+      "category": "skills",
+      "keywords": [
+        "skill-creation",
+        "skill-development",
+        "validation",
+        "canonicalize",
+        "titlecase",
+        "workflows"
+      ],
+      "license": "MIT",
+      "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure"
     }
   ]
 }
