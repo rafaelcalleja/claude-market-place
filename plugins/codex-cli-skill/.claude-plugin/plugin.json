@@ -1,0 +1,13 @@
+{
+  "name": "codex-cli-skill",
+  "version": "1.0.0",
+  "description": "OpenAI Codex CLI integration skill for code analysis, refactoring, and automated editing with gpt-5.1 models",
+  "author": {
+    "name": "Claude Market Place"
+  },
+  "license": "MIT",
+  "keywords": ["codex", "openai", "gpt-5", "code-analysis", "refactoring", "cli"],
+  "skills": [
+    "./skills/codex-cli"
+  ]
+}

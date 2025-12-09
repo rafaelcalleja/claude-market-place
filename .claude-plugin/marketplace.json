@@ -397,6 +397,25 @@
       ],
       "license": "MIT",
       "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure"
+    },
+    {
+      "name": "codex-cli-skill",
+      "description": "OpenAI Codex CLI integration skill for code analysis, refactoring, and automated editing with gpt-5.1 models",
+      "version": "1.0.0",
+      "author": {
+        "name": "Claude Market Place"
+      },
+      "source": "./plugins/codex-cli-skill",
+      "category": "development",
+      "keywords": [
+        "codex",
+        "openai",
+        "gpt-5",
+        "code-analysis",
+        "refactoring",
+        "cli"
+      ],
+      "license": "MIT"
     }
   ]
 }
