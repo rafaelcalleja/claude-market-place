@@ -337,8 +337,8 @@
     },
     {
       "name": "aws-skills",
-      "description": "AWS development skills for Claude Code including CDK best practices, serverless architecture, cost optimization with MCP servers (pricing, cost explorer, cloudwatch), and Bedrock AgentCore for AI agent deployment",
-      "version": "2.0.0",
+      "description": "AWS development skills for Claude Code including serverless architecture patterns and Bedrock AgentCore for AI agent deployment",
+      "version": "2.1.0",
       "author": {
         "name": "Kane Zhu",
         "email": "me@kane.mx"
@@ -347,14 +347,11 @@
       "category": "development",
       "keywords": [
         "aws",
-        "cdk",
         "serverless",
-        "cost-optimization",
         "bedrock",
         "agentcore",
         "lambda",
-        "cloudwatch",
-        "mcp-servers"
+        "event-driven"
       ],
       "license": "MIT",
       "homepage": "https://github.com/zxkane/aws-skills"

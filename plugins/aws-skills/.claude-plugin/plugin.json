@@ -1,7 +1,7 @@
 {
   "name": "aws-skills",
-  "version": "2.0.0",
-  "description": "AWS development skills for Claude Code including CDK best practices, serverless architecture, cost optimization with MCP servers, and Bedrock AgentCore for AI agent deployment",
+  "version": "2.1.0",
+  "description": "AWS development skills for Claude Code including serverless architecture patterns and Bedrock AgentCore for AI agent deployment",
   "author": {
     "name": "Kane Zhu",
     "email": "me@kane.mx"
@@ -9,45 +9,9 @@
   "homepage": "https://github.com/zxkane/aws-skills",
   "repository": "https://github.com/zxkane/aws-skills",
   "license": "MIT",
-  "keywords": ["aws", "cdk", "serverless", "cost-optimization", "bedrock", "agentcore", "lambda", "cloudwatch", "mcp-servers"],
+  "keywords": ["aws", "serverless", "bedrock", "agentcore", "lambda", "event-driven"],
   "skills": [
-    "./skills/aws-cdk-development",
-    "./skills/aws-cost-operations",
     "./skills/aws-serverless-eda",
     "./skills/aws-agentic-ai"
-  ],
-  "mcpServers": {
-    "cdk": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["awslabs.cdk-mcp-server@latest"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "pricing": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["awslabs.aws-pricing-mcp-server@latest"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "costexp": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["awslabs.cost-explorer-mcp-server@latest"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "cw": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["awslabs.cloudwatch-mcp-server@latest"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    }
-  }
+  ]
 }
