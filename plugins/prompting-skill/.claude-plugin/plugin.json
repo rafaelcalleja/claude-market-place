@@ -1,0 +1,15 @@
+{
+  "name": "prompting-skill",
+  "version": "1.0.0",
+  "description": "Prompt engineering and context engineering skill based on Anthropic best practices. Covers clarity, structure, progressive discovery, and signal-to-noise optimization for AI agents.",
+  "author": {
+    "name": "Daniel Miessler",
+    "url": "https://danielmiessler.com"
+  },
+  "homepage": "https://github.com/danielmiessler/Personal_AI_Infrastructure",
+  "license": "MIT",
+  "keywords": ["prompting", "prompt-engineering", "context-engineering", "ai-agents", "anthropic", "best-practices"],
+  "skills": [
+    "./skills/prompting"
+  ]
+}
