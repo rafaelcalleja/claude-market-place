@@ -420,7 +420,7 @@
     {
       "name": "rules-builder",
       "description": "Interactive skill for creating and managing Claude Code rules in .claude/rules/ with guided elicitation, glob pattern support, and YAML frontmatter validation",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": {
         "name": "Claude Market Place"
       },
