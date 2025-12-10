@@ -5,280 +5,125 @@ description: Use when the user wants to create, edit, or manage Claude Code rule
 
 # Rules Builder
 
-Interactive skill for creating and editing Claude Code rules with guided elicitation.
+Interactive skill for creating and managing Claude Code modular rules using guided elicitation with `AskUserQuestion`.
 
 ## When to Use
 
 - User wants to create a new rule file
-- User wants to edit an existing rule
+- User wants to edit or delete an existing rule
 - User mentions `.claude/rules/`
 - User asks about path-specific rules or glob patterns
 - User wants to organize project instructions
+- User wants personal rules across all projects
 
-## Workflow: Create New Rule
+## Elicitation Approach
 
-### Step 1: Determine Rule Scope
+Use `AskUserQuestion` throughout the workflow to guide the user through all available options. Present relevant choices based on context and let the user shape the rule configuration step by step.
 
-Use `AskUserQuestion` to ask:
+## What Can Be Done with Rules
 
-**Question**: "What type of rule do you want to create?"
+### Rule Scope Options
 
-| Option | Description |
-|--------|-------------|
-| Global rule | Applies to all files in the project |
-| Path-specific rule | Only applies to files matching a pattern |
+| Scope | Description |
+|-------|-------------|
+| **Global** | Applies to all files in the project (no `paths` frontmatter) |
+| **Path-specific** | Only applies to files matching glob patterns |
 
-### Step 2: If Path-Specific, Determine Pattern
+### Rule Locations
 
-Use `AskUserQuestion` to ask:
+| Location | Path | Applies To |
+|----------|------|------------|
+| User-level | `~/.claude/rules/` | All your projects (personal preferences) |
+| Project root | `.claude/rules/` | Current project only |
+| Subdirectory | `.claude/rules/frontend/` | Current project, organized by domain |
+| Subdirectory | `.claude/rules/backend/` | Current project, organized by domain |
 
-**Question**: "What files should this rule apply to?"
+**Priority**: User-level rules load first, project rules load after and can override.
 
-| Option | Pattern | Description |
-|--------|---------|-------------|
-| TypeScript files | `**/*.ts` | All .ts files |
-| React/TSX files | `**/*.{ts,tsx}` | TypeScript and React |
-| Frontend code | `src/**/*.{ts,tsx,css}` | All frontend sources |
-| Backend/API | `src/api/**/*.ts` | API endpoints only |
-| Tests | `**/*.{test,spec}.ts` | Test files only |
-| Custom pattern | (ask for input) | User specifies |
+### Glob Pattern Options
 
-If "Custom pattern", ask user to provide the glob pattern and validate it.
+| Pattern | Matches |
+|---------|---------|
+| `**/*.ts` | All TypeScript files |
+| `**/*.{ts,tsx}` | TypeScript and React files |
+| `src/**/*` | All files under src/ |
+| `src/api/**/*.ts` | API files only |
+| `**/*.{test,spec}.ts` | Test files only |
+| `*.config.{js,ts,json}` | Config files in root |
+| `{src,lib}/**/*.ts` | Multiple directories |
 
-### Step 3: Determine Rule Category
+See `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/references/glob-patterns.md` for complete reference.
 
-Use `AskUserQuestion` to ask:
+### Rule Categories
 
-**Question**: "What category of rules will this contain?"
+Common categories to organize rules:
+- Code style and formatting
+- Testing conventions
+- Security requirements
+- API development patterns
+- Documentation standards
+- Performance guidelines
+- Framework-specific rules (React, Node, etc.)
 
-| Option | Suggested filename |
-|--------|-------------------|
-| Code style | `code-style.md` |
-| Testing conventions | `testing.md` |
-| Security requirements | `security.md` |
-| API development | `api.md` |
-| Documentation | `docs.md` |
-| Performance | `performance.md` |
-| Custom | (ask for name) |
+### Frontmatter Options
 
-### Step 4: Determine Location
-
-Use `AskUserQuestion` to ask:
-
-**Question**: "Where should this rule be created?"
-
-| Option | Path | Scope |
-|--------|------|-------|
-| User-level (personal) | `~/.claude/rules/` | All your projects |
-| Project root rules | `.claude/rules/` | This project only |
-| Frontend subdirectory | `.claude/rules/frontend/` | This project only |
-| Backend subdirectory | `.claude/rules/backend/` | This project only |
-| Custom location | (ask for path) | Depends on path |
-
-**Note**: User-level rules in `~/.claude/rules/` are loaded **before** project rules, giving project rules higher priority to override personal preferences.
-
-### Step 5: Generate Rule File
-
-1. Create the directory if it doesn't exist
-2. Generate the file with proper frontmatter:
+Valid YAML frontmatter fields:
 
 ```yaml
 ---
-paths: [selected pattern or omit if global]
+paths: "src/**/*.ts"        # Glob pattern(s) - string or array
+description: "API rules"    # Optional description (max 200 chars)
+priority: 75                # Optional priority 0-100 (default 50)
+enabled: true               # Optional enable/disable (default true)
 ---
-
-# [Rule Title]
-
-[Guide user to add their specific rules here]
 ```
 
-3. Validate frontmatter against schema: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
+Validate against schema: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
 
-### Step 6: Suggest Initial Content
+### Available Operations
 
-Based on the category, suggest starter content:
+| Operation | Description |
+|-----------|-------------|
+| **Create** | New rule file with guided configuration |
+| **Edit** | Modify existing rule (scope, content, frontmatter) |
+| **Delete** | Remove a rule file |
+| **List** | Show all rules in project or user directory |
+| **Validate** | Check frontmatter against schema |
+| **Move** | Change rule location (project ↔ user-level) |
 
-**For code-style.md:**
-```markdown
-# Code Style Rules
+## Workflow
 
-- Use consistent indentation (2 spaces)
-- Follow naming conventions: camelCase for variables, PascalCase for types
-- Maximum line length: 100 characters
-```
-
-**For testing.md:**
-```markdown
-# Testing Conventions
-
-- Write tests for all new features
-- Use descriptive test names
-- Follow AAA pattern: Arrange, Act, Assert
-```
-
-**For security.md:**
-```markdown
-# Security Requirements
-
-- Never commit secrets or API keys
-- Validate all user input
-- Use parameterized queries for database operations
-```
-
-## Workflow: Edit Existing Rule
-
-### Step 1: List Available Rules
-
-Read `.claude/rules/` directory and present options:
-
-```bash
-find .claude/rules -name "*.md" -type f
-```
-
-Use `AskUserQuestion` to let user select which rule to edit.
-
-### Step 2: Show Current Content
-
-Read the selected file and display:
-- Current frontmatter (paths, etc.)
-- Current rule content
-
-### Step 3: Determine Edit Type
-
-Use `AskUserQuestion`:
-
-**Question**: "What do you want to change?"
-
-| Option | Action |
-|--------|--------|
-| Change path scope | Modify the `paths` frontmatter |
-| Add more rules | Append new content |
-| Reorganize | Restructure the file |
-| Delete rule | Remove the file |
-
-### Step 4: Apply Changes
-
-Make the requested changes and validate.
-
-## Validation
-
-Before saving any rule file, validate the frontmatter:
-
-1. Read the JSON schema from `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
-2. Parse the YAML frontmatter
-3. Validate against schema
-4. Report any errors to user
-
-### Common Validation Errors
-
-| Error | Fix |
-|-------|-----|
-| Invalid glob pattern | Check pattern syntax, see references/glob-patterns.md |
-| Unknown frontmatter field | Only `paths`, `description`, `priority`, `enabled` allowed |
-| Invalid paths type | Must be string or array of strings |
-
-## References
-
-- **Glob patterns guide**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/references/glob-patterns.md`
-- **Frontmatter schema**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
-
-## Examples
-
-**Example 1: Create API-specific rules**
-```
-User: "I want to create rules for my API endpoints"
--> Ask about path scope -> Select "Backend/API"
--> Ask about category -> Select "API development"
--> Create .claude/rules/api.md with paths: src/api/**/*.ts
-```
-
-**Example 2: Edit existing testing rules**
-```
-User: "Update my testing rules to also apply to integration tests"
--> List rules, user selects testing.md
--> Show current paths: **/*.test.ts
--> User wants to change scope
--> Update to: **/*.{test,spec,integration}.ts
-```
-
-**Example 3: Create global code style**
-```
-User: "Add code style rules for the whole project"
--> Ask about scope -> Select "Global rule"
--> No paths frontmatter needed
--> Create .claude/rules/code-style.md
-```
-
-**Example 4: Create personal user-level rules**
-```
-User: "I want my personal coding preferences to apply to all my projects"
--> Ask about location -> Select "User-level (personal)"
--> Create ~/.claude/rules/preferences.md
--> These rules apply to ALL projects but can be overridden by project rules
-```
+1. **Determine intent** - Create, edit, delete, or list rules
+2. **Elicit configuration** - Use `AskUserQuestion` to gather:
+   - Rule scope (global vs path-specific)
+   - Target files (glob patterns)
+   - Location (user-level vs project)
+   - Category and filename
+   - Initial content suggestions
+3. **Generate/modify file** - Create or edit the rule with proper frontmatter
+4. **Validate** - Check frontmatter against JSON schema
+5. **Confirm** - Show result and offer next actions
 
 ## User-Level Rules
 
-Personal rules that apply to all your projects can be created in `~/.claude/rules/`:
+Personal rules in `~/.claude/rules/` apply to all projects:
 
 ```
 ~/.claude/rules/
-├── preferences.md    # Your personal coding preferences
-├── workflows.md      # Your preferred workflows
-└── shortcuts.md      # Personal shortcuts and aliases
+├── preferences.md    # Personal coding preferences
+├── workflows.md      # Preferred workflows
+└── shortcuts.md      # Personal shortcuts
 ```
 
-### Priority Order
+Use cases:
+- Consistent style across all projects
+- Personal workflow reminders
+- Default behaviors that projects can override
 
-1. **User-level rules** (`~/.claude/rules/`) - Loaded first
-2. **Project rules** (`.claude/rules/`) - Loaded after, can override user rules
+## Organizing Rules
 
-This allows:
-- Personal preferences across all projects
-- Project-specific rules that override personal preferences when needed
+### By Domain (Subdirectories)
 
-### Common User-Level Rules
-
-**preferences.md** - Personal coding style:
-```markdown
-# My Coding Preferences
-
-- I prefer 4-space indentation
-- Use descriptive variable names
-- Add comments for complex logic
-```
-
-**workflows.md** - Personal workflows:
-```markdown
-# My Workflows
-
-- Always run tests before committing
-- Use conventional commits format
-- Review changes before pushing
-```
-
-## Best Practices
-
-Follow these guidelines when creating rules:
-
-### Keep Rules Focused
-Each file should cover **one topic** only:
-- `testing.md` - Testing conventions
-- `api-design.md` - API design patterns
-- `security.md` - Security requirements
-
-### Use Descriptive Filenames
-The filename should indicate what the rules cover:
-- `code-style.md` (not `rules1.md`)
-- `react-components.md` (not `frontend.md`)
-
-### Use Conditional Rules Sparingly
-Only add `paths` frontmatter when rules **truly apply** to specific file types:
-- Add `paths` for language-specific rules
-- Omit `paths` for general guidelines that apply everywhere
-
-### Organize with Subdirectories
-Group related rules for larger projects:
 ```
 .claude/rules/
 ├── frontend/
@@ -290,12 +135,74 @@ Group related rules for larger projects:
 └── general.md
 ```
 
-### Be Specific
-Good: "Use 2-space indentation"
-Bad: "Format code properly"
+### By Scope (Path-Specific)
 
-### Use Structure to Organize
-Format each rule as a bullet point and group related rules under descriptive markdown headings.
+```yaml
+---
+paths: src/api/**/*.ts
+---
+# API Rules
+```
 
-### Review Periodically
-Update rules as your project evolves to ensure Claude always uses the most up-to-date context.
+### Symlinks for Shared Rules
+
+```bash
+ln -s ~/shared-rules .claude/rules/shared
+ln -s ~/company-standards/security.md .claude/rules/security.md
+```
+
+## Best Practices
+
+- **Keep rules focused** - One topic per file
+- **Use descriptive filenames** - `code-style.md` not `rules1.md`
+- **Use conditional rules sparingly** - Only when truly path-specific
+- **Organize with subdirectories** - Group related rules
+- **Be specific** - "Use 2-space indentation" not "Format properly"
+- **Review periodically** - Update as project evolves
+
+## Validation
+
+Before saving, validate frontmatter against the JSON schema:
+
+| Field | Type | Constraints |
+|-------|------|-------------|
+| `paths` | string or string[] | Valid glob pattern(s) |
+| `description` | string | Max 200 characters |
+| `priority` | integer | 0-100, default 50 |
+| `enabled` | boolean | default true |
+
+## References
+
+- **Glob patterns**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/references/glob-patterns.md`
+- **Frontmatter schema**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
+
+## Examples
+
+**Create API-specific rules**
+```
+User: "I want rules for my API endpoints"
+-> Elicit scope, patterns, location, category
+-> Create .claude/rules/api.md with paths: src/api/**/*.ts
+```
+
+**Edit existing rule scope**
+```
+User: "Update testing rules to include integration tests"
+-> List rules, elicit selection
+-> Show current config, elicit changes
+-> Update paths to **/*.{test,spec,integration}.ts
+```
+
+**Create personal preferences**
+```
+User: "Add my coding preferences for all projects"
+-> Elicit location (user-level)
+-> Create ~/.claude/rules/preferences.md
+```
+
+**Organize by domain**
+```
+User: "Organize my frontend rules"
+-> Elicit subdirectory structure
+-> Create .claude/rules/frontend/ with react.md, styles.md
+```
