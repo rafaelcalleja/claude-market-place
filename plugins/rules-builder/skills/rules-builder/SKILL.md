@@ -67,12 +67,15 @@ Use `AskUserQuestion` to ask:
 
 **Question**: "Where should this rule be created?"
 
-| Option | Path |
-|--------|------|
-| Project root rules | `.claude/rules/` |
-| Frontend subdirectory | `.claude/rules/frontend/` |
-| Backend subdirectory | `.claude/rules/backend/` |
-| Custom location | (ask for path) |
+| Option | Path | Scope |
+|--------|------|-------|
+| User-level (personal) | `~/.claude/rules/` | All your projects |
+| Project root rules | `.claude/rules/` | This project only |
+| Frontend subdirectory | `.claude/rules/frontend/` | This project only |
+| Backend subdirectory | `.claude/rules/backend/` | This project only |
+| Custom location | (ask for path) | Depends on path |
+
+**Note**: User-level rules in `~/.claude/rules/` are loaded **before** project rules, giving project rules higher priority to override personal preferences.
 
 ### Step 5: Generate Rule File
 
@@ -205,3 +208,94 @@ User: "Add code style rules for the whole project"
 -> No paths frontmatter needed
 -> Create .claude/rules/code-style.md
 ```
+
+**Example 4: Create personal user-level rules**
+```
+User: "I want my personal coding preferences to apply to all my projects"
+-> Ask about location -> Select "User-level (personal)"
+-> Create ~/.claude/rules/preferences.md
+-> These rules apply to ALL projects but can be overridden by project rules
+```
+
+## User-Level Rules
+
+Personal rules that apply to all your projects can be created in `~/.claude/rules/`:
+
+```
+~/.claude/rules/
+├── preferences.md    # Your personal coding preferences
+├── workflows.md      # Your preferred workflows
+└── shortcuts.md      # Personal shortcuts and aliases
+```
+
+### Priority Order
+
+1. **User-level rules** (`~/.claude/rules/`) - Loaded first
+2. **Project rules** (`.claude/rules/`) - Loaded after, can override user rules
+
+This allows:
+- Personal preferences across all projects
+- Project-specific rules that override personal preferences when needed
+
+### Common User-Level Rules
+
+**preferences.md** - Personal coding style:
+```markdown
+# My Coding Preferences
+
+- I prefer 4-space indentation
+- Use descriptive variable names
+- Add comments for complex logic
+```
+
+**workflows.md** - Personal workflows:
+```markdown
+# My Workflows
+
+- Always run tests before committing
+- Use conventional commits format
+- Review changes before pushing
+```
+
+## Best Practices
+
+Follow these guidelines when creating rules:
+
+### Keep Rules Focused
+Each file should cover **one topic** only:
+- `testing.md` - Testing conventions
+- `api-design.md` - API design patterns
+- `security.md` - Security requirements
+
+### Use Descriptive Filenames
+The filename should indicate what the rules cover:
+- `code-style.md` (not `rules1.md`)
+- `react-components.md` (not `frontend.md`)
+
+### Use Conditional Rules Sparingly
+Only add `paths` frontmatter when rules **truly apply** to specific file types:
+- Add `paths` for language-specific rules
+- Omit `paths` for general guidelines that apply everywhere
+
+### Organize with Subdirectories
+Group related rules for larger projects:
+```
+.claude/rules/
+├── frontend/
+│   ├── react.md
+│   └── styles.md
+├── backend/
+│   ├── api.md
+│   └── database.md
+└── general.md
+```
+
+### Be Specific
+Good: "Use 2-space indentation"
+Bad: "Format code properly"
+
+### Use Structure to Organize
+Format each rule as a bullet point and group related rules under descriptive markdown headings.
+
+### Review Periodically
+Update rules as your project evolves to ensure Claude always uses the most up-to-date context.

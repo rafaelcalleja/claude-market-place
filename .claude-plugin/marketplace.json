@@ -3,7 +3,7 @@
   "name": "claude-market-place",
   "metadata": {
     "description": "Comprehensive Claude Code plugin marketplace featuring productivity commands (/quick-test, /analyze-deps, /project-stats), specialized code analysis agents (security-auditor, performance-optimizer, architecture-reviewer), and automatic code formatting hooks. Perfect for learning plugin development or extending your Claude Code workflow with production-ready examples.",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "owner": {
     "name": "Example Developer",
@@ -13,7 +13,7 @@
     {
       "name": "productivity-commands",
       "description": "Collection of productivity-enhancing slash commands for common development workflows",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Example Developer",
         "email": "developer@example.com"
@@ -30,7 +30,7 @@
     {
       "name": "code-analysis-agents",
       "description": "Specialized agents for code review, security analysis, and performance optimization",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Example Developer",
         "email": "developer@example.com"
@@ -48,7 +48,7 @@
     {
       "name": "auto-formatter",
       "description": "Automatic code formatting hook that runs after file edits",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Example Developer",
         "email": "developer@example.com"
@@ -235,7 +235,7 @@
     {
       "name": "skill-extractor",
       "description": "Extract reusable skills from Claude Code conversations using Fabric AI patterns. Transforms conversation history into well-structured SKILL.md files.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Claude Market Place"
       },
@@ -275,7 +275,7 @@
     {
       "name": "skill-activator",
       "description": "Increase Claude Code skill activation rates from 20% to 84% using forced evaluation hooks. Based on research by Scott Spence with 200+ test prompts.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Based on research by Scott Spence",
         "url": "https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably"
@@ -359,7 +359,7 @@
     {
       "name": "prompting-skill",
       "description": "Prompt engineering and context engineering skill based on Anthropic best practices. Covers clarity, structure, progressive discovery, and signal-to-noise optimization for AI agents.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Daniel Miessler",
         "url": "https://danielmiessler.com"
@@ -380,7 +380,7 @@
     {
       "name": "createskill-skill",
       "description": "Skill creation framework with workflows for creating, validating, updating, and canonicalizing Claude Code skills. Enforces TitleCase naming conventions and canonical structure.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Daniel Miessler",
         "url": "https://danielmiessler.com"
@@ -401,7 +401,7 @@
     {
       "name": "codex-cli-skill",
       "description": "OpenAI Codex CLI integration skill for code analysis, refactoring, and automated editing with gpt-5.1 models",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Claude Market Place"
       },
@@ -420,7 +420,7 @@
     {
       "name": "rules-builder",
       "description": "Interactive skill for creating and managing Claude Code rules in .claude/rules/ with guided elicitation, glob pattern support, and YAML frontmatter validation",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Claude Market Place"
       },
