@@ -1,0 +1,13 @@
+{
+  "name": "rules-builder",
+  "version": "1.0.0",
+  "description": "Interactive skill for creating and managing Claude Code rules in .claude/rules/ with guided elicitation, glob pattern support, and YAML frontmatter validation",
+  "author": {
+    "name": "Claude Market Place"
+  },
+  "license": "MIT",
+  "keywords": ["rules", "claude-rules", "modular-rules", "glob-patterns", "frontmatter", "elicitation"],
+  "skills": [
+    "./skills/rules-builder"
+  ]
+}

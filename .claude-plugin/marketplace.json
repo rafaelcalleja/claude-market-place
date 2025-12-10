@@ -416,6 +416,25 @@
         "cli"
       ],
       "license": "MIT"
+    },
+    {
+      "name": "rules-builder",
+      "description": "Interactive skill for creating and managing Claude Code rules in .claude/rules/ with guided elicitation, glob pattern support, and YAML frontmatter validation",
+      "version": "1.0.0",
+      "author": {
+        "name": "Claude Market Place"
+      },
+      "source": "./plugins/rules-builder",
+      "category": "productivity",
+      "keywords": [
+        "rules",
+        "claude-rules",
+        "modular-rules",
+        "glob-patterns",
+        "frontmatter",
+        "elicitation"
+      ],
+      "license": "MIT"
     }
   ]
 }

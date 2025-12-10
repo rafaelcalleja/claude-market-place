@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude.com/schemas/rule-frontmatter.json",
+  "title": "Claude Code Rule Frontmatter",
+  "description": "Schema for validating YAML frontmatter in .claude/rules/ files",
+  "type": "object",
+  "properties": {
+    "paths": {
+      "description": "Glob pattern(s) to scope this rule to specific files. Rules without paths apply to all files.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Single glob pattern or comma-separated patterns",
+          "examples": [
+            "src/**/*.ts",
+            "**/*.{ts,tsx}",
+            "{src,lib}/**/*.ts, tests/**/*.test.ts"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of glob patterns",
+          "examples": [
+            ["src/**/*.ts", "lib/**/*.ts"]
+          ]
+        }
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of what this rule covers",
+      "maxLength": 200
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Optional priority for rule ordering (higher = loaded later = higher priority)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether this rule is active",
+      "default": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "paths": "src/api/**/*.ts"
+    },
+    {
+      "paths": "src/**/*.{ts,tsx}",
+      "description": "TypeScript and React rules"
+    },
+    {
+      "paths": [
+        "src/**/*.ts",
+        "lib/**/*.ts"
+      ],
+      "priority": 75
+    }
+  ],
+  "patternProperties": {},
+  "definitions": {
+    "globPattern": {
+      "type": "string",
+      "description": "A glob pattern for matching files",
+      "pattern": "^[^\\0]+$",
+      "examples": [
+        "**/*.ts",
+        "src/**/*",
+        "*.md",
+        "src/components/*.tsx",
+        "src/**/*.{ts,tsx}",
+        "{src,lib}/**/*.ts"
+      ]
+    }
+  }
+}
