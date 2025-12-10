@@ -1,6 +1,6 @@
 ---
 name: rules-builder
-description: Use when the user wants to create, edit, or manage Claude Code rules in .claude/rules/. Provides guided elicitation to configure path-specific rules with proper YAML frontmatter and glob patterns.
+description: Use when the user wants to create, edit, list, or manage Claude Code rules in .claude/rules/. Provides guided elicitation to configure path-specific rules with proper YAML frontmatter and glob patterns. Can list all available rules from user-level and project directories.
 ---
 
 # Rules Builder
@@ -11,6 +11,7 @@ Interactive skill for creating and managing Claude Code modular rules using guid
 
 - User wants to create a new rule file
 - User wants to edit or delete an existing rule
+- User wants to list or view existing rules
 - User mentions `.claude/rules/`
 - User asks about path-specific rules or glob patterns
 - User wants to organize project instructions
@@ -160,6 +161,28 @@ ln -s ~/company-standards/security.md .claude/rules/security.md
 - **Be specific** - "Use 2-space indentation" not "Format properly"
 - **Review periodically** - Update as project evolves
 
+## Listing Rules
+
+To show all available rules from both user-level and project directories:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/scripts/list_rules.py [project_path]
+```
+
+**Examples:**
+```bash
+# List rules for current directory
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/scripts/list_rules.py
+
+# List rules for specific project
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/scripts/list_rules.py /path/to/project
+```
+
+**Output includes:**
+- User-level rules from `~/.claude/rules/`
+- Project rules from `<project>/.claude/rules/`
+- For each rule: name, path, description, glob patterns, scope, priority, enabled status
+
 ## Validation
 
 Before saving, validate frontmatter against the JSON schema:
@@ -175,6 +198,8 @@ Before saving, validate frontmatter against the JSON schema:
 
 - **Glob patterns**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/references/glob-patterns.md`
 - **Frontmatter schema**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/schemas/rule-frontmatter.schema.json`
+- **List rules script**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/scripts/list_rules.py`
+- **Validate script**: `${CLAUDE_PLUGIN_ROOT}/skills/rules-builder/scripts/validate_frontmatter.py`
 
 ## Examples
 
@@ -205,4 +230,12 @@ User: "Add my coding preferences for all projects"
 User: "Organize my frontend rules"
 -> Elicit subdirectory structure
 -> Create .claude/rules/frontend/ with react.md, styles.md
+```
+
+**List all rules**
+```
+User: "Show me all my rules"
+-> Run list_rules.py script
+-> Display user-level and project rules with metadata
+-> Offer to edit, delete, or create new rules
 ```
