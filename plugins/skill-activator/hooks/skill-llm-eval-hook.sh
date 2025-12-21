@@ -6,6 +6,8 @@
 # skills (if any) are relevant. It then instructs Claude to activate those skills
 # before proceeding with implementation.
 #
+# Protocol: Reads JSON from stdin, outputs JSON with hookSpecificOutput
+#
 # COST ANALYSIS (per prompt):
 # Current model: Claude Haiku 3.5 ($0.80/$4 per MTok input/output)
 # - Estimated: ~400 input tokens + ~20 output tokens
@@ -87,9 +89,24 @@ fi
 # Fallback instruction message
 FALLBACK_INSTRUCTION="INSTRUCTION: If the prompt matches any available skill keywords, use Skill(skill-name) to activate it."
 
+# Helper function to output JSON with additionalContext
+output_json() {
+  local message="$1"
+  # Escape special characters for JSON
+  local escaped=$(echo "$message" | jq -Rs .)
+  cat <<JSONEOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": $escaped
+  }
+}
+JSONEOF
+}
+
 # If no API key in environment, fall back
 if [ -z "$ANTHROPIC_API_KEY" ]; then
-  echo "$FALLBACK_INSTRUCTION"
+  output_json "$FALLBACK_INSTRUCTION"
   exit 0
 fi
 
@@ -127,7 +144,7 @@ RAW_TEXT=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null)
 
 # Check if we got a valid response
 if [ $? -ne 0 ] || [ -z "$RAW_TEXT" ]; then
-  echo "$FALLBACK_INSTRUCTION"
+  output_json "$FALLBACK_INSTRUCTION"
   exit 0
 fi
 
@@ -143,14 +160,16 @@ fi
 SKILL_COUNT=$(echo "$SKILLS" | jq 'length' 2>/dev/null)
 
 if [ "$SKILL_COUNT" = "0" ]; then
-  echo "INSTRUCTION: LLM evaluation determined no skills are needed for this task."
+  output_json "INSTRUCTION: LLM evaluation determined no skills are needed for this task."
 elif [ -n "$SKILL_COUNT" ] && [ "$SKILL_COUNT" != "null" ]; then
   SKILL_NAMES=$(echo "$SKILLS" | jq -r '.[]' | paste -sd ',' -)
-  echo "INSTRUCTION: LLM evaluation determined these skills are relevant: $SKILL_NAMES"
-  echo ""
-  echo "You MUST activate these skills using the Skill() tool BEFORE implementation:"
-  echo "$SKILLS" | jq -r '.[] | "- Skill(\(.))"'
+  SKILL_CALLS=$(echo "$SKILLS" | jq -r '.[] | "- Skill(\(.))"' | tr '\n' '\n')
+  MESSAGE="INSTRUCTION: LLM evaluation determined these skills are relevant: $SKILL_NAMES
+
+You MUST activate these skills using the Skill() tool BEFORE implementation:
+$SKILL_CALLS"
+  output_json "$MESSAGE"
 else
   # Fallback if parsing failed
-  echo "$FALLBACK_INSTRUCTION"
+  output_json "$FALLBACK_INSTRUCTION"
 fi
