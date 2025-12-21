@@ -275,7 +275,7 @@
     {
       "name": "skill-activator",
       "description": "Increase Claude Code skill activation rates from 20% to 84% using forced evaluation hooks. Based on research by Scott Spence with 200+ test prompts.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Based on research by Scott Spence",
         "url": "https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably"
